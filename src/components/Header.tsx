@@ -44,7 +44,7 @@ export default function Header() {
                   : 'flex items-center text-gray-300 hover:text-white'
               }
             >
-              <Icon size={18} className="mr-1" />
+              <Icon size={18} className="mr-1 text-[#D4AF37]" />
               {t(key)}
             </Link>
           )
@@ -62,7 +62,7 @@ export default function Header() {
           href="/login"
           className="inline-flex items-center py-1 text-gray-300 hover:text-white ml-4"
         >
-          <LogOut size={18} className="mr-1" />
+          <LogOut size={18} className="mr-1 text-[#D4AF37]" />
           {t('logout')}
         </Link>
       </nav>
@@ -84,7 +84,7 @@ export default function Header() {
         className="block md:hidden text-white ml-2"
         aria-label="Toggle menu"
       >
-        {menuOpen ? <X size={24} /> : <Menu size={24} />}
+        {menuOpen ? <X size={24} className="text-[#D4AF37]" /> : <Menu size={24} className="text-[#D4AF37]" />}
       </button>
 
       {/* mobile menu panel */}
@@ -97,7 +97,7 @@ export default function Header() {
               onClick={() => setMenuOpen(false)}
               className="flex items-center text-white hover:text-gold py-1"
             >
-              <Icon size={18} className="mr-1" />
+              <Icon size={18} className="mr-1 text-[#D4AF37]" />
               {t(key)}
             </Link>
           ))}
@@ -106,11 +106,11 @@ export default function Header() {
             onClick={() => setMenuOpen(false)}
             className="flex items-center text-gray-300 hover:text-white py-1"
           >
-            <LogOut size={18} className="mr-1" />
+            <LogOut size={18} className="mr-1 text-[#D4AF37]" />
             {t('logout')}
           </Link>
         </div>
       )}
     </header>
-)
+  )
 }
