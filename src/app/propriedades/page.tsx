@@ -8,7 +8,6 @@ import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
-
 type PropertyRow = string[]
 
 export default function PropriedadesPage() {
@@ -33,10 +32,34 @@ export default function PropriedadesPage() {
   const saleDateIndex = 34
 
   useEffect(() => {
+    console.log('[PropriedadesPage] iniciando fetch de /api/propriedades')
     ;(async () => {
-      const res = await fetch('/api/propriedades')
-      const json: PropertyRow[] = await res.json()
-      setData(json.length > 1 ? json.slice(1) : [])
+      try {
+        const res = await fetch('/api/propriedades', { cache: 'no-store' })
+        console.log('[PropriedadesPage] status da resposta:', res.status)
+        const body = await res.json() as {
+          ok: boolean
+          rows?: PropertyRow[]
+          error?: string
+          message?: string
+        }
+        console.log('[PropriedadesPage] body recebido:', body)
+
+        if (!body.ok) {
+          console.error('[PropriedadesPage] API retornou erro:', body.error, body.message)
+          return
+        }
+
+        const allRows = body.rows || []
+        console.log('[PropriedadesPage] rows totais:', allRows.length)
+
+        const contentRows = allRows.length > 1 ? allRows.slice(1) : []
+        console.log('[PropriedadesPage] rows de conteúdo:', contentRows.length)
+
+        setData(contentRows)
+      } catch (err) {
+        console.error('[PropriedadesPage] falha no fetch:', err)
+      }
     })()
   }, [])
 
