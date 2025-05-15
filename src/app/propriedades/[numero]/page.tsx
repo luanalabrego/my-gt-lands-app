@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useTranslation } from '../../../hooks/useTranslation'  // path corrigido
+import { useTranslation } from '../../../hooks/useTranslation'
 
 type PropertyRow = string[]
 
@@ -76,7 +76,6 @@ export default function PropertyDetailPage() {
           camposParaExibir.forEach(c => {
             initial[c.index] = found[c.index] || ''
           })
-          // campos de pagamento
           initial[entradaIndex]  = found[entradaIndex]  || ''
           initial[parcelaQtdIdx] = found[parcelaQtdIdx] || ''
           initial[parcelaValIdx] = found[parcelaValIdx] || ''
@@ -106,7 +105,6 @@ export default function PropertyDetailPage() {
   }
 
   const handleSave = async () => {
-    // upload de foto
     if (imageFile) {
       const form = new FormData()
       form.append('numero', numero as string)
@@ -120,7 +118,6 @@ export default function PropertyDetailPage() {
       row[photoIdx] = bodyFoto.url
       setPreviewUrl(bodyFoto.url)
     }
-    // update campos editáveis
     const res = await fetch('/api/propriedades/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -180,9 +177,9 @@ export default function PropertyDetailPage() {
           {statusLabel}
         </span>
 
-        {/* Conteúdo principal: informações + imagem/condições */}
+        {/* Bloco principal: informações + imagem/link */}
         <div className="mt-6 flex flex-col lg:flex-row lg:items-start lg:space-x-6">
-          {/* Campos de informação */}
+          {/* Informações */}
           <div className="space-y-4 text-white lg:w-1/2">
             {isSold ? (
               <>
@@ -237,7 +234,7 @@ export default function PropertyDetailPage() {
             )}
           </div>
 
-          {/* Imagem + condições de pagamento */}
+          {/* Imagem / Link */}
           <div className="mt-6 flex flex-col items-center lg:mt-0 lg:w-1/2">
             {previewUrl && (
               <img
@@ -265,56 +262,60 @@ export default function PropertyDetailPage() {
                 {t('viewOnMap')}
               </a>
             )}
-            <div className="w-full bg-[#1F1F1F] border border-gray-700 rounded-2xl p-4 text-white">
-              <h2 className="text-center text-lg font-semibold mb-2">
-                {t('paymentConditions')}
-              </h2>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="font-medium">{t('downPayment')}</span>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editValues[entradaIndex]}
-                      onChange={e => handleChangeField(entradaIndex, e.target.value)}
-                      className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
-                    />
-                  ) : (
-                    <span>{row[entradaIndex] || '—'}</span>
-                  )}
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">{t('installments')}</span>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editValues[parcelaQtdIdx]}
-                      onChange={e => handleChangeField(parcelaQtdIdx, e.target.value)}
-                      className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
-                    />
-                  ) : (
-                    <span>
-                      {row[parcelaQtdIdx] || '—'} {t('times')}
-                    </span>
-                  )}
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">{t('installmentValue')}</span>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editValues[parcelaValIdx]}
-                      onChange={e => handleChangeField(parcelaValIdx, e.target.value)}
-                      className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
-                    />
-                  ) : (
-                    <span>{row[parcelaValIdx] || '—'}</span>
-                  )}
-                </div>
+          </div>
+        </div>
+
+        {/* Condições de pagamento apenas para pendentes */}
+        {!isSold && (
+          <div className="mt-6 w-full bg-[#1F1F1F] border border-gray-700 rounded-2xl p-4 text-white">
+            <h2 className="text-center text-lg font-semibold mb-2">
+              {t('paymentConditions')}
+            </h2>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="font-medium">{t('downPayment')}</span>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editValues[entradaIndex]}
+                    onChange={e => handleChangeField(entradaIndex, e.target.value)}
+                    className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
+                  />
+                ) : (
+                  <span>{row[entradaIndex] || '—'}</span>
+                )}
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">{t('installments')}</span>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editValues[parcelaQtdIdx]}
+                    onChange={e => handleChangeField(parcelaQtdIdx, e.target.value)}
+                    className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
+                  />
+                ) : (
+                  <span>
+                    {row[parcelaQtdIdx] || '—'} {t('times')}
+                  </span>
+                )}
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">{t('installmentValue')}</span>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editValues[parcelaValIdx]}
+                    onChange={e => handleChangeField(parcelaValIdx, e.target.value)}
+                    className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
+                  />
+                ) : (
+                  <span>{row[parcelaValIdx] || '—'}</span>
+                )}
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Botões de ação */}
         <div className="mt-6 flex justify-end space-x-2">
