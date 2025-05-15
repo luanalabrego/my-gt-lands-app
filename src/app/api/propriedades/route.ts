@@ -6,32 +6,40 @@ import { google } from 'googleapis'
 export const runtime = 'nodejs'
 
 export async function GET() {
+  console.log('[API GET] iniciando leitura da planilha (header na linha 8)')
+
+  // 1) valida env-vars
+  const {
+    GOOGLE_CLIENT_EMAIL: clientEmail,
+    GOOGLE_PRIVATE_KEY: privateKey,
+    SPREADSHEET_ID
+  } = process.env
+
+  if (!clientEmail || !privateKey || !SPREADSHEET_ID) {
+    console.error('[API GET] Variáveis de ambiente faltando')
+    return NextResponse.json(
+      { error: 'Server misconfiguration' },
+      { status: 500 }
+    )
+  }
+
+  // 2) configura auth usando GoogleAuth diretamente
+  const auth = new google.auth.GoogleAuth({
+    credentials: {
+      client_email: clientEmail,
+      private_key: privateKey.replace(/\\n/g, '\n'),
+    },
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  })
+
+  // 3) instancia o cliente Sheets com a instância de auth
+  const sheets = google.sheets({ version: 'v4', auth })
+
+  const spreadsheetId = SPREADSHEET_ID
+  const range         = 'Cadastro de Propriedades!A8:BG'  // cabeçalho na linha 8
+
+  console.log('[API GET] lendo range:', range)
   try {
-    console.log('[API GET] iniciando leitura da planilha (header na linha 8)')
-
-    // Verifica variáveis de ambiente
-    if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
-      throw new Error('Credenciais do Google não configuradas')
-    }
-    if (!process.env.SPREADSHEET_ID) {
-      throw new Error('ID da planilha não configurado')
-    }
-
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-      },
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-    })
-
-    const client = await auth.getClient()
-    const sheets = google.sheets({ version: 'v4', auth: client })
-
-    const spreadsheetId = process.env.SPREADSHEET_ID as string
-    const range         = 'Cadastro de Propriedades!A8:BG'  // começa na linha 8
-
-    console.log('[API GET] lendo range:', range)
     const res = await sheets.spreadsheets.values.get({ spreadsheetId, range })
     const rows: string[][] = res.data.values || []
 
