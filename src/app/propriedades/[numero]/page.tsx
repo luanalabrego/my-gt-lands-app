@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useLanguage } from '../../context/LanguageContext'
 import { useTranslation } from '../../../hooks/useTranslation'  // path corrigido
 
 type PropertyRow = string[]
