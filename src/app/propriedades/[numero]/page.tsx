@@ -34,27 +34,27 @@ export default function PropertyDetailPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [editValues, setEditValues] = useState<Record<number,string>>({})
+  const [editValues, setEditValues] = useState<Record<number, string>>({})
 
   // índices usados
-  const purchaseDateIdx = 1     // coluna B
-  const addressIdx      = 5     // coluna F
-  const countyIdx       = 6     // coluna G
-  const stateIdx        = 7     // coluna H
-  const acresIdx        = 9     // coluna J
-  const saleDateIdx     = 34    // coluna AI
-  const agingIdx        = 14    // coluna O
-  const saleValueIdx    = 50    // coluna AY
-  const profitIdx       = 51    // coluna AZ
-  const photoIdx        = 33    // coluna AF (foto)
-  const entradaIndex    = 56    // entrada (down payment)
-  const parcelaQtdIdx   = 57    // número de parcelas
-  const parcelaValIdx   = 58    // valor da parcela
+  const purchaseDateIdx = 1
+  const addressIdx      = 5
+  const countyIdx       = 6
+  const stateIdx        = 7
+  const acresIdx        = 9
+  const saleDateIdx     = 34
+  const agingIdx        = 14
+  const saleValueIdx    = 50
+  const profitIdx       = 51
+  const photoIdx        = 33
+  const entradaIndex    = 56
+  const parcelaQtdIdx   = 57
+  const parcelaValIdx   = 58
 
   // remove classes para impressão
   const stripClasses = (el: HTMLElement) => {
     el.removeAttribute('class')
-    Array.from(el.children).forEach(c =>
+    Array.from(el.children).forEach((c) =>
       c instanceof HTMLElement && stripClasses(c)
     )
   }
@@ -65,18 +65,18 @@ export default function PropertyDetailPage() {
     ;(async () => {
       try {
         const res = await fetch('/api/propriedades', { cache: 'no-store' })
-        const body = await res.json() as { ok: boolean; rows?: PropertyRow[] }
+        const body = (await res.json()) as { ok: boolean; rows?: PropertyRow[] }
         if (!body.ok) return
         const content = body.rows?.slice(1) || []
-        const found = content.find(r => r[2] === numero) || null
+        const found = content.find((r) => r[2] === numero) || null
         setRow(found)
         if (found) {
           setPreviewUrl(found[photoIdx])
-          const initial: Record<number,string> = {}
-          camposParaExibir.forEach(c => {
+          const initial: Record<number, string> = {}
+          camposParaExibir.forEach((c) => {
             initial[c.index] = found[c.index] || ''
           })
-          initial[entradaIndex]  = found[entradaIndex]  || ''
+          initial[entradaIndex] = found[entradaIndex] || ''
           initial[parcelaQtdIdx] = found[parcelaQtdIdx] || ''
           initial[parcelaValIdx] = found[parcelaValIdx] || ''
           setEditValues(initial)
@@ -96,7 +96,7 @@ export default function PropertyDetailPage() {
   const statusLabel = isSold ? t('statusVendido') : t('statusPendente')
 
   const handleChangeField = (i: number, v: string) =>
-    setEditValues(prev => ({ ...prev, [i]: v }))
+    setEditValues((prev) => ({ ...prev, [i]: v }))
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0] ?? null
@@ -105,11 +105,15 @@ export default function PropertyDetailPage() {
   }
 
   const handleSave = async () => {
+    // upload de foto
     if (imageFile) {
       const form = new FormData()
       form.append('numero', numero as string)
       form.append('foto', imageFile)
-      const resFoto = await fetch('/api/propriedades/upload-foto', { method: 'POST', body: form })
+      const resFoto = await fetch('/api/propriedades/upload-foto', {
+        method: 'POST',
+        body: form,
+      })
       const bodyFoto = await resFoto.json()
       if (!bodyFoto.ok) {
         alert(`${t('photoUploadError')}: ${bodyFoto.message}`)
@@ -118,6 +122,7 @@ export default function PropertyDetailPage() {
       row[photoIdx] = bodyFoto.url
       setPreviewUrl(bodyFoto.url)
     }
+    // update campos editáveis
     const res = await fetch('/api/propriedades/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -156,7 +161,10 @@ export default function PropertyDetailPage() {
     if (!win) return
     win.document.write(html)
     win.document.close()
-    win.onload = () => { win.print(); win.close() }
+    win.onload = () => {
+      win.print()
+      win.close()
+    }
   }
 
   return (
@@ -234,8 +242,8 @@ export default function PropertyDetailPage() {
             )}
           </div>
 
-          {/* Imagem / Link */}
-          <div className="mt-6 flex flex-col items-center lg:mt-0 lg:w-1/2">
+          {/* Imagem / Link / (botão alinhado à esquerda) */}
+          <div className="mt-6 flex flex-col items-start lg:mt-0 lg:w-1/2">
             {previewUrl && (
               <img
                 src={previewUrl}
@@ -243,6 +251,7 @@ export default function PropertyDetailPage() {
                 className="w-full h-auto max-h-60 object-cover rounded-lg mb-4"
               />
             )}
+
             {isEditing ? (
               <input
                 type="file"
@@ -257,65 +266,71 @@ export default function PropertyDetailPage() {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mb-4 w-full sm:w-auto bg-[#D4AF37] text-black px-4 py-2 text-sm rounded-lg font-medium text-center hover:bg-[#D4AF37]/90 transition"
+                className="mb-4 bg-[#D4AF37] text-black px-4 py-2 text-sm rounded-lg font-medium hover:bg-[#D4AF37]/90 transition"
               >
                 {t('viewOnMap')}
               </a>
             )}
+
+            {/* Condições de pagamento apenas para pendentes */}
+            {!isSold && (
+              <div className="w-full bg-[#1F1F1F] border border-gray-700 rounded-2xl p-4 text-white">
+                <h2 className="text-center text-lg font-semibold mb-2">
+                  {t('paymentConditions')}
+                </h2>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="font-medium">{t('downPayment')}</span>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editValues[entradaIndex]}
+                        onChange={(e) =>
+                          handleChangeField(entradaIndex, e.target.value)
+                        }
+                        className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
+                      />
+                    ) : (
+                      <span>{row[entradaIndex] || '—'}</span>
+                    )}
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">{t('installments')}</span>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editValues[parcelaQtdIdx]}
+                        onChange={(e) =>
+                          handleChangeField(parcelaQtdIdx, e.target.value)
+                        }
+                        className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
+                      />
+                    ) : (
+                      <span>
+                        {row[parcelaQtdIdx] || '—'} {t('times')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">{t('installmentValue')}</span>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editValues[parcelaValIdx]}
+                        onChange={(e) =>
+                          handleChangeField(parcelaValIdx, e.target.value)
+                        }
+                        className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
+                      />
+                    ) : (
+                      <span>{row[parcelaValIdx] || '—'}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Condições de pagamento apenas para pendentes */}
-        {!isSold && (
-          <div className="mt-6 w-full bg-[#1F1F1F] border border-gray-700 rounded-2xl p-4 text-white">
-            <h2 className="text-center text-lg font-semibold mb-2">
-              {t('paymentConditions')}
-            </h2>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="font-medium">{t('downPayment')}</span>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editValues[entradaIndex]}
-                    onChange={e => handleChangeField(entradaIndex, e.target.value)}
-                    className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
-                  />
-                ) : (
-                  <span>{row[entradaIndex] || '—'}</span>
-                )}
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">{t('installments')}</span>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editValues[parcelaQtdIdx]}
-                    onChange={e => handleChangeField(parcelaQtdIdx, e.target.value)}
-                    className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
-                  />
-                ) : (
-                  <span>
-                    {row[parcelaQtdIdx] || '—'} {t('times')}
-                  </span>
-                )}
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">{t('installmentValue')}</span>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editValues[parcelaValIdx]}
-                    onChange={e => handleChangeField(parcelaValIdx, e.target.value)}
-                    className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
-                  />
-                ) : (
-                  <span>{row[parcelaValIdx] || '—'}</span>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Botões de ação */}
         <div className="mt-6 flex justify-end space-x-2">
