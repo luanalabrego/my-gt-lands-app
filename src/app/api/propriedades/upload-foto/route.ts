@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server'
 import fs from 'fs'
 import path from 'path'
 import { google } from 'googleapis'
+import os from 'os'
+
 
 export const runtime = 'nodejs'
 export const config = { api: { bodyParser: false } }
@@ -26,7 +28,7 @@ export async function POST(request: Request) {
 
     // 2) salvar arquivo em /public/uploads
     const buffer = Buffer.from(await file.arrayBuffer())
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
+    const uploadsDir = path.join(os.tmpdir(), 'uploads')
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true })
     }
