@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // 2) configura auth
+    // 2) configura auth via GoogleAuth
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: clientEmail,
@@ -51,11 +51,11 @@ export async function POST(request: Request) {
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     })
 
-    // 3) instancia Sheets
+    // 3) instancia Sheets passando o auth
     const sheets = google.sheets({ version: 'v4', auth })
     const spreadsheetId = SPREADSHEET_ID
 
-    // 4) lê todas as linhas para achar o índice
+    // 4) lê todas as linhas para achar o índice (header começa em A8)
     const getRes = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: 'Cadastro de Propriedades!A8:ZZ',
@@ -68,8 +68,7 @@ export async function POST(request: Request) {
         { status: 404 }
       )
     }
-
-    const sheetRow = rowIdx + 8  // header começa na linha 8
+    const sheetRow = rowIdx + 8
 
     // 5) grava cada campo editado
     for (const [idxStr, valor] of Object.entries(updates)) {
