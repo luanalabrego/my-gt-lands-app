@@ -6,7 +6,7 @@ import { useLanguage } from '../../context/LanguageContext'
 import { useTranslation } from '../../hooks/useTranslation'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 type PropertyRow = string[]
 
@@ -15,67 +15,43 @@ export default function PropriedadesPage() {
   const [data, setData] = useState<PropertyRow[]>([])
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card')
   const [dateFromObj, setDateFromObj] = useState<Date | null>(null)
-  const [dateToObj, setDateToObj]   = useState<Date | null>(null)
+  const [dateToObj, setDateToObj] = useState<Date | null>(null)
 
-  // idioma e função de tradução
   const { lang, setLang } = useLanguage()
   const { t } = useTranslation()
 
-  // filtros
-  const [searchTerm, setSearchTerm]       = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
   const [selectedState, setSelectedState] = useState('')
   const [selectedCounty, setSelectedCounty] = useState('')
-  const [statusFilter, setStatusFilter]   = useState<'all' | 'sold' | 'pending'>('all')
-  const [dateFrom, setDateFrom]           = useState('')
-  const [dateTo, setDateTo]               = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'sold' | 'pending'>('all')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
 
-  // índice da coluna de data de venda (AI) = 34 (0-based)
   const saleDateIndex = 34
 
   useEffect(() => {
-    console.log('[PropriedadesPage] iniciando fetch de /api/propriedades')
     ;(async () => {
-      try {
-        const res = await fetch('/api/propriedades', { cache: 'no-store' })
-        console.log('[PropriedadesPage] status da resposta:', res.status)
-        const body = await res.json() as {
-          ok: boolean
-          rows?: PropertyRow[]
-          error?: string
-          message?: string
-        }
-        console.log('[PropriedadesPage] body recebido:', body)
-
-        if (!body.ok) {
-          console.error('[PropriedadesPage] API retornou erro:', body.error, body.message)
-          return
-        }
-
-        const allRows = body.rows || []
-        console.log('[PropriedadesPage] rows totais:', allRows.length)
-
-        const contentRows = allRows.length > 1 ? allRows.slice(1) : []
-        console.log('[PropriedadesPage] rows de conteúdo:', contentRows.length)
-
-        setData(contentRows)
-      } catch (err) {
-        console.error('[PropriedadesPage] falha no fetch:', err)
+      const res = await fetch('/api/propriedades', { cache: 'no-store' })
+      const body = await res.json() as { ok: boolean; rows?: PropertyRow[] }
+      if (body.ok && body.rows) {
+        const all = body.rows
+        setData(all.length > 1 ? all.slice(1) : [])
       }
     })()
   }, [])
 
   const validRows = data.filter(r => r[2]?.trim() !== '')
-  const states    = Array.from(new Set(validRows.map(r => r[7]).filter(Boolean)))
-  const counties  = Array.from(new Set(validRows.map(r => r[6]).filter(Boolean)))
+  const states = Array.from(new Set(validRows.map(r => r[7]).filter(Boolean)))
+  const counties = Array.from(new Set(validRows.map(r => r[6]).filter(Boolean)))
 
   const filtered = validRows.filter(r => {
-    const address     = r[5] || ''
-    const numero      = r[2] || ''
-    const state       = r[7] || ''
-    const county      = r[6] || ''
+    const address = r[5] || ''
+    const numero = r[2] || ''
+    const state = r[7] || ''
+    const county = r[6] || ''
     const purchaseDate = new Date(r[1] || '')
-    const saleDateRaw  = (r[saleDateIndex] || '').toString().trim()
-    const sold         = saleDateRaw !== ''
+    const saleDateRaw = (r[saleDateIndex] || '').trim()
+    const sold = saleDateRaw !== ''
 
     if (searchTerm) {
       if (/^\d+$/.test(searchTerm)) {
@@ -90,163 +66,139 @@ export default function PropriedadesPage() {
     if (statusFilter === 'pending' && sold) return false
 
     if (dateFrom) {
-      const from = new Date(dateFrom)
-      from.setHours(0,0,0,0)
+      const from = new Date(dateFrom); from.setHours(0,0,0,0)
       if (purchaseDate < from) return false
     }
     if (dateTo) {
-      const to = new Date(dateTo)
-      to.setHours(23,59,59,999)
+      const to = new Date(dateTo); to.setHours(23,59,59,999)
       if (purchaseDate > to) return false
     }
-
     return true
   })
 
   return (
     <div className="min-h-screen bg-[#1F1F1F] px-4 py-6">
-      {/* Cabeçalho e botão */}
-      <div className="flex flex-wrap items-center justify-between mb-6">
-        <h1 className="text-3xl font-semibold text-white mb-4 md:mb-0">
+      {/* Controles principais */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-semibold text-white mb-4">
           {t('properties')}
         </h1>
-        <Link
-          href="/propriedades/new"
-          className="
-            bg-[#D4AF37] text-black
-            border border-[#D4AF37]
-            px-4 py-2 rounded-lg font-medium
-            hover:bg-[#D4AF37]/90 transition
-          "
-        >
-          {t('newProperty')}
-        </Link>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Link
+              href="/propriedades/new"
+              className="bg-[#D4AF37] text-black border border-[#D4AF37] px-4 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 transition"
+            >
+              {t('newProperty')}
+            </Link>
+            <button
+              onClick={() => setShowFilters(v => !v)}
+              className="flex items-center gap-1 px-4 py-2 bg-[#2C2C2C] rounded-lg text-white"
+            >
+              {t('filter')}
+              {showFilters ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
+            </button>
+          </div>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setViewMode('card')}
+              className={`px-3 py-1 rounded-lg font-medium ${
+                viewMode === 'card' ? 'bg-[#D4AF37] text-black' : 'bg-gray-dark text-white'
+              }`}
+            >
+              {t('cards')}
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-1 rounded-lg font-medium ${
+                viewMode === 'list' ? 'bg-[#D4AF37] text-black' : 'bg-gray-dark text-white'
+              }`}
+            >
+              {t('list')}
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* 1) Botão “Filtro” mobile */}
-<div className="flex items-center justify-between mb-4 md:hidden">
-  <button
-    onClick={() => setShowFilters(v => !v)}
-    className="flex items-center gap-2 px-4 py-2 bg-[#2C2C2C] rounded-lg text-white"
-  >
-    {t('filter')}
-    {showFilters ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
-  </button>
-</div>
-{/* 2) Contêiner de filtros completo */}
-<div
-  className={`
-    ${showFilters ? 'flex flex-wrap gap-4 mb-6' : 'hidden'}
-    md:flex flex-wrap gap-4 mb-6
-  `}
->
-  {/* Busca */}
-  <input
-    type="text"
-    placeholder={t('placeholder')}
-    value={searchTerm}
-    onChange={e => setSearchTerm(e.target.value)}
-    className="flex-1 min-w-[200px] px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-  />
+      {/* 2) Contêiner de filtros */}
+      <div
+        className={`
+          ${showFilters ? 'flex flex-wrap gap-4 mb-6' : 'hidden'}
+          md:flex flex-wrap gap-4 mb-6
+        `}
+      >
+        <input
+          type="text"
+          placeholder={t('placeholder')}
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          className="flex-1 min-w-[200px] px-4 py-2 rounded-lg bg-black border border-gray-600 text-white"
+        />
 
-  {/* Estado */}
-  <select
-    value={selectedState}
-    onChange={e => setSelectedState(e.target.value)}
-    className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-  >
-    <option value="">{t('allStates')}</option>
-    {states.map(s => (
-      <option key={s} value={s}>{s}</option>
-    ))}
-  </select>
+        <select
+          value={selectedState}
+          onChange={e => setSelectedState(e.target.value)}
+          className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white"
+        >
+          <option value="">{t('allStates')}</option>
+          {states.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
 
-  {/* Condado */}
-  <select
-    value={selectedCounty}
-    onChange={e => setSelectedCounty(e.target.value)}
-    className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-  >
-    <option value="">{t('allCounties')}</option>
-    {counties.map(c => (
-      <option key={c} value={c}>{c}</option>
-    ))}
-  </select>
+        <select
+          value={selectedCounty}
+          onChange={e => setSelectedCounty(e.target.value)}
+          className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white"
+        >
+          <option value="">{t('allCounties')}</option>
+          {counties.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
 
-  {/* Status */}
-  <select
-    value={statusFilter}
-    onChange={e => setStatusFilter(e.target.value as any)}
-    className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-  >
-    <option value="all">{t('allStatus')}</option>
-    <option value="sold">{t('sold')}</option>
-    <option value="pending">{t('pending')}</option>
-  </select>
+        <select
+          value={statusFilter}
+          onChange={e => setStatusFilter(e.target.value as any)}
+          className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white"
+        >
+          <option value="all">{t('allStatus')}</option>
+          <option value="sold">{t('sold')}</option>
+          <option value="pending">{t('pending')}</option>
+        </select>
 
-  {/* DatePickers */}
-  <div className="flex space-x-2">
-    <DatePicker
-      selected={dateFromObj}
-      onChange={d => {
-        setDateFromObj(d)
-        setDateFrom(d ? d.toISOString().slice(0, 10) : '')
-      }}
-      placeholderText={t('fromDate')}
-      className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-      dateFormat="yyyy-MM-dd"
-    />
-    <DatePicker
-      selected={dateToObj}
-      onChange={d => {
-        setDateToObj(d)
-        setDateTo(d ? d.toISOString().slice(0, 10) : '')
-      }}
-      placeholderText={t('toDate')}
-      className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-      dateFormat="yyyy-MM-dd"
-    />
-  </div>
-
-  {/* Botões de visualização */}
-  <div className="ml-auto flex space-x-2">
-    <button
-      onClick={() => setViewMode('card')}
-      className={`px-3 py-1 rounded-lg font-medium ${
-        viewMode === 'card'
-          ? 'bg-[#D4AF37] text-black'
-          : 'bg-gray-dark text-white'
-      }`}
-    >
-      {t('cards')}
-    </button>
-    <button
-      onClick={() => setViewMode('list')}
-      className={`px-3 py-1 rounded-lg font-medium ${
-        viewMode === 'list'
-          ? 'bg-[#D4AF37] text-black'
-          : 'bg-gray-dark text-white'
-      }`}
-    >
-      {t('list')}
-    </button>
-  </div>
-</div>
+        <div className="flex space-x-2">
+          <DatePicker
+            selected={dateFromObj}
+            onChange={d => {
+              setDateFromObj(d)
+              setDateFrom(d ? d.toISOString().slice(0,10) : '')
+            }}
+            placeholderText={t('fromDate')}
+            className="w-32 sm:w-auto px-4 py-2 rounded-lg bg-black border border-gray-600 text-white"
+            dateFormat="yyyy-MM-dd"
+          />
+          <DatePicker
+            selected={dateToObj}
+            onChange={d => {
+              setDateToObj(d)
+              setDateTo(d ? d.toISOString().slice(0,10) : '')
+            }}
+            placeholderText={t('toDate')}
+            className="w-32 sm:w-auto px-4 py-2 rounded-lg bg-black border border-gray-600 text-white"
+            dateFormat="yyyy-MM-dd"
+          />
+        </div>
+      </div>
 
       {/* Renderização em Cards */}
       {viewMode === 'card' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((r, i) => {
-            const dataCompra   = r[1]
-            const numero       = r[2]
-            const endereco     = r[5]
-            const condado      = r[6]
-            const estado       = r[7]
-            const acres        = r[9]
-            const medidas      = r[12]  // coluna M
-            const descImovel   = r[21]  // coluna V
-            const saleDateRaw  = (r[saleDateIndex] || '').trim()
-            const status       = saleDateRaw ? t('statusVendido') : t('statusPendente')
+            const dataCompra = r[1]
+            const numero = r[2]
+            const endereco = r[5]
+            const condado = r[6]
+            const estado = r[7]
+            const descImovel = r[21]
+            const saleDateRaw = (r[saleDateIndex] || '').trim()
+            const status = saleDateRaw ? t('statusVendido') : t('statusPendente')
 
             return (
               <div
@@ -254,12 +206,12 @@ export default function PropriedadesPage() {
                 className="bg-[#2C2C2C] rounded-2xl p-6 shadow-lg flex flex-col justify-between"
               >
                 <div className="space-y-2">
-                <h2 className="text-xl font-bold text-white line-clamp-2">
-                <span className="text-gold">#{numero}</span> {endereco}
+                  <h2 className="text-xl font-bold text-white line-clamp-2">
+                    <span className="text-gold">#{numero}</span> {endereco}
                   </h2>
                   <p className="text-gray-300 text-sm">
-  {condado}, {estado}
-</p>
+                    {condado}, {estado}
+                  </p>
                   {descImovel && (
                     <p className="text-gray-400 text-sm italic line-clamp-3">
                       {descImovel}
@@ -309,10 +261,7 @@ export default function PropriedadesPage() {
                   t('measuresLabel'),
                   t('sold')
                 ].map((h, j) => (
-                  <th
-                    key={j}
-                    className="px-4 py-2 text-left text-sm font-medium text-gray-300"
-                  >
+                  <th key={j} className="px-4 py-2 text-left text-sm font-medium text-gray-300">
                     {h}
                   </th>
                 ))}
@@ -324,8 +273,7 @@ export default function PropriedadesPage() {
             <tbody className="divide-y divide-gray-700">
               {filtered.map((r, i) => {
                 const saleDateRaw = (r[saleDateIndex] || '').trim()
-                const status       = saleDateRaw ? t('statusVendido') : t('statusPendente')
-
+                const status = saleDateRaw ? t('statusVendido') : t('statusPendente')
                 return (
                   <tr key={i}>
                     <td className="px-4 py-2 text-sm text-white">{r[1]}</td>
