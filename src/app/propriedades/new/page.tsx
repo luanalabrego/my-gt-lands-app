@@ -31,6 +31,9 @@ const FIELDS = {
   propertyDesc:     'Descrição do Imóvel',
   legalDesc:        'Legal Description',
   hoa:              'HOA',
+  hoaName:          'Nome do HOA',
+  hoaValue:         'Valor (Hoa)',
+  hoaPeriod:        'Período (Hoa)',
   optionalNotes:    'Notas (Opcional)',
   images:           'Imagens',
   documents:        'Documentos',
@@ -220,7 +223,7 @@ export default function CadastrarPropriedade() {
       <fieldset className="border border-gray-700 rounded-lg p-4 space-y-3">
         <legend className="px-2 text-sm font-semibold">{t('Extras')}</legend>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {(['floodZone','propertyDesc','legalDesc','hoa','optionalNotes'] as FieldKey[]).map(key => (
+          {(['floodZone','propertyDesc','legalDesc','hoa','hoaName','hoaValue','hoaPeriod','optionalNotes'] as FieldKey[]).map(key => (
             <div key={key}>
               <label className="block text-xs font-medium mb-1 text-gray-300">
                 {t(FIELDS[key])}
@@ -242,11 +245,12 @@ export default function CadastrarPropriedade() {
                   <option value="Sim">{t('Sim')}</option>
                   <option value="Não">{t('Não')}</option>
                 </select>
-              ) : key === 'images' || key === 'documents' ? (
+              ) : key === 'hoaName' || key === 'hoaValue' || key === 'hoaPeriod' ? (
                 <input
-                  type="file"
-                  multiple
-                  className="w-full text-sm text-gray-200"
+                  type="text"
+                  value={values[key]}
+                  onChange={e => handleChange(key, e.target.value)}
+                  className="w-full text-sm px-2 py-1 bg-[#1F1F1F] border border-gray-600 rounded text-white placeholder-gray-500"
                 />
               ) : (
                 <input
@@ -258,6 +262,30 @@ export default function CadastrarPropriedade() {
               )}
             </div>
           ))}
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-3">
+          {/* Imagens */}
+          <div>
+            <label className="block text-xs font-medium mb-1 text-gray-300">
+              {t(FIELDS.images)}
+            </label>
+            <input
+              type="file"
+              multiple
+              className="w-full text-sm text-gray-200"
+            />
+          </div>
+          {/* Documentos */}
+          <div>
+            <label className="block text-xs font-medium mb-1 text-gray-300">
+              {t(FIELDS.documents)}
+            </label>
+            <input
+              type="file"
+              multiple
+              className="w-full text-sm text-gray-200"
+            />
+          </div>
         </div>
       </fieldset>
 
