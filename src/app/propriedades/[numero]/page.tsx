@@ -6,7 +6,7 @@ import { useTranslation } from '../../../hooks/useTranslation'  // path corrigid
 
 type PropertyRow = string[]
 
-// campos editáveis, agora usando chaves de tradução
+// campos padrão para lotes não vendidos
 const camposParaExibir = [
   { key: 'addressLabel',    index: 5  },
   { key: 'countyLabel',     index: 6  },
@@ -36,14 +36,22 @@ export default function PropertyDetailPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [editValues, setEditValues] = useState<Record<number,string>>({})
 
-  // índices extras
-  const saleDateIndex = 34
-  const fotoIndex     = 33
-  const entradaIndex  = 56
-  const parcelaQtdIdx = 57
-  const parcelaValIdx = 58
+  // índices usados
+  const purchaseDateIdx = 1     // coluna B
+  const addressIdx      = 5     // coluna F
+  const countyIdx       = 6     // coluna G
+  const stateIdx        = 7     // coluna H
+  const acresIdx        = 9     // coluna J
+  const saleDateIdx     = 34    // coluna AI
+  const agingIdx        = 14    // coluna O
+  const saleValueIdx    = 50    // coluna AY
+  const profitIdx       = 51    // coluna AZ
+  const photoIdx        = 33    // coluna AF (foto)
+  const entradaIndex    = 56    // entrada (down payment)
+  const parcelaQtdIdx   = 57    // número de parcelas
+  const parcelaValIdx   = 58    // valor da parcela
 
-  // limpa classes para impressão
+  // remove classes para impressão
   const stripClasses = (el: HTMLElement) => {
     el.removeAttribute('class')
     Array.from(el.children).forEach(c =>
@@ -51,29 +59,24 @@ export default function PropertyDetailPage() {
     )
   }
 
+  // carrega dados da API
   useEffect(() => {
     if (!numero) return
-
     ;(async () => {
       try {
         const res = await fetch('/api/propriedades', { cache: 'no-store' })
-        const body = await res.json() as {
-          ok: boolean
-          rows?: PropertyRow[]
-          error?: string
-          message?: string
-        }
+        const body = await res.json() as { ok: boolean; rows?: PropertyRow[] }
         if (!body.ok) return
-        const allRows = body.rows || []
-        const contentRows = allRows.length > 1 ? allRows.slice(1) : []
-        const found = contentRows.find(r => r[2] === numero) || null
+        const content = body.rows?.slice(1) || []
+        const found = content.find(r => r[2] === numero) || null
         setRow(found)
         if (found) {
-          setPreviewUrl(found[fotoIndex])
+          setPreviewUrl(found[photoIdx])
           const initial: Record<number,string> = {}
           camposParaExibir.forEach(c => {
             initial[c.index] = found[c.index] || ''
           })
+          // campos de pagamento
           initial[entradaIndex]  = found[entradaIndex]  || ''
           initial[parcelaQtdIdx] = found[parcelaQtdIdx] || ''
           initial[parcelaValIdx] = found[parcelaValIdx] || ''
@@ -89,10 +92,9 @@ export default function PropertyDetailPage() {
     return <p className="p-6 text-white">{t('loading')}</p>
   }
 
-  const saleDateRaw = (row[saleDateIndex] || '').trim()
-  const statusLabel = saleDateRaw
-    ? t('statusVendido')
-    : t('statusPendente')
+  const saleDateRaw = (row[saleDateIdx] || '').trim()
+  const isSold = Boolean(saleDateRaw)
+  const statusLabel = isSold ? t('statusVendido') : t('statusPendente')
 
   const handleChangeField = (i: number, v: string) =>
     setEditValues(prev => ({ ...prev, [i]: v }))
@@ -104,34 +106,31 @@ export default function PropertyDetailPage() {
   }
 
   const handleSave = async () => {
+    // upload de foto
     if (imageFile) {
       const form = new FormData()
       form.append('numero', numero as string)
       form.append('foto', imageFile)
-      const resFoto = await fetch('/api/propriedades/upload-foto', {
-        method: 'POST',
-        body: form,
-      })
+      const resFoto = await fetch('/api/propriedades/upload-foto', { method: 'POST', body: form })
       const bodyFoto = await resFoto.json()
       if (!bodyFoto.ok) {
         alert(`${t('photoUploadError')}: ${bodyFoto.message}`)
         return
       }
-      row[fotoIndex] = bodyFoto.url
+      row[photoIdx] = bodyFoto.url
       setPreviewUrl(bodyFoto.url)
     }
-
+    // update campos editáveis
     const res = await fetch('/api/propriedades/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ numero, updates: editValues }),
     })
-    const body = await res.json()
-    if (!body.ok) {
-      alert(`${t('saveError')}: ${body.message}`)
+    const result = await res.json()
+    if (!result.ok) {
+      alert(`${t('saveError')}: ${result.message}`)
       return
     }
-
     setIsEditing(false)
     router.refresh()
   }
@@ -140,15 +139,22 @@ export default function PropertyDetailPage() {
     if (!cardRef.current) return
     const clone = cardRef.current.cloneNode(true) as HTMLElement
     stripClasses(clone)
-    const html = `<html><head><title>${t('print')}</title><style>
-      @media print {
-        body * { visibility: hidden !important; }         
-        #to-print, #to-print * { visibility: visible !important; }         
-        #to-print { position: absolute; top:0; left:0; }
-      }       
-    </style></head><body style="margin:0;padding:0;">
-      <div id="to-print">${clone.outerHTML}</div>
-    </body></html>`
+    const html = `
+      <html>
+        <head>
+          <title>${t('print')}</title>
+          <style>
+            @media print {
+              body * { visibility: hidden !important; }
+              #to-print, #to-print * { visibility: visible !important; }
+              #to-print { position: absolute; top:0; left:0; }
+            }
+          </style>
+        </head>
+        <body style="margin:0;padding:0;">
+          <div id="to-print">${clone.outerHTML}</div>
+        </body>
+      </html>`
     const win = window.open('', '_blank', 'width=800,height=600')
     if (!win) return
     win.document.write(html)
@@ -162,133 +168,162 @@ export default function PropertyDetailPage() {
         ref={cardRef}
         className="relative bg-[#2C2C2C] rounded-2xl p-6 shadow-lg max-w-3xl mx-auto flex flex-col h-full"
       >
+        {/* Título e status */}
         <h1 className="text-2xl sm:text-3xl font-bold text-[#D4AF37] border-b border-[#D4AF37] pb-2 mb-4">
           {`${t('property')} #${numero}`}
         </h1>
-        <span className={`absolute top-6 right-6 px-2 py-1 rounded-full text-xs font-bold ${
-          saleDateRaw ? 'bg-green-400 text-black' : 'bg-red-500 text-white'
-        }`}>
+        <span
+          className={`absolute top-6 right-6 px-2 py-1 rounded-full text-xs font-bold ${
+            isSold ? 'bg-green-400 text-black' : 'bg-red-500 text-white'
+          }`}
+        >
           {statusLabel}
         </span>
 
-        <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Campos de texto */}
-          <div className="space-y-3 text-white">
-            {camposParaExibir.map(({ key, index }) => (
-              <div
-                key={index}
-                className="flex items-center min-w-0"
-              >
-                <span className="w-28 flex-shrink-0 font-medium">{t(key)}:</span>
-                {isEditing && index === 1 ? (
-                  <input
-                    type="date"
-                    value={editValues[index]}
-                    onChange={e => handleChangeField(index, e.target.value)}
-                    className="ml-2 flex-1 bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm"
-                  />
-                ) : isEditing ? (
+        {/* Campos de informação */}
+        <div className="space-y-4 text-white">
+          {isSold ? (
+            <>
+              <div className="flex items-center">
+                <span className="w-36 font-medium">{t('propertyNumber')}:</span>
+                <span className="ml-2">{numero}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-36 font-medium">{t('boughtOn')}:</span>
+                <span className="ml-2">{row[purchaseDateIdx] || '—'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-36 font-medium">{t('addressLabel')}:</span>
+                <span className="ml-2">{row[addressIdx] || '—'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-36 font-medium">{t('countyLabel')}:</span>
+                <span className="ml-2">{row[countyIdx] || '—'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-36 font-medium">{t('stateLabel')}:</span>
+                <span className="ml-2">{row[stateIdx] || '—'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-36 font-medium">{t('acresLabel')}:</span>
+                <span className="ml-2">{row[acresIdx] || '—'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-36 font-medium">{t('saleDate')}:</span>
+                <span className="ml-2">{row[saleDateIdx] || '—'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-36 font-medium">{t('aging')}:</span>
+                <span className="ml-2">{row[agingIdx] || '—'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-36 font-medium">{t('saleValue')}:</span>
+                <span className="ml-2">{row[saleValueIdx] || '—'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-36 font-medium">{t('profit')}:</span>
+                <span className="ml-2">{row[profitIdx] || '—'}</span>
+              </div>
+            </>
+          ) : (
+            camposParaExibir.map(({ key, index }) => (
+              <div key={index} className="flex items-center">
+                <span className="w-36 font-medium">{t(key)}:</span>
+                <span className="ml-2 break-words">{row[index] || '—'}</span>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Imagem + condições de pagamento */}
+        <div className="mt-6 flex flex-col items-center">
+          {previewUrl && (
+            <img
+              src={previewUrl}
+              alt={t('photoAlt')}
+              className="w-full h-auto max-h-60 object-cover rounded-lg mb-4"
+            />
+          )}
+          {isEditing ? (
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="mb-4 w-full sm:w-auto text-white text-sm"
+            />
+          ) : (
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                row[24]
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mb-4 w-full sm:w-auto bg-[#D4AF37] text-black px-4 py-2 text-sm rounded-lg font-medium text-center hover:bg-[#D4AF37]/90 transition"
+            >
+              {t('viewOnMap')}
+            </a>
+          )}
+          <div className="w-full bg-[#1F1F1F] border border-gray-700 rounded-2xl p-4 text-white">
+            <h2 className="text-center text-lg font-semibold mb-2">
+              {t('paymentConditions')}
+            </h2>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="font-medium">{t('downPayment')}</span>
+                {isEditing ? (
                   <input
                     type="text"
-                    value={editValues[index]}
-                    onChange={e => handleChangeField(index, e.target.value)}
-                    className="ml-2 flex-1 bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm"
+                    value={editValues[entradaIndex]}
+                    onChange={e => handleChangeField(entradaIndex, e.target.value)}
+                    className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
                   />
                 ) : (
-                  <span className="ml-2 break-words">{row[index] || '—'}</span>
+                  <span>{row[entradaIndex] || '—'}</span>
                 )}
               </div>
-            ))}
-          </div>
-
-          {/* Imagem e condições de pagamento */}
-          <div className="flex flex-col items-center">
-            {previewUrl && (
-              <img
-                src={previewUrl}
-                alt={t('photoAlt')}
-                className="w-full h-auto max-h-60 object-cover rounded-lg mb-4"
-              />
-            )}
-            {isEditing ? (
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="mb-4 w-full sm:w-auto text-white text-sm"
-              />
-            ) : (
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(row[24])}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mb-4 w-full sm:w-auto bg-[#D4AF37] text-black px-4 py-2 text-sm rounded-lg font-medium text-center hover:bg-[#D4AF37]/90 transition"
-              >
-                {t('viewOnMap')}
-              </a>
-            )}
-            <div className="w-full bg-[#1F1F1F] border border-gray-700 rounded-2xl p-4 text-white">
-              <h2 className="text-center text-lg font-semibold mb-2">
-                {t('paymentConditions')}
-              </h2>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="font-medium">{t('downPayment')}</span>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editValues[entradaIndex]}
-                      onChange={e => handleChangeField(entradaIndex, e.target.value)}
-                      className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
-                    />
-                  ) : (
-                    <span>{row[entradaIndex] || '—'}</span>
-                  )}
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">{t('installments')}</span>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editValues[parcelaQtdIdx]}
-                      onChange={e => handleChangeField(parcelaQtdIdx, e.target.value)}
-                      className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
-                    />
-                  ) : (
-                    <span>
-                      {row[parcelaQtdIdx] || '—'} {t('times')}
-                    </span>
-                  )}
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">{t('installmentValue')}</span>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editValues[parcelaValIdx]}
-                      onChange={e => handleChangeField(parcelaValIdx, e.target.value)}
-                      className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
-                    />
-                  ) : (
-                    <span>{row[parcelaValIdx] || '—'}</span>
-                  )}
-                </div>
+              <div className="flex justify-between">
+                <span className="font-medium">{t('installments')}</span>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editValues[parcelaQtdIdx]}
+                    onChange={e => handleChangeField(parcelaQtdIdx, e.target.value)}
+                    className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
+                  />
+                ) : (
+                  <span>
+                    {row[parcelaQtdIdx] || '—'} {t('times')}
+                  </span>
+                )}
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">{t('installmentValue')}</span>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editValues[parcelaValIdx]}
+                    onChange={e => handleChangeField(parcelaValIdx, e.target.value)}
+                    className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
+                  />
+                ) : (
+                  <span>{row[parcelaValIdx] || '—'}</span>
+                )}
               </div>
             </div>
           </div>
         </div>
 
         {/* Botões de ação */}
-        <div className="mt-6 flex flex-col sm:flex-row justify-end items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+        <div className="mt-6 flex justify-end space-x-2">
           <button
             onClick={() => router.back()}
-            className="flex-1 sm:flex-none bg-[#D4AF37] text-black px-2 py-1 text-sm rounded-lg font-medium hover:bg-[#D4AF37]/90 text-center"
+            className="bg-[#D4AF37] text-black px-3 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 text-sm"
           >
             ← {t('back')}
           </button>
           <button
             onClick={printCard}
-            className="flex-1 sm:flex-none bg-blue-500 text-white px-2 py-1 text-sm rounded-lg font-medium hover:bg-blue-600 text-center"
+            className="bg-blue-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-blue-600 text-sm"
           >
             {t('print')}
           </button>
@@ -296,13 +331,13 @@ export default function PropertyDetailPage() {
             <>
               <button
                 onClick={handleSave}
-                className="flex-1 sm:flex-none bg-green-500 text-white px-2 py-1 text-sm rounded-lg font-medium hover:bg-green-600 text-center"
+                className="bg-green-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-green-600 text-sm"
               >
                 {t('save')}
               </button>
               <button
                 onClick={() => setIsEditing(false)}
-                className="flex-1 sm:flex-none bg-gray-600 text-white px-2 py-1 text-sm rounded-lg font-medium hover:bg-gray-700 text-center"
+                className="bg-gray-600 text-white px-3 py-2 rounded-lg font-medium hover:bg-gray-700 text-sm"
               >
                 {t('cancel')}
               </button>
@@ -310,7 +345,7 @@ export default function PropertyDetailPage() {
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex-1 sm:flex-none bg-[#D4AF37] text-black px-2 py-1 text-sm rounded-lg font-medium hover:bg-[#D4AF37]/90 text-center"
+              className="bg-[#D4AF37] text-black px-3 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 text-sm"
             >
               {t('edit')}
             </button>
