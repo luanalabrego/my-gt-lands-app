@@ -180,134 +180,137 @@ export default function PropertyDetailPage() {
           {statusLabel}
         </span>
 
-        {/* Campos de informação */}
-        <div className="space-y-4 text-white">
-          {isSold ? (
-            <>
-              <div className="flex items-center">
-                <span className="w-36 font-medium">{t('propertyNumber')}:</span>
-                <span className="ml-2">{numero}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-36 font-medium">{t('boughtOn')}:</span>
-                <span className="ml-2">{row[purchaseDateIdx] || '—'}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-36 font-medium">{t('addressLabel')}:</span>
-                <span className="ml-2">{row[addressIdx] || '—'}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-36 font-medium">{t('countyLabel')}:</span>
-                <span className="ml-2">{row[countyIdx] || '—'}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-36 font-medium">{t('stateLabel')}:</span>
-                <span className="ml-2">{row[stateIdx] || '—'}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-36 font-medium">{t('acresLabel')}:</span>
-                <span className="ml-2">{row[acresIdx] || '—'}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-36 font-medium">{t('saleDate')}:</span>
-                <span className="ml-2">{row[saleDateIdx] || '—'}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-36 font-medium">{t('aging')}:</span>
-                <span className="ml-2">{row[agingIdx] || '—'}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-36 font-medium">{t('saleValue')}:</span>
-                <span className="ml-2">{row[saleValueIdx] || '—'}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-36 font-medium">{t('profit')}:</span>
-                <span className="ml-2">{row[profitIdx] || '—'}</span>
-              </div>
-            </>
-          ) : (
-            camposParaExibir.map(({ key, index }) => (
-              <div key={index} className="flex items-center">
-                <span className="w-36 font-medium">{t(key)}:</span>
-                <span className="ml-2 break-words">{row[index] || '—'}</span>
-              </div>
-            ))
-          )}
-        </div>
+        {/* Conteúdo principal: informações + imagem/condições */}
+        <div className="mt-6 flex flex-col lg:flex-row lg:items-start lg:space-x-6">
+          {/* Campos de informação */}
+          <div className="space-y-4 text-white lg:w-1/2">
+            {isSold ? (
+              <>
+                <div className="flex items-center">
+                  <span className="w-36 font-medium">{t('propertyNumber')}:</span>
+                  <span className="ml-2">{numero}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-36 font-medium">{t('boughtOn')}:</span>
+                  <span className="ml-2">{row[purchaseDateIdx] || '—'}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-36 font-medium">{t('addressLabel')}:</span>
+                  <span className="ml-2">{row[addressIdx] || '—'}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-36 font-medium">{t('countyLabel')}:</span>
+                  <span className="ml-2">{row[countyIdx] || '—'}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-36 font-medium">{t('stateLabel')}:</span>
+                  <span className="ml-2">{row[stateIdx] || '—'}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-36 font-medium">{t('acresLabel')}:</span>
+                  <span className="ml-2">{row[acresIdx] || '—'}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-36 font-medium">{t('saleDate')}:</span>
+                  <span className="ml-2">{row[saleDateIdx] || '—'}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-36 font-medium">{t('aging')}:</span>
+                  <span className="ml-2">{row[agingIdx] || '—'}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-36 font-medium">{t('saleValue')}:</span>
+                  <span className="ml-2">{row[saleValueIdx] || '—'}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-36 font-medium">{t('profit')}:</span>
+                  <span className="ml-2">{row[profitIdx] || '—'}</span>
+                </div>
+              </>
+            ) : (
+              camposParaExibir.map(({ key, index }) => (
+                <div key={index} className="flex items-center">
+                  <span className="w-36 font-medium">{t(key)}:</span>
+                  <span className="ml-2 break-words">{row[index] || '—'}</span>
+                </div>
+              ))
+            )}
+          </div>
 
-        {/* Imagem + condições de pagamento */}
-        <div className="mt-6 flex flex-col items-center">
-          {previewUrl && (
-            <img
-              src={previewUrl}
-              alt={t('photoAlt')}
-              className="w-full h-auto max-h-60 object-cover rounded-lg mb-4"
-            />
-          )}
-          {isEditing ? (
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="mb-4 w-full sm:w-auto text-white text-sm"
-            />
-          ) : (
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                row[24]
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mb-4 w-full sm:w-auto bg-[#D4AF37] text-black px-4 py-2 text-sm rounded-lg font-medium text-center hover:bg-[#D4AF37]/90 transition"
-            >
-              {t('viewOnMap')}
-            </a>
-          )}
-          <div className="w-full bg-[#1F1F1F] border border-gray-700 rounded-2xl p-4 text-white">
-            <h2 className="text-center text-lg font-semibold mb-2">
-              {t('paymentConditions')}
-            </h2>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="font-medium">{t('downPayment')}</span>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editValues[entradaIndex]}
-                    onChange={e => handleChangeField(entradaIndex, e.target.value)}
-                    className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
-                  />
-                ) : (
-                  <span>{row[entradaIndex] || '—'}</span>
-                )}
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">{t('installments')}</span>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editValues[parcelaQtdIdx]}
-                    onChange={e => handleChangeField(parcelaQtdIdx, e.target.value)}
-                    className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
-                  />
-                ) : (
-                  <span>
-                    {row[parcelaQtdIdx] || '—'} {t('times')}
-                  </span>
-                )}
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">{t('installmentValue')}</span>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editValues[parcelaValIdx]}
-                    onChange={e => handleChangeField(parcelaValIdx, e.target.value)}
-                    className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
-                  />
-                ) : (
-                  <span>{row[parcelaValIdx] || '—'}</span>
-                )}
+          {/* Imagem + condições de pagamento */}
+          <div className="mt-6 flex flex-col items-center lg:mt-0 lg:w-1/2">
+            {previewUrl && (
+              <img
+                src={previewUrl}
+                alt={t('photoAlt')}
+                className="w-full h-auto max-h-60 object-cover rounded-lg mb-4"
+              />
+            )}
+            {isEditing ? (
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="mb-4 w-full sm:w-auto text-white text-sm"
+              />
+            ) : (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                  row[24]
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mb-4 w-full sm:w-auto bg-[#D4AF37] text-black px-4 py-2 text-sm rounded-lg font-medium text-center hover:bg-[#D4AF37]/90 transition"
+              >
+                {t('viewOnMap')}
+              </a>
+            )}
+            <div className="w-full bg-[#1F1F1F] border border-gray-700 rounded-2xl p-4 text-white">
+              <h2 className="text-center text-lg font-semibold mb-2">
+                {t('paymentConditions')}
+              </h2>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="font-medium">{t('downPayment')}</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editValues[entradaIndex]}
+                      onChange={e => handleChangeField(entradaIndex, e.target.value)}
+                      className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
+                    />
+                  ) : (
+                    <span>{row[entradaIndex] || '—'}</span>
+                  )}
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">{t('installments')}</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editValues[parcelaQtdIdx]}
+                      onChange={e => handleChangeField(parcelaQtdIdx, e.target.value)}
+                      className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
+                    />
+                  ) : (
+                    <span>
+                      {row[parcelaQtdIdx] || '—'} {t('times')}
+                    </span>
+                  )}
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">{t('installmentValue')}</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editValues[parcelaValIdx]}
+                      onChange={e => handleChangeField(parcelaValIdx, e.target.value)}
+                      className="w-20 bg-black border border-gray-600 px-1 py-1 rounded text-white text-sm text-right"
+                    />
+                  ) : (
+                    <span>{row[parcelaValIdx] || '—'}</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
