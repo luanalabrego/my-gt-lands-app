@@ -2,21 +2,33 @@
 
 import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
-import path from 'path'
 
 export const runtime = 'nodejs'
 
 export async function GET() {
   try {
     console.log('[API GET] iniciando leitura da planilha (header na linha 8)')
+
+    // Verifica variáveis de ambiente
+    if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
+      throw new Error('Credenciais do Google não configuradas')
+    }
+    if (!process.env.SPREADSHEET_ID) {
+      throw new Error('ID da planilha não configurado')
+    }
+
     const auth = new google.auth.GoogleAuth({
-      keyFile: path.join(process.cwd(), 'src', 'lib', 'credentials.json'),
+      credentials: {
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     })
+
     const client = await auth.getClient()
     const sheets = google.sheets({ version: 'v4', auth: client })
 
-    const spreadsheetId = '1RKsyNuRT61ERq_PBdgirNaACXqgXyMuMoNwaXQ30Fqs'
+    const spreadsheetId = process.env.SPREADSHEET_ID as string
     const range         = 'Cadastro de Propriedades!A8:BG'  // começa na linha 8
 
     console.log('[API GET] lendo range:', range)
@@ -31,10 +43,11 @@ export async function GET() {
     }
 
     return NextResponse.json(rows)
-  } catch (err) {
-    console.error('[API GET] erro ao acessar a planilha:', err)
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[API GET] erro ao acessar a planilha:', message)
     return NextResponse.json(
-      { error: 'Erro interno no servidor' },
+      { error: 'Erro interno no servidor', message },
       { status: 500 }
     )
   }

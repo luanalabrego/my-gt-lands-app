@@ -46,13 +46,25 @@ export async function POST(request: Request) {
 
     // 3) atualizar a planilha (coluna AH)
     console.log('upload-foto: autenticando Google Sheets')
+
+    // Verifica variáveis de ambiente
+    if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
+      throw new Error('Credenciais do Google não configuradas')
+    }
+    if (!process.env.SPREADSHEET_ID) {
+      throw new Error('ID da planilha não configurado')
+    }
+
     const auth = new google.auth.GoogleAuth({
-      keyFile: path.join(process.cwd(), 'src', 'lib', 'credentials.json'),
+      credentials: {
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     })
     const client = await auth.getClient()
     const sheets = google.sheets({ version: 'v4', auth: client })
-    const spreadsheetId = '1RKsyNuRT61ERq_PBdgirNaACXqgXyMuMoNwaXQ30Fqs'
+    const spreadsheetId = process.env.SPREADSHEET_ID as string
 
     console.log('upload-foto: lendo planilha para encontrar rowIndex')
     const { data: all } = await sheets.spreadsheets.values.get({
