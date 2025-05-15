@@ -226,15 +226,11 @@ export default function PropriedadesPage() {
               >
                 <div className="space-y-2">
                   <h2 className="text-xl font-bold text-white line-clamp-2">
-                    {endereco}
+                  {endereco} <span className="text-gold">#{numero}</span>
                   </h2>
                   <p className="text-gray-300 text-sm">
-                    <span className="font-medium">{t('nrLabel')}:</span> {numero} &nbsp;
-                    <span className="font-medium">{t('measuresLabel')}:</span> {medidas}
-                  </p>
-                  <p className="text-gray-300 text-sm">
-                    {condado}, {estado} • {acres} {t('acresLabel')}
-                  </p>
+  {condado}, {estado}
+</p>
                   {descImovel && (
                     <p className="text-gray-400 text-sm italic line-clamp-3">
                       {descImovel}
