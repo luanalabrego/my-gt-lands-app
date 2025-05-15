@@ -1,8 +1,10 @@
 'use client'
 
+import React, { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { Menu, X } from 'lucide-react'
 import { useLanguage } from '../context/LanguageContext'
 import { useTranslation } from '../hooks/useTranslation'
 
@@ -10,6 +12,7 @@ export default function Header() {
   const pathname = usePathname()
   const { lang, setLang } = useLanguage()
   const { t } = useTranslation()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   if (pathname === '/login') return null
 
@@ -21,13 +24,14 @@ export default function Header() {
   ]
 
   return (
-    <header className="w-full bg-black px-6 py-4 flex items-center justify-between">
+    <header className="relative w-full bg-black px-6 py-4 flex items-center justify-between">
       <Link href="/dashboard" className="flex items-center space-x-2">
         <Image src="/logo.png" alt="G&T Lands" width={40} height={40} />
         <span className="text-xl font-bold text-white">G&amp;T Lands</span>
       </Link>
 
-      <nav className="flex items-center space-x-6">
+      {/* desktop menu */}
+      <nav className="hidden md:flex items-center space-x-6">
         {navLinks.map(({ href, key }) => {
           const active = pathname === href
           return (
@@ -44,8 +48,6 @@ export default function Header() {
             </Link>
           )
         })}
-
-        {/* Seletor de idioma */}
         <select
           value={lang}
           onChange={e => setLang(e.target.value as any)}
@@ -55,8 +57,6 @@ export default function Header() {
           <option value="en">EN</option>
           <option value="es">ES</option>
         </select>
-
-        {/* Logout */}
         <Link
           href="/login"
           className="inline-block py-1 text-gray-300 hover:text-white ml-4"
@@ -64,6 +64,50 @@ export default function Header() {
           {t('logout')}
         </Link>
       </nav>
+
+      {/* mobile hamburger */}
+      <button
+        onClick={() => setMenuOpen(prev => !prev)}
+        className="block md:hidden text-white"
+        aria-label="Toggle menu"
+      >
+        {menuOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
+      {/* mobile menu panel */}
+      {menuOpen && (
+        <div className="absolute top-full right-6 mt-2 w-48 bg-[#2C2C2C] rounded-lg shadow-lg p-4 flex flex-col space-y-2 z-50">
+          {navLinks.map(({ href, key }) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setMenuOpen(false)}
+              className="text-white hover:text-gold py-1"
+            >
+              {t(key)}
+            </Link>
+          ))}
+          <select
+            value={lang}
+            onChange={e => {
+              setLang(e.target.value as any)
+              setMenuOpen(false)
+            }}
+            className="px-2 py-1 bg-black border border-gray-600 text-white rounded"
+          >
+            <option value="pt">PT</option>
+            <option value="en">EN</option>
+            <option value="es">ES</option>
+          </select>
+          <Link
+            href="/login"
+            onClick={() => setMenuOpen(false)}
+            className="text-gray-300 hover:text-white py-1"
+          >
+            {t('logout')}
+          </Link>
+        </div>
+      )}
     </header>
   )
 }
