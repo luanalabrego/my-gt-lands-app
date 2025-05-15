@@ -6,7 +6,7 @@ import { useLanguage } from '../../context/LanguageContext'
 import { useTranslation } from '../../hooks/useTranslation'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 type PropertyRow = string[]
 
@@ -105,7 +105,7 @@ export default function PropriedadesPage() {
 
   return (
     <div className="min-h-screen bg-[#1F1F1F] px-4 py-6">
-      {/* Cabeçalho e botão */}
+      {/* Cabeçalho */}
       <div className="flex flex-wrap items-center justify-between mb-6">
         <h1 className="text-3xl font-semibold text-white mb-4 md:mb-0">
           {t('properties')}
@@ -123,7 +123,7 @@ export default function PropriedadesPage() {
         </Link>
       </div>
 
-      {/* 1) Botão “Filtro” mobile */}
+      {/* Botão “Filtro” mobile */}
       <div className="flex items-center justify-between mb-4 md:hidden">
         <button
           onClick={() => setShowFilters(v => !v)}
@@ -132,21 +132,9 @@ export default function PropriedadesPage() {
           {t('filter')}
           {showFilters ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
         </button>
-        {/* adicionado o botão “Nova Propriedade” para mobile, mantendo consistência */}
-        <Link
-          href="/propriedades/new"
-          className="
-            bg-[#D4AF37] text-black
-            border border-[#D4AF37]
-            px-4 py-2 rounded-lg font-medium
-            hover:bg-[#D4AF37]/90 transition
-          "
-        >
-          {t('newProperty')}
-        </Link>
       </div>
 
-      {/* 2) Contêiner de filtros completo */}
+      {/* Contêiner de filtros completo */}
       <div
         className={`
           ${showFilters ? 'flex flex-wrap gap-4 mb-6' : 'hidden'}
@@ -220,30 +208,30 @@ export default function PropriedadesPage() {
             dateFormat="yyyy-MM-dd"
           />
         </div>
+      </div>
 
-        {/* Botões de visualização */}
-        <div className="ml-auto flex space-x-2">
-          <button
-            onClick={() => setViewMode('card')}
-            className={`px-3 py-1 rounded-lg font-medium ${
-              viewMode === 'card'
-                ? 'bg-[#D4AF37] text-black'
-                : 'bg-gray-dark text-white'
-            }`}
-          >
-            {t('cards')}
-          </button>
-          <button
-            onClick={() => setViewMode('list')}
-            className={`px-3 py-1 rounded-lg font-medium ${
-              viewMode === 'list'
-                ? 'bg-[#D4AF37] text-black'
-                : 'bg-gray-dark text-white'
-            }`}
-          >
-            {t('list')}
-          </button>
-        </div>
+      {/* Botões de visualização (fora do filtro) */}
+      <div className="flex mb-6 space-x-2">
+        <button
+          onClick={() => setViewMode('card')}
+          className={`px-3 py-1 rounded-lg font-medium ${
+            viewMode === 'card'
+              ? 'bg-[#D4AF37] text-black'
+              : 'bg-gray-dark text-white'
+          }`}
+        >
+          {t('cards')}
+        </button>
+        <button
+          onClick={() => setViewMode('list')}
+          className={`px-3 py-1 rounded-lg font-medium ${
+            viewMode === 'list'
+              ? 'bg-[#D4AF37] text-black'
+              : 'bg-gray-dark text-white'
+          }`}
+        >
+          {t('list')}
+        </button>
       </div>
 
       {/* Renderização em Cards */}
