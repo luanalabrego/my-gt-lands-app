@@ -65,10 +65,21 @@ export default function Header() {
         </Link>
       </nav>
 
+      {/* mobile language selector (outside hamburger) */}
+      <select
+        value={lang}
+        onChange={e => setLang(e.target.value as any)}
+        className="block md:hidden ml-4 px-2 py-1 bg-gray-900 border border-gray-600 text-white rounded"
+      >
+        <option value="pt">PT</option>
+        <option value="en">EN</option>
+        <option value="es">ES</option>
+      </select>
+
       {/* mobile hamburger */}
       <button
         onClick={() => setMenuOpen(prev => !prev)}
-        className="block md:hidden text-white"
+        className="block md:hidden text-white ml-2"
         aria-label="Toggle menu"
       >
         {menuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -87,18 +98,6 @@ export default function Header() {
               {t(key)}
             </Link>
           ))}
-          <select
-            value={lang}
-            onChange={e => {
-              setLang(e.target.value as any)
-              setMenuOpen(false)
-            }}
-            className="px-2 py-1 bg-black border border-gray-600 text-white rounded"
-          >
-            <option value="pt">PT</option>
-            <option value="en">EN</option>
-            <option value="es">ES</option>
-          </select>
           <Link
             href="/login"
             onClick={() => setMenuOpen(false)}
@@ -109,5 +108,5 @@ export default function Header() {
         </div>
       )}
     </header>
-  )
+)
 }

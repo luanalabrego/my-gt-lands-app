@@ -1,7 +1,9 @@
 // app/layout.tsx
+
 import './globals.css'
 import Header from '../components/Header'
 import Providers from '../components/Providers'
+import Footer from '../components/Footer'
 
 export const metadata = {
   title: 'G&T Lands',
@@ -11,12 +13,13 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body className="bg-black min-h-screen text-white flex flex-col">
+      <body className="bg-black min-h-screen text-white flex flex-col pb-12">
         <Providers>
           <Header />
           <main className="flex-1 bg-[#1F1F1F] px-4 py-6">
             {children}
           </main>
+          <Footer />
         </Providers>
       </body>
     </html>
