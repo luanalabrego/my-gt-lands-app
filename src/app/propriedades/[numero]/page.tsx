@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useTranslation } from '../../../hooks/useTranslation'
+import { useTranslation } from '../../../hooks/useTranslation'  // path corrigido
 
 type PropertyRow = string[]
 
@@ -53,12 +53,15 @@ export default function PropertyDetailPage() {
 
   useEffect(() => {
     if (!numero) return
+
     ;(async () => {
       try {
         const res = await fetch('/api/propriedades', { cache: 'no-store' })
         const body = await res.json() as {
           ok: boolean
           rows?: PropertyRow[]
+          error?: string
+          message?: string
         }
         if (!body.ok) return
         const allRows = body.rows || []
@@ -117,6 +120,7 @@ export default function PropertyDetailPage() {
       row[fotoIndex] = bodyFoto.url
       setPreviewUrl(bodyFoto.url)
     }
+
     const res = await fetch('/api/propriedades/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -127,6 +131,7 @@ export default function PropertyDetailPage() {
       alert(`${t('saveError')}: ${body.message}`)
       return
     }
+
     setIsEditing(false)
     router.refresh()
   }
@@ -171,24 +176,27 @@ export default function PropertyDetailPage() {
           {/* Campos de texto */}
           <div className="space-y-3 text-white">
             {camposParaExibir.map(({ key, index }) => (
-              <div key={index} className="flex flex-row items-center min-w-0">
-                <span className="w-36 font-medium">{t(key)}:</span>
+              <div
+                key={index}
+                className="flex flex-col sm:flex-row items-start sm:items-center min-w-0"
+              >
+                <span className="sm:w-36 w-full font-medium">{t(key)}:</span>
                 {isEditing && index === 1 ? (
                   <input
                     type="date"
                     value={editValues[index]}
                     onChange={e => handleChangeField(index, e.target.value)}
-                    className="ml-2 flex-1 bg-black border border-gray-600 px-2 py-1 rounded text-white w-auto"
+                    className="mt-1 sm:mt-0 flex-1 w-full sm:w-auto bg-black border border-gray-600 px-2 py-1 rounded text-white"
                   />
                 ) : isEditing ? (
                   <input
                     type="text"
                     value={editValues[index]}
                     onChange={e => handleChangeField(index, e.target.value)}
-                    className="ml-2 flex-1 bg-black border border-gray-600 px-2 py-1 rounded text-white w-auto"
+                    className="mt-1 sm:mt-0 flex-1 w-full sm:w-auto bg-black border border-gray-600 px-2 py-1 rounded text-white"
                   />
                 ) : (
-                  <span className="ml-2 break-words">{row[index] || '—'}</span>
+                  <span className="mt-1 sm:mt-0 break-words">{row[index] || '—'}</span>
                 )}
               </div>
             ))}
@@ -215,7 +223,7 @@ export default function PropertyDetailPage() {
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(row[24])}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mb-4 w-full sm:w-auto bg-[#D4AF37] text-black px-2 py-1 text-xs rounded-lg font-medium text-center hover:bg-[#D4AF37]/90 transition"
+                className="mb-4 w-full sm:w-auto bg-[#D4AF37] text-black px-4 py-2 rounded-lg font-medium text-center hover:bg-[#D4AF37]/90 transition"
               >
                 {t('viewOnMap')}
               </a>
@@ -232,24 +240,23 @@ export default function PropertyDetailPage() {
                       type="text"
                       value={editValues[entradaIndex]}
                       onChange={e => handleChangeField(entradaIndex, e.target.value)}
-                      className="w-16 bg-black border border-gray-600 px-1 py-1 rounded text-white text-right text-xs"
+                      className="w-20 bg-black border border-gray-600 px-1 rounded text-white text-right"
                     />
                   ) : (
-                    <span className="text-xs">{row[entradaIndex] || '—'}</span>
+                    <span>{row[entradaIndex] || '—'}</span>
                   )}
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">{t('installments')}</span>
                   {isEditing ? (
                     <input
-                      type="text
-
+                      type="text"
                       value={editValues[parcelaQtdIdx]}
                       onChange={e => handleChangeField(parcelaQtdIdx, e.target.value)}
-                      className="w-16 bg-black border border-gray-600 px-1 py-1 rounded text-white text-right text-xs"
+                      className="w-20 bg-black border border-gray-600 px-1 rounded text-white text-right"
                     />
                   ) : (
-                    <span className="text-xs">
+                    <span>
                       {row[parcelaQtdIdx] || '—'} {t('times')}
                     </span>
                   )}
@@ -261,10 +268,10 @@ export default function PropertyDetailPage() {
                       type="text"
                       value={editValues[parcelaValIdx]}
                       onChange={e => handleChangeField(parcelaValIdx, e.target.value)}
-                      className="w-16 bg-black border border-gray-600 px-1 py-1 rounded text-white text-right text-xs"
+                      className="w-20 bg-black border border-gray-600 px-1 rounded text-white text-right"
                     />
                   ) : (
-                    <span className="text-xs">{row[parcelaValIdx] || '—'}</span>
+                    <span>{row[parcelaValIdx] || '—'}</span>
                   )}
                 </div>
               </div>
@@ -273,16 +280,16 @@ export default function PropertyDetailPage() {
         </div>
 
         {/* Botões de ação */}
-        <div className="mt-6 flex justify-end space-x-2">
+        <div className="mt-6 flex flex-col sm:flex-row justify-end items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
           <button
             onClick={() => router.back()}
-            className="bg-[#D4AF37] text-black px-2 py-1 text-xs rounded-lg font-medium hover:bg-[#D4AF37]/90 transition"
+            className="flex-1 sm:flex-none bg-[#D4AF37] text-black px-3 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 text-center"
           >
             ← {t('back')}
           </button>
           <button
             onClick={printCard}
-            className="bg-blue-500 text-white px-2 py-1 text-xs rounded-lg font-medium hover:bg-blue-600 transition"
+            className="flex-1 sm:flex-none bg-blue-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-blue-600 text-center"
           >
             {t('print')}
           </button>
@@ -290,13 +297,13 @@ export default function PropertyDetailPage() {
             <>
               <button
                 onClick={handleSave}
-                className="bg-green-500 text-white px-2 py-1 text-xs rounded-lg font-medium hover:bg-green-600 transition"
+                className="flex-1 sm:flex-none bg-green-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-green-600 text-center"
               >
                 {t('save')}
               </button>
               <button
                 onClick={() => setIsEditing(false)}
-                className="bg-gray-600 text-white px-2 py-1 text-xs rounded-lg font-medium hover:bg-gray-700 transition"
+                className="flex-1 sm:flex-none bg-gray-600 text-white px-3 py-2 rounded-lg font-medium hover:bg-gray-700 text-center"
               >
                 {t('cancel')}
               </button>
@@ -304,7 +311,7 @@ export default function PropertyDetailPage() {
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="bg-[#D4AF37] text-black px-2 py-1 text-xs rounded-lg font-medium hover:bg-[#D4AF37]/90 transition"
+              className="flex-1 sm:flex-none bg-[#D4AF37] text-black px-3 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 text-center"
             >
               {t('edit')}
             </button>
