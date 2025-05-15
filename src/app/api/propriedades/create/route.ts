@@ -87,12 +87,12 @@ export async function POST(request: Request) {
     return url
   }
 
-  // 7) processa uploads
+  const prefix = data.propertyNumber || Date.now().toString()
   const imageUrls = await Promise.all(
-    imageFiles.map((f,i) => uploadToDrive(f, `img-${numero}-${i}`))
+    imageFiles.map((f, i) => uploadToDrive(f, `img-${prefix}-${i}`))
   )
   const docUrls = await Promise.all(
-    docFiles.map((f,i) => uploadToDrive(f, `doc-${numero}-${i}`))
+    docFiles.map((f, i) => uploadToDrive(f, `doc-${prefix}-${i}`))
   )
 
   // 8) insere URLs concatenadas no data
