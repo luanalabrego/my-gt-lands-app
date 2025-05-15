@@ -5,70 +5,91 @@ import 'react-datepicker/dist/react-datepicker.css'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useState } from 'react'
 
+// Rótulos das colunas
 const FIELDS = {
-  purchaseDate: 'Data da Compra',
-  propertyNumber: 'Número Propriedade',
-  description: 'Descrição',
-  parcel: 'Parcel',
-  address: 'Endereço',
-  county: 'Condado',
-  state: 'Estado',
-  squareFeet: 'Square Feet',
-  acres: 'Acres',
-  zoningCode: 'Zoning Code',
-  zoningType: 'Zoning Type',
-  lotMeasurements: 'Medidas do Lote',
-  propertyTax: 'Property Tax',
-  water: 'Água',
-  waterDesc: 'Descrição Água',
-  electricity: 'Luz',
-  electricityDesc: 'Descrição Luz',
-  sewer: 'Esgoto',
-  sewerDesc: 'Descrição Esgoto',
-  floodZone: 'Flood Zone',
-  propertyDesc: 'Descrição do Imóvel',
-  notesZone: 'Notes Zone',
-  minimumLotArea: 'Minimum Lot Area',
-  coordinates: 'Coordinates',
-  legalDesc: 'Legal Description',
-  hoa: 'HOA',
-  hoaName: 'Nome do HOA',
-  hoaValue: 'Valor (Hoa)',
-  hoaPeriod: 'Período (Hoa)',
-  optionalNotes: 'Notas (Opcional)',
-  // Para uploads, enviaremos nomes dos arquivos (ou vazios)
-  images: 'Imagens',
-  documents: 'Documentos',
-}
+  purchaseDate:     'Data da Compra',
+  propertyNumber:   'Número Propriedade',
+  description:      'Descrição',
+  parcel:           'Parcel',
+  address:          'Endereço',
+  county:           'Condado',
+  state:            'Estado',
+  squareFeet:       'Square Feet',
+  acres:            'Acres',
+  zoningCode:       'Zoning Code',
+  zoningType:       'Zoning Type',
+  lotMeasurements:  'Medidas do Lote',
+  propertyTax:      'Property Tax',
+  water:            'Água',
+  waterDesc:        'Descrição Água',
+  electricity:      'Luz',
+  electricityDesc:  'Descrição Luz',
+  sewer:            'Esgoto',
+  sewerDesc:        'Descrição Esgoto',
+  floodZone:        'Flood Zone',
+  propertyDesc:     'Descrição do Imóvel',
+  notesZone:        'Notes Zone',
+  minimumLotArea:   'Minimum Lot Area',
+  coordinates:      'Coordinates',
+  legalDesc:        'Legal Description',
+  hoa:              'HOA',
+  hoaName:          'Nome do HOA',
+  hoaValue:         'Valor (Hoa)',
+  hoaPeriod:        'Período (Hoa)',
+  optionalNotes:    'Notas (Opcional)',
+  images:           'Imagens',
+  documents:        'Documentos',
+} as const
+
+// Tipo das chaves de campo
+type FieldKey = keyof typeof FIELDS
 
 export default function CadastrarPropriedade() {
   const { t } = useTranslation()
-  const [values, setValues] = useState(
-    Object.fromEntries(Object.keys(FIELDS).map(k => [k, '']))
-  )
+
+  // Estado para todos os campos textuais
+  const [values, setValues] = useState<Record<FieldKey,string>>(() => {
+    const obj = {} as Record<FieldKey,string>
+    (Object.keys(FIELDS) as FieldKey[]).forEach(k => { obj[k] = '' })
+    return obj
+  })
+
+  // Estado apenas para o DatePicker
   const [purchaseDateObj, setPurchaseDateObj] = useState<Date | null>(null)
 
-  const handleChange = (key: string, v: string) =>
+  // Atualiza valor de um campo
+  const handleChange = (key: FieldKey, v: string) =>
     setValues(prev => ({ ...prev, [key]: v }))
 
+  // Envio do formulário
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // já gravou em values via handleChange e DatePicker
+    const payload = {
+      ...values,
+      purchaseDate: purchaseDateObj ? purchaseDateObj.toISOString().slice(0, 10) : ''
+    }
     const resp = await fetch('/api/propriedades/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(values),
+      body: JSON.stringify(payload),
     })
     const body = await resp.json()
     if (!body.ok) {
       alert('Erro ao salvar: ' + (body.error || resp.statusText))
     } else {
       alert('Propriedade salva com sucesso!')
-      // opcional: resetar form
-      setValues(Object.fromEntries(Object.keys(FIELDS).map(k => [k, ''])))
+      // Reset completo
+      setValues(prev => {
+        const obj = {} as Record<FieldKey,string>
+        (Object.keys(FIELDS) as FieldKey[]).forEach(k => { obj[k] = '' })
+        return obj
+      })
       setPurchaseDateObj(null)
     }
   }
+
+  // Lista tipada das chaves
+  const fieldKeys = Object.keys(FIELDS) as FieldKey[]
 
   return (
     <form
@@ -87,7 +108,7 @@ export default function CadastrarPropriedade() {
               selected={purchaseDateObj}
               onChange={d => {
                 setPurchaseDateObj(d)
-                handleChange('purchaseDate', d ? d.toISOString().slice(0, 10) : '')
+                // não armazenamos aqui em values, fazemos no handleSubmit
               }}
               dateFormat="yyyy-MM-dd"
               placeholderText="yyyy-MM-dd"
@@ -112,7 +133,7 @@ export default function CadastrarPropriedade() {
       <fieldset className="border border-gray-700 rounded-lg p-4 space-y-3">
         <legend className="px-2 text-sm font-semibold">{t('Localização')}</legend>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {['parcel','address','county','state'].map(key => (
+          {(['parcel','address','county','state'] as FieldKey[]).map(key => (
             <div key={key}>
               <label className="block text-xs font-medium mb-1 text-gray-300">
                 {t(FIELDS[key])}
@@ -132,7 +153,7 @@ export default function CadastrarPropriedade() {
       <fieldset className="border border-gray-700 rounded-lg p-4 space-y-3">
         <legend className="px-2 text-sm font-semibold">{t('Tamanho do Terreno')}</legend>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {['squareFeet','acres','minimumLotArea'].map(key => (
+          {(['squareFeet','acres','minimumLotArea'] as FieldKey[]).map(key => (
             <div key={key}>
               <label className="block text-xs font-medium mb-1 text-gray-300">
                 {t(FIELDS[key])}
@@ -152,7 +173,7 @@ export default function CadastrarPropriedade() {
       <fieldset className="border border-gray-700 rounded-lg p-4 space-y-3">
         <legend className="px-2 text-sm font-semibold">{t('Zoneamento')}</legend>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {['zoningCode','zoningType','notesZone'].map(key => (
+          {(['zoningCode','zoningType','notesZone'] as FieldKey[]).map(key => (
             <div key={key}>
               <label className="block text-xs font-medium mb-1 text-gray-300">
                 {t(FIELDS[key])}
@@ -172,7 +193,7 @@ export default function CadastrarPropriedade() {
       <fieldset className="border border-gray-700 rounded-lg p-4 space-y-3">
         <legend className="px-2 text-sm font-semibold">{t('Serviços')}</legend>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {['water','waterDesc','electricity','electricityDesc','sewer','sewerDesc'].map(key => (
+          {(['water','waterDesc','electricity','electricityDesc','sewer','sewerDesc'] as FieldKey[]).map(key => (
             <div key={key}>
               <label className="block text-xs font-medium mb-1 text-gray-300">
                 {t(FIELDS[key])}
@@ -192,13 +213,24 @@ export default function CadastrarPropriedade() {
       <fieldset className="border border-gray-700 rounded-lg p-4 space-y-3">
         <legend className="px-2 text-sm font-semibold">{t('Extras')}</legend>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {['hoa','hoaName','hoaValue','hoaPeriod','optionalNotes','images','documents'].map(key => (
+          {(['floodZone','propertyDesc','minimumLotArea','coordinates','legalDesc','hoa','hoaName','hoaValue','hoaPeriod','optionalNotes','images','documents'] as FieldKey[]).map(key => (
             <div key={key}>
               <label className="block text-xs font-medium mb-1 text-gray-300">
                 {t(FIELDS[key])}
               </label>
               {key === 'images' || key === 'documents' ? (
-                <input type="file" multiple className="w-full text-sm text-gray-200" />
+                <input
+                  type="file"
+                  multiple
+                  className="w-full text-sm text-gray-200"
+                />
+              ) : key === 'floodZone' ? (
+                <input
+                  type="checkbox"
+                  checked={values.floodZone === 'true'}
+                  onChange={e => handleChange('floodZone', e.target.checked.toString())}
+                  className="h-4 w-4 text-[#D4AF37] bg-[#1F1F1F] border-gray-600 rounded"
+                />
               ) : (
                 <input
                   type="text"
