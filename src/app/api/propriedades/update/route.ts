@@ -1,6 +1,7 @@
+// src/app/api/propriedades/update/route.ts
+
 import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
-import path from 'path'
 
 export const runtime = 'nodejs'
 export const config = { api: { bodyParser: true } }
@@ -21,33 +22,56 @@ export async function POST(request: Request) {
   try {
     const { numero, updates } = await request.json() as {
       numero: string
-      updates: Record<string,string>
+      updates: Record<string, string>
     }
 
     console.log('[Update] número =', numero, 'fields =', updates)
 
-    // 1) autenticar no Google Sheets
+    // 1) valida env-vars
+    const {
+      GOOGLE_CLIENT_EMAIL: clientEmail,
+      GOOGLE_PRIVATE_KEY: privateKey,
+      SPREADSHEET_ID
+    } = process.env
+
+    if (!clientEmail || !privateKey || !SPREADSHEET_ID) {
+      console.error('[Update] Variáveis de ambiente faltando')
+      return NextResponse.json(
+        { ok: false, message: 'Server misconfiguration' },
+        { status: 500 }
+      )
+    }
+
+    // 2) configura auth
     const auth = new google.auth.GoogleAuth({
-      keyFile: path.join(process.cwd(), 'src/lib/credentials.json'),
+      credentials: {
+        client_email: clientEmail,
+        private_key: privateKey.replace(/\\n/g, '\n'),
+      },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     })
-    const client = await auth.getClient()
-    const sheets = google.sheets({ version: 'v4', auth: client })
-    const spreadsheetId = '1RKsyNuRT61ERq_PBdgirNaACXqgXyMuMoNwaXQ30Fqs'
 
-    // 2) ler todas as linhas para achar o rowIndex
-    const { data } = await sheets.spreadsheets.values.get({
+    // 3) instancia Sheets
+    const sheets = google.sheets({ version: 'v4', auth })
+    const spreadsheetId = SPREADSHEET_ID
+
+    // 4) lê todas as linhas para achar o índice
+    const getRes = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: 'Cadastro de Propriedades!A8:ZZ',
     })
-    const rows: string[][] = data.values || []
+    const rows: string[][] = getRes.data.values || []
     const rowIdx = rows.findIndex(r => r[2] === numero)
     if (rowIdx < 0) {
-      return NextResponse.json({ ok: false, message: 'Propriedade não encontrada' }, { status: 404 })
+      return NextResponse.json(
+        { ok: false, message: 'Propriedade não encontrada' },
+        { status: 404 }
+      )
     }
-    const sheetRow = rowIdx + 8  // porque o header começa em A8
 
-    // 3) para cada campo editado, dispara um update separado
+    const sheetRow = rowIdx + 8  // header começa na linha 8
+
+    // 5) grava cada campo editado
     for (const [idxStr, valor] of Object.entries(updates)) {
       const idx = parseInt(idxStr, 10)
       const col = indexToColumn(idx)
@@ -62,8 +86,12 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ ok: true })
-  } catch (err: any) {
-    console.error('[Update] erro:', err)
-    return NextResponse.json({ ok: false, message: err.message }, { status: 500 })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[Update] erro:', message)
+    return NextResponse.json(
+      { ok: false, message },
+      { status: 500 }
+    )
   }
 }
