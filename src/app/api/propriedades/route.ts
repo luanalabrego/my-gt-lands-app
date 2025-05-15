@@ -6,24 +6,20 @@ import { google } from 'googleapis'
 export const runtime = 'nodejs'
 
 export async function GET() {
-  console.log('[API GET] iniciando leitura da planilha (header na linha 8)')
+  console.log('[API GET] iniciando leitura da planilha')
 
-  // 1) valida env-vars
+  // valida env-vars
   const {
     GOOGLE_CLIENT_EMAIL: clientEmail,
     GOOGLE_PRIVATE_KEY: privateKey,
     SPREADSHEET_ID
   } = process.env
-
   if (!clientEmail || !privateKey || !SPREADSHEET_ID) {
-    console.error('[API GET] Variáveis de ambiente faltando')
-    return NextResponse.json(
-      { error: 'Server misconfiguration' },
-      { status: 500 }
-    )
+    console.error('[API GET] ENV vars faltando')
+    return NextResponse.json({ ok: false, error: 'misconfiguration' }, { status: 500 })
   }
 
-  // 2) configura auth usando GoogleAuth diretamente
+  // monta o auth
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: clientEmail,
@@ -31,32 +27,43 @@ export async function GET() {
     },
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   })
-
-  // 3) instancia o cliente Sheets com a instância de auth
   const sheets = google.sheets({ version: 'v4', auth })
-
   const spreadsheetId = SPREADSHEET_ID
-  const range         = 'Cadastro de Propriedades!A8:BG'  // cabeçalho na linha 8
+  const range = `'Cadastro de Propriedades'!A8:BG`
 
-  console.log('[API GET] lendo range:', range)
   try {
+    console.log('[API GET] lendo', range)
     const res = await sheets.spreadsheets.values.get({ spreadsheetId, range })
     const rows: string[][] = res.data.values || []
+    console.log('[API GET] linhas:', rows.length)
+    return NextResponse.json({ ok: true, rows })
+  } catch (err: unknown) {
+    // extrai código de erro se existir
+    const e = err as any
+    const message = e.message || String(err)
+    let status = 500
+    let errorType = 'server_error'
 
-    console.log('[API GET] total de linhas retornadas:', rows.length)
-    if (rows.length > 0) {
-      console.log('[API GET] total de colunas (header):', rows[0].length)
-      console.log('[API GET] header AH (idx 33):', rows[0][33])
-      console.log('[API GET] primeiro valor AH (idx 33):', rows[1]?.[33])
+    // Google API retorna code 403 para falta de permissão
+    if (e.code === 403 || message.match(/permission/i)) {
+      status = 403
+      errorType = 'permission_denied'
+    }
+    // 401 = credenciais inválidas
+    else if (e.code === 401 || message.match(/unauthorized/i)) {
+      status = 401
+      errorType = 'unauthorized'
+    }
+    // por fim, pode ser erro de rede
+    else if (message.match(/ENOTFOUND|ECONNREFUSED|ETIMEOUT/)) {
+      status = 503
+      errorType = 'network_error'
     }
 
-    return NextResponse.json(rows)
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err)
-    console.error('[API GET] erro ao acessar a planilha:', message)
+    console.error(`[API GET] erro (${errorType}):`, message)
     return NextResponse.json(
-      { error: 'Erro interno no servidor', message },
-      { status: 500 }
+      { ok: false, error: errorType, message },
+      { status }
     )
   }
 }
