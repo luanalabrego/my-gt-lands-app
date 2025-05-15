@@ -6,11 +6,12 @@ import { useLanguage } from '../../context/LanguageContext'
 import { useTranslation } from '../../hooks/useTranslation'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
 
 type PropertyRow = string[]
 
 export default function PropriedadesPage() {
+  const [showFilters, setShowFilters] = useState(false)
   const [data, setData] = useState<PropertyRow[]>([])
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card')
   const [dateFromObj, setDateFromObj] = useState<Date | null>(null)
@@ -122,87 +123,115 @@ export default function PropriedadesPage() {
         </Link>
       </div>
 
-      {/* Controles de filtro */}
-      <div className="flex flex-wrap gap-4 items-center mb-6">
-        <input
-          type="text"
-          placeholder={t('placeholder')}
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          className="flex-1 min-w-[200px] px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-        />
+      {/* 1) Botão “Filtro” mobile */}
+<div className="flex items-center justify-between mb-4 md:hidden">
+  <button
+    onClick={() => setShowFilters(v => !v)}
+    className="flex items-center gap-2 px-4 py-2 bg-[#2C2C2C] rounded-lg text-white"
+  >
+    {t('filter')}
+    {showFilters ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
+  </button>
+</div>
+{/* 2) Contêiner de filtros completo */}
+<div
+  className={`
+    ${showFilters ? 'flex flex-wrap gap-4 mb-6' : 'hidden'}
+    md:flex flex-wrap gap-4 mb-6
+  `}
+>
+  {/* Busca */}
+  <input
+    type="text"
+    placeholder={t('placeholder')}
+    value={searchTerm}
+    onChange={e => setSearchTerm(e.target.value)}
+    className="flex-1 min-w-[200px] px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
+  />
 
-        <select
-          value={selectedState}
-          onChange={e => setSelectedState(e.target.value)}
-          className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-        >
-          <option value="">{t('allStates')}</option>
-          {states.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
+  {/* Estado */}
+  <select
+    value={selectedState}
+    onChange={e => setSelectedState(e.target.value)}
+    className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
+  >
+    <option value="">{t('allStates')}</option>
+    {states.map(s => (
+      <option key={s} value={s}>{s}</option>
+    ))}
+  </select>
 
-        <select
-          value={selectedCounty}
-          onChange={e => setSelectedCounty(e.target.value)}
-          className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-        >
-          <option value="">{t('allCounties')}</option>
-          {counties.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
+  {/* Condado */}
+  <select
+    value={selectedCounty}
+    onChange={e => setSelectedCounty(e.target.value)}
+    className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
+  >
+    <option value="">{t('allCounties')}</option>
+    {counties.map(c => (
+      <option key={c} value={c}>{c}</option>
+    ))}
+  </select>
 
-        <select
-          value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value as any)}
-          className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-        >
-          <option value="all">{t('allStatus')}</option>
-          <option value="sold">{t('sold')}</option>
-          <option value="pending">{t('pending')}</option>
-        </select>
+  {/* Status */}
+  <select
+    value={statusFilter}
+    onChange={e => setStatusFilter(e.target.value as any)}
+    className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
+  >
+    <option value="all">{t('allStatus')}</option>
+    <option value="sold">{t('sold')}</option>
+    <option value="pending">{t('pending')}</option>
+  </select>
 
-        {/* DatePickers */}
-        <div className="flex space-x-2">
-          <DatePicker
-            selected={dateFromObj}
-            onChange={d => {
-              setDateFromObj(d)
-              setDateFrom(d ? d.toISOString().slice(0,10) : '')
-            }}
-            placeholderText={t('fromDate')}
-            className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-            dateFormat="yyyy-MM-dd"
-          />
-          <DatePicker
-            selected={dateToObj}
-            onChange={d => {
-              setDateToObj(d)
-              setDateTo(d ? d.toISOString().slice(0,10) : '')
-            }}
-            placeholderText={t('toDate')}
-            className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-            dateFormat="yyyy-MM-dd"
-          />
-        </div>
+  {/* DatePickers */}
+  <div className="flex space-x-2">
+    <DatePicker
+      selected={dateFromObj}
+      onChange={d => {
+        setDateFromObj(d)
+        setDateFrom(d ? d.toISOString().slice(0, 10) : '')
+      }}
+      placeholderText={t('fromDate')}
+      className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
+      dateFormat="yyyy-MM-dd"
+    />
+    <DatePicker
+      selected={dateToObj}
+      onChange={d => {
+        setDateToObj(d)
+        setDateTo(d ? d.toISOString().slice(0, 10) : '')
+      }}
+      placeholderText={t('toDate')}
+      className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
+      dateFormat="yyyy-MM-dd"
+    />
+  </div>
 
-        <div className="ml-auto flex space-x-2">
-          <button
-            onClick={() => setViewMode('card')}
-            className={`px-3 py-1 rounded-lg font-medium ${
-              viewMode === 'card' ? 'bg-[#D4AF37] text-black' : 'bg-gray-dark text-white'
-            }`}
-          >
-            {t('cards')}
-          </button>
-          <button
-            onClick={() => setViewMode('list')}
-            className={`px-3 py-1 rounded-lg font-medium ${
-              viewMode === 'list' ? 'bg-[#D4AF37] text-black' : 'bg-gray-dark text-white'
-            }`}
-          >
-            {t('list')}
-          </button>
-        </div>
-      </div>
+  {/* Botões de visualização */}
+  <div className="ml-auto flex space-x-2">
+    <button
+      onClick={() => setViewMode('card')}
+      className={`px-3 py-1 rounded-lg font-medium ${
+        viewMode === 'card'
+          ? 'bg-[#D4AF37] text-black'
+          : 'bg-gray-dark text-white'
+      }`}
+    >
+      {t('cards')}
+    </button>
+    <button
+      onClick={() => setViewMode('list')}
+      className={`px-3 py-1 rounded-lg font-medium ${
+        viewMode === 'list'
+          ? 'bg-[#D4AF37] text-black'
+          : 'bg-gray-dark text-white'
+      }`}
+    >
+      {t('list')}
+    </button>
+  </div>
+</div>
 
       {/* Renderização em Cards */}
       {viewMode === 'card' && (
@@ -225,8 +254,8 @@ export default function PropriedadesPage() {
                 className="bg-[#2C2C2C] rounded-2xl p-6 shadow-lg flex flex-col justify-between"
               >
                 <div className="space-y-2">
-                  <h2 className="text-xl font-bold text-white line-clamp-2">
-                  {endereco} <span className="text-gold">#{numero}</span>
+                <h2 className="text-xl font-bold text-white line-clamp-2">
+                <span className="text-gold">#{numero}</span> {endereco}
                   </h2>
                   <p className="text-gray-300 text-sm">
   {condado}, {estado}
