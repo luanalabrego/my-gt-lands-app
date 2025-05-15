@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+
+/* ===========================
+   Botões reutilizáveis
+   =========================== */
+@layer components {
+  .btn      { @apply px-4 py-2 rounded-lg font-medium transition; }
+  .btn-gold { @apply bg-gold text-black border border-gold hover:bg-gold/90; }
+  .btn-sm   { @apply px-3 py-1 text-sm; }
+}
+
+@tailwind utilities;
+
+@media print {
+  /* remove margens e garante impressão de cores de fundo */
+  @page {
+    margin: 0;
+    size: auto;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* oculta tudo na página */
+  body * {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* exibe apenas o container com classe print-container */
+  .print-container,
+  .print-container * {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  /* posiciona e dimensiona o card */
+  .print-container {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: #2C2C2C !important; /* seu fundo escuro */
+    page-break-inside: avoid !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

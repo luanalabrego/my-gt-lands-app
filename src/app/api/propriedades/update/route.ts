@@ -1,0 +1,69 @@
+import { NextResponse } from 'next/server'
+import { google } from 'googleapis'
+import path from 'path'
+
+export const runtime = 'nodejs'
+export const config = { api: { bodyParser: true } }
+
+// converte índice 0-based em letra de coluna (ex: 0→A, 33→AH)
+function indexToColumn(idx: number): string {
+  let col = ''
+  let n = idx + 1
+  while (n > 0) {
+    const rem = (n - 1) % 26
+    col = String.fromCharCode(65 + rem) + col
+    n = Math.floor((n - 1) / 26)
+  }
+  return col
+}
+
+export async function POST(request: Request) {
+  try {
+    const { numero, updates } = await request.json() as {
+      numero: string
+      updates: Record<string,string>
+    }
+
+    console.log('[Update] número =', numero, 'fields =', updates)
+
+    // 1) autenticar no Google Sheets
+    const auth = new google.auth.GoogleAuth({
+      keyFile: path.join(process.cwd(), 'src/lib/credentials.json'),
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    })
+    const client = await auth.getClient()
+    const sheets = google.sheets({ version: 'v4', auth: client })
+    const spreadsheetId = '1RKsyNuRT61ERq_PBdgirNaACXqgXyMuMoNwaXQ30Fqs'
+
+    // 2) ler todas as linhas para achar o rowIndex
+    const { data } = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: 'Cadastro de Propriedades!A8:ZZ',
+    })
+    const rows: string[][] = data.values || []
+    const rowIdx = rows.findIndex(r => r[2] === numero)
+    if (rowIdx < 0) {
+      return NextResponse.json({ ok: false, message: 'Propriedade não encontrada' }, { status: 404 })
+    }
+    const sheetRow = rowIdx + 8  // porque o header começa em A8
+
+    // 3) para cada campo editado, dispara um update separado
+    for (const [idxStr, valor] of Object.entries(updates)) {
+      const idx = parseInt(idxStr, 10)
+      const col = indexToColumn(idx)
+      const cell = `${col}${sheetRow}`
+      console.log(`[Update] gravando ${valor} em ${cell}`)
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `Cadastro de Propriedades!${cell}`,
+        valueInputOption: 'RAW',
+        requestBody: { values: [[valor]] },
+      })
+    }
+
+    return NextResponse.json({ ok: true })
+  } catch (err: any) {
+    console.error('[Update] erro:', err)
+    return NextResponse.json({ ok: false, message: err.message }, { status: 500 })
+  }
+}
