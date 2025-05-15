@@ -56,32 +56,17 @@ export default function PropertyDetailPage() {
 
     ;(async () => {
       try {
-        console.log('[PropertyDetail] iniciando fetch /api/propriedades para numero', numero)
         const res = await fetch('/api/propriedades', { cache: 'no-store' })
-        console.log('[PropertyDetail] status da resposta:', res.status)
-
         const body = await res.json() as {
           ok: boolean
           rows?: PropertyRow[]
           error?: string
           message?: string
         }
-        console.log('[PropertyDetail] body recebido:', body)
-
-        if (!body.ok) {
-          console.error('[PropertyDetail] API retornou erro:', body.error, body.message)
-          return
-        }
-
+        if (!body.ok) return
         const allRows = body.rows || []
-        console.log('[PropertyDetail] total rows (incluindo header):', allRows.length)
-
         const contentRows = allRows.length > 1 ? allRows.slice(1) : []
-        console.log('[PropertyDetail] rows de conteúdo:', contentRows.length)
-
         const found = contentRows.find(r => r[2] === numero) || null
-        console.log('[PropertyDetail] linha encontrada:', found)
-
         setRow(found)
         if (found) {
           setPreviewUrl(found[fotoIndex])
@@ -95,7 +80,7 @@ export default function PropertyDetailPage() {
           setEditValues(initial)
         }
       } catch (err) {
-        console.error('[PropertyDetail] falha no fetch:', err)
+        console.error(err)
       }
     })()
   }, [numero])
@@ -178,66 +163,72 @@ export default function PropertyDetailPage() {
         ref={cardRef}
         className="relative bg-[#2C2C2C] rounded-2xl p-6 shadow-lg max-w-3xl mx-auto flex flex-col h-full"
       >
-        <h1 className="text-3xl font-bold text-[#D4AF37] border-b border-[#D4AF37] pb-2 mb-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#D4AF37] border-b border-[#D4AF37] pb-2 mb-4">
           {`${t('property')} #${numero}`}
         </h1>
-        <span className={`absolute top-6 right-6 px-3 py-1 rounded-full text-xs font-bold ${
+        <span className={`absolute top-6 right-6 px-2 py-1 rounded-full text-xs font-bold ${
           saleDateRaw ? 'bg-green-400 text-black' : 'bg-red-500 text-white'
         }`}>
           {statusLabel}
         </span>
 
-        <div className="flex-grow grid md:grid-cols-2 gap-6">
+        <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Campos de texto */}
           <div className="space-y-3 text-white">
             {camposParaExibir.map(({ key, index }) => (
-              <div key={index} className="flex items-center">
-                <span className="w-40 font-medium">{t(key)}:</span>
+              <div
+                key={index}
+                className="flex flex-col sm:flex-row items-start sm:items-center min-w-0"
+              >
+                <span className="sm:w-36 w-full font-medium">{t(key)}:</span>
                 {isEditing && index === 1 ? (
                   <input
                     type="date"
                     value={editValues[index]}
                     onChange={e => handleChangeField(index, e.target.value)}
-                    className="flex-1 bg-black border border-gray-600 px-2 py-1 rounded text-white"
+                    className="mt-1 sm:mt-0 flex-1 w-full sm:w-auto bg-black border border-gray-600 px-2 py-1 rounded text-white"
                   />
                 ) : isEditing ? (
                   <input
                     type="text"
                     value={editValues[index]}
                     onChange={e => handleChangeField(index, e.target.value)}
-                    className="flex-1 bg-black border border-gray-600 px-2 py-1 rounded text-white"
+                    className="mt-1 sm:mt-0 flex-1 w-full sm:w-auto bg-black border border-gray-600 px-2 py-1 rounded text-white"
                   />
                 ) : (
-                  <span>{row[index] || '—'}</span>
+                  <span className="mt-1 sm:mt-0 break-words">{row[index] || '—'}</span>
                 )}
               </div>
             ))}
           </div>
 
+          {/* Imagem e condições de pagamento */}
           <div className="flex flex-col items-center">
             {previewUrl && (
               <img
                 src={previewUrl}
                 alt={t('photoAlt')}
-                className="w-full md:w-80 h-60 object-cover rounded-lg mb-4"
+                className="w-full h-auto max-h-60 object-cover rounded-lg mb-4"
               />
-            )}            {isEditing ? (
+            )}
+            {isEditing ? (
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
-                className="mb-4 text-white"
+                className="mb-4 w-full sm:w-auto text-white"
               />
             ) : (
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(row[24])}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-[#D4AF37] text-black px-4 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 transition mb-4"
+                className="mb-4 w-full sm:w-auto bg-[#D4AF37] text-black px-4 py-2 rounded-lg font-medium text-center hover:bg-[#D4AF37]/90 transition"
               >
                 {t('viewOnMap')}
               </a>
             )}
-            <div className="w-full bg-[#1F1F1F] border border-gray-700 rounded-2xl p-4 text-white mb-4">
+            <div className="w-full bg-[#1F1F1F] border border-gray-700 rounded-2xl p-4 text-white">
               <h2 className="text-center text-lg font-semibold mb-2">
                 {t('paymentConditions')}
               </h2>
@@ -249,7 +240,7 @@ export default function PropertyDetailPage() {
                       type="text"
                       value={editValues[entradaIndex]}
                       onChange={e => handleChangeField(entradaIndex, e.target.value)}
-                      className="w-24 bg-black border border-gray-600 px-1 rounded text-white text-right"
+                      className="w-20 bg-black border border-gray-600 px-1 rounded text-white text-right"
                     />
                   ) : (
                     <span>{row[entradaIndex] || '—'}</span>
@@ -262,7 +253,7 @@ export default function PropertyDetailPage() {
                       type="text"
                       value={editValues[parcelaQtdIdx]}
                       onChange={e => handleChangeField(parcelaQtdIdx, e.target.value)}
-                      className="w-24 bg-black border border-gray-600 px-1 rounded text-white text-right"
+                      className="w-20 bg-black border border-gray-600 px-1 rounded text-white text-right"
                     />
                   ) : (
                     <span>
@@ -277,7 +268,7 @@ export default function PropertyDetailPage() {
                       type="text"
                       value={editValues[parcelaValIdx]}
                       onChange={e => handleChangeField(parcelaValIdx, e.target.value)}
-                      className="w-24 bg-black border border-gray-600 px-1 rounded text-white text-right"
+                      className="w-20 bg-black border border-gray-600 px-1 rounded text-white text-right"
                     />
                   ) : (
                     <span>{row[parcelaValIdx] || '—'}</span>
@@ -288,16 +279,17 @@ export default function PropertyDetailPage() {
           </div>
         </div>
 
-        <div className="mt-auto flex justify-end space-x-2">
+        {/* Botões de ação */}
+        <div className="mt-6 flex flex-col sm:flex-row justify-end items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
           <button
             onClick={() => router.back()}
-            className="bg-[#D4AF37] text-black px-3 py-1 rounded-lg font-medium hover:bg-[#D4AF37]/90"
+            className="flex-1 sm:flex-none bg-[#D4AF37] text-black px-3 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 text-center"
           >
             ← {t('back')}
           </button>
           <button
             onClick={printCard}
-            className="bg-blue-500 text-white px-3 py-1 rounded-lg font-medium hover:bg-blue-600"
+            className="flex-1 sm:flex-none bg-blue-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-blue-600 text-center"
           >
             {t('print')}
           </button>
@@ -305,13 +297,13 @@ export default function PropertyDetailPage() {
             <>
               <button
                 onClick={handleSave}
-                className="bg-green-500 text-white px-3 py-1 rounded-lg font-medium hover:bg-green-600"
+                className="flex-1 sm:flex-none bg-green-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-green-600 text-center"
               >
                 {t('save')}
               </button>
               <button
                 onClick={() => setIsEditing(false)}
-                className="bg-gray-600 text-white px-3 py-1 rounded-lg font-medium hover:bg-gray-700"
+                className="flex-1 sm:flex-none bg-gray-600 text-white px-3 py-2 rounded-lg font-medium hover:bg-gray-700 text-center"
               >
                 {t('cancel')}
               </button>
@@ -319,7 +311,7 @@ export default function PropertyDetailPage() {
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="bg-[#D4AF37] text-black px-3 py-1 rounded-lg font-medium hover:bg-[#D4AF37]/90"
+              className="flex-1 sm:flex-none bg-[#D4AF37] text-black px-3 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 text-center"
             >
               {t('edit')}
             </button>
