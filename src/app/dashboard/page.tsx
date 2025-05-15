@@ -1,4 +1,3 @@
-// src/app/dashboard/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -13,14 +12,39 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    console.log('[DashboardPage] iniciando fetch de /api/propriedades')
     ;(async () => {
-      const res = await fetch('/api/propriedades')
-      const data: PropertyRow[] = await res.json()
-      // removemos o header
-      const all = data.length > 1 ? data.slice(1) : []
-      // só linhas com número preenchido (coluna C = índice 2)
-      setRows(all.filter(r => r[2]?.toString().trim() !== ''))
-      setLoading(false)
+      try {
+        const res = await fetch('/api/propriedades', { cache: 'no-store' })
+        console.log('[DashboardPage] status da resposta:', res.status)
+        const body = await res.json() as {
+          ok: boolean
+          rows?: PropertyRow[]
+          error?: string
+          message?: string
+        }
+        console.log('[DashboardPage] body recebido:', body)
+
+        if (!body.ok) {
+          console.error('[DashboardPage] API retornou erro:', body.error, body.message)
+          setLoading(false)
+          return
+        }
+
+        const all = body.rows || []
+        console.log('[DashboardPage] rows totais (incluindo header):', all.length)
+        const content = all.length > 1 ? all.slice(1) : []
+        console.log('[DashboardPage] rows de conteúdo:', content.length)
+
+        const filtered = content.filter(r => r[2]?.toString().trim() !== '')
+        console.log('[DashboardPage] rows após filtrar número:', filtered.length)
+
+        setRows(filtered)
+      } catch (err) {
+        console.error('[DashboardPage] falha no fetch:', err)
+      } finally {
+        setLoading(false)
+      }
     })()
   }, [])
 
@@ -41,7 +65,7 @@ export default function DashboardPage() {
 
   const today = new Date()
   const daysInStock = pendingRows.map(r => {
-    const purchase = new Date(r[1]!)
+    const purchase = new Date(r[1] || '')
     return (today.getTime() - purchase.getTime()) / (1000 * 60 * 60 * 24)
   })
   const avgDays = daysInStock.length

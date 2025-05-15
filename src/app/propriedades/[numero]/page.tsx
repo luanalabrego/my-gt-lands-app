@@ -53,11 +53,35 @@ export default function PropertyDetailPage() {
 
   useEffect(() => {
     if (!numero) return
-    fetch('/api/propriedades')
-      .then(res => res.json())
-      .then((data: PropertyRow[]) => {
-        const [, ...rows] = data
-        const found = rows.find(r => r[2] === numero) || null
+
+    ;(async () => {
+      try {
+        console.log('[PropertyDetail] iniciando fetch /api/propriedades para numero', numero)
+        const res = await fetch('/api/propriedades', { cache: 'no-store' })
+        console.log('[PropertyDetail] status da resposta:', res.status)
+
+        const body = await res.json() as {
+          ok: boolean
+          rows?: PropertyRow[]
+          error?: string
+          message?: string
+        }
+        console.log('[PropertyDetail] body recebido:', body)
+
+        if (!body.ok) {
+          console.error('[PropertyDetail] API retornou erro:', body.error, body.message)
+          return
+        }
+
+        const allRows = body.rows || []
+        console.log('[PropertyDetail] total rows (incluindo header):', allRows.length)
+
+        const contentRows = allRows.length > 1 ? allRows.slice(1) : []
+        console.log('[PropertyDetail] rows de conteúdo:', contentRows.length)
+
+        const found = contentRows.find(r => r[2] === numero) || null
+        console.log('[PropertyDetail] linha encontrada:', found)
+
         setRow(found)
         if (found) {
           setPreviewUrl(found[fotoIndex])
@@ -70,8 +94,10 @@ export default function PropertyDetailPage() {
           initial[parcelaValIdx] = found[parcelaValIdx] || ''
           setEditValues(initial)
         }
-      })
-      .catch(console.error)
+      } catch (err) {
+        console.error('[PropertyDetail] falha no fetch:', err)
+      }
+    })()
   }, [numero])
 
   if (!row) {
@@ -152,7 +178,6 @@ export default function PropertyDetailPage() {
         ref={cardRef}
         className="relative bg-[#2C2C2C] rounded-2xl p-6 shadow-lg max-w-3xl mx-auto flex flex-col h-full"
       >
-        {/* cabeçalho e status */}
         <h1 className="text-3xl font-bold text-[#D4AF37] border-b border-[#D4AF37] pb-2 mb-4">
           {`${t('property')} #${numero}`}
         </h1>
@@ -162,7 +187,6 @@ export default function PropertyDetailPage() {
           {statusLabel}
         </span>
 
-        {/* Conteúdo principal */}
         <div className="flex-grow grid md:grid-cols-2 gap-6">
           <div className="space-y-3 text-white">
             {camposParaExibir.map(({ key, index }) => (
@@ -196,8 +220,7 @@ export default function PropertyDetailPage() {
                 alt={t('photoAlt')}
                 className="w-full md:w-80 h-60 object-cover rounded-lg mb-4"
               />
-            )}
-            {isEditing ? (
+            )}            {isEditing ? (
               <input
                 type="file"
                 accept="image/*"
@@ -265,7 +288,6 @@ export default function PropertyDetailPage() {
           </div>
         </div>
 
-        {/* rodapé de botões */}
         <div className="mt-auto flex justify-end space-x-2">
           <button
             onClick={() => router.back()}
