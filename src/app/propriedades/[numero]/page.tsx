@@ -243,8 +243,8 @@ export default function PropertyDetailPage() {
           </div>
 
           {/* Imagem / Link / (botão alinhado à esquerda) */}
-          <div className="mt-6 flex flex-col items-start lg:mt-0 lg:w-1/2">
-            {previewUrl && (
+          <div className="mt-6 flex flex-col items-end lg:mt-0 lg:w-1/2">
+                      {previewUrl && (
               <img
                 src={previewUrl}
                 alt={t('photoAlt')}
@@ -266,7 +266,7 @@ export default function PropertyDetailPage() {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mb-4 bg-[#D4AF37] text-black px-4 py-2 text-sm rounded-lg font-medium hover:bg-[#D4AF37]/90 transition"
+                className="self-end mb-4 bg-[#D4AF37] text-black px-4 py-2 text-sm rounded-lg font-medium hover:bg-[#D4AF37]/90 transition"
               >
                 {t('viewOnMap')}
               </a>
