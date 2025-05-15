@@ -12,61 +12,53 @@ export async function POST(request: Request) {
   try {
     console.log('upload-foto: recebendo request')
 
-    // 1) parsear multipart com Web API
+    // 1) parsear multipart
     const formData = await request.formData()
-    console.log('upload-foto: formData keys =', [...formData.keys()])
-
     const numero = formData.get('numero')
     if (typeof numero !== 'string') {
       throw new Error('Campo "numero" inválido')
     }
-    console.log('upload-foto: numero =', numero)
 
     const file = formData.get('foto')
     if (!(file instanceof File)) {
       throw new Error('Campo "foto" inválido')
     }
-    console.log('upload-foto: arquivo recebido =', file.name, file.size)
 
-    // 2) salvar o arquivo em /public/uploads
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
+    // 2) salvar arquivo em /public/uploads
+    const buffer = Buffer.from(await file.arrayBuffer())
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
     if (!fs.existsSync(uploadsDir)) {
-      console.log('upload-foto: criando pasta uploads')
       fs.mkdirSync(uploadsDir, { recursive: true })
     }
     const filename = `${Date.now()}-${file.name}`
     const outPath = path.join(uploadsDir, filename)
     fs.writeFileSync(outPath, buffer)
+    const url = `/uploads/${filename}`
     console.log('upload-foto: arquivo salvo em', outPath)
 
-    const url = `/uploads/${filename}`
-    console.log('upload-foto: url pública =', url)
+    // 3) configurar Google Sheets via env vars
+    const {
+      GOOGLE_CLIENT_EMAIL: clientEmail,
+      GOOGLE_PRIVATE_KEY: privateKey,
+      SPREADSHEET_ID
+    } = process.env
 
-    // 3) atualizar a planilha (coluna AH)
-    console.log('upload-foto: autenticando Google Sheets')
-
-    // Verifica variáveis de ambiente
-    if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
-      throw new Error('Credenciais do Google não configuradas')
-    }
-    if (!process.env.SPREADSHEET_ID) {
-      throw new Error('ID da planilha não configurado')
+    if (!clientEmail || !privateKey || !SPREADSHEET_ID) {
+      throw new Error('Variáveis de ambiente do Google não configuradas')
     }
 
     const auth = new google.auth.GoogleAuth({
       credentials: {
-        client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        client_email: clientEmail,
+        private_key: privateKey.replace(/\\n/g, '\n'),
       },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     })
-    const client = await auth.getClient()
-    const sheets = google.sheets({ version: 'v4', auth: client })
-    const spreadsheetId = process.env.SPREADSHEET_ID as string
 
-    console.log('upload-foto: lendo planilha para encontrar rowIndex')
+    const sheets = google.sheets({ version: 'v4', auth })
+    const spreadsheetId = SPREADSHEET_ID
+
+    // 4) ler planilha para encontrar a linha
     const { data: all } = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: 'Cadastro de Propriedades!A1:ZZ',
@@ -93,7 +85,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, url })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
-    console.error('Erro em upload-foto:', message, err)
+    console.error('Erro em upload-foto:', message)
     return NextResponse.json({ ok: false, message }, { status: 500 })
   }
 }
