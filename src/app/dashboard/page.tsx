@@ -45,12 +45,12 @@ export default function DashboardPage() {
     )
   }
 
-  // --- cálculos ---
+  // --- cálculos básicos ---
   const total = rows.length
   const soldRows    = rows.filter(r => Boolean(r[34]?.toString().trim()))
   const pendingRows = rows.filter(r => !r[34]?.toString().trim())
 
-  // 1) Aging em estoque (pendentes)
+  // 1) Média do aging de estoque (pendentes)
   const daysInStock = pendingRows
     .map(r => {
       const str = r[1]?.toString().trim()
@@ -99,6 +99,12 @@ export default function DashboardPage() {
     return sum + v
   }, 0)
 
+  // 5) Lucro total (coluna AZ = índice 51)
+  const totalProfit = soldRows.reduce((sum, r) => {
+    const v = parseFloat(r[51]?.toString().replace(/[^0-9.-]+/g, '')) || 0
+    return sum + v
+  }, 0)
+
   // --- ordem dos cards ---
   const cards = [
     { key: 'totalProps',     value: total },
@@ -109,6 +115,7 @@ export default function DashboardPage() {
     { key: 'avgStockTime',   value: `${avgStockTime} ${t('days')}` },
     { key: 'totalInStock',   value: `U$ ${totalInStock.toLocaleString()}` },
     { key: 'totalToReceive', value: `U$ ${totalToReceive.toLocaleString()}` },
+    { key: 'totalProfit',    value: `U$ ${totalProfit.toLocaleString()}` },
   ]
 
   return (
@@ -119,8 +126,7 @@ export default function DashboardPage() {
 
       {/* Grid de 3 colunas a partir de md */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-12">
-        {cards.map(({ key, value }, i) => {
-          // só deixamos os 3 primeiros mais compactos
+        {cards.map(({ key, value }) => {
           const compact = ['totalProps','soldProps','pendingProps'].includes(key)
           return (
             <div
