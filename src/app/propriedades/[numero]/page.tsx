@@ -193,7 +193,7 @@ export default function PropertyDetailPage() {
   // Definição de seções
   // dentro do seu componente
 // defina as sessões com os índices corretos:
-const sections = [
+const availableSections = [
   { title: t('sectionPropertyInfo'), indices: [4, 5, 6, 7, 24, 21] },
   { title: t('sectionSize'),           indices: [8, 9, 12, 23] },
   { title: t('sectionZoning'),         indices: [10, 11, 22] },
@@ -202,6 +202,18 @@ const sections = [
   { title: t('sectionHOA'),            indices: [26, 27, 28, 29] },
   { title: t('sectionTax'),            indices: [13] },  // imposto anual por último
 ];
+
+// Definição de seções “vendido”
+const soldSections = [
+  { title: t('sectionPropertyInfo'), indices: [4, 5, 6, 7, 24, 21] },
+  { title: t('sectionSize'),           indices: [8, 9, 12, 23] },
+  { title: t('sectionPurchaseInfo'), indices: [ 1, 44,48 ] },
+
+  // nova seção: Informações de Venda
+  { title: t('sectionSaleInfo'),       indices: [34,50,40] },
+  // nova seção: Dados Financeiros
+  { title: t('sectionFinancial'),      indices: [51, 52,53,54 ] },
+]
 
 
   return (
@@ -280,7 +292,7 @@ const sections = [
 
 {/* Demais seções na ordem desejada */}
 <div className="space-y-8 mt-8">
-  {sections.map(({ title, indices }) => (
+{(isSold ? soldSections : availableSections).map(({ title, indices }) => (
     <section key={title}>
       <h2 className="text-lg font-bold text-[#D4AF37] border-b border-gray-600 pl-2 mb-4">
         {title}
