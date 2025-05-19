@@ -134,7 +134,16 @@
   "print": "Print",
   "save": "Save",
   "cancel": "Cancel",
-  "edit": "Edit"
+  "edit": "Edit",
+  "sectionPropertyInfo": "Property Information",
+  "sectionSize": "Size",
+  "sectionZoning": "Zoning",
+  "sectionTax": "Property Tax",
+  "sectionUtilities": "Utilities",
+  "sectionFlood": "Flood Zone",
+  "sectionPropertyDescription": "Property Description",
+  "sectionLocation": "Legal Location",
+  "sectionHOA": "HOA Information"
 
 
 }

@@ -134,7 +134,16 @@
   "print": "Imprimir",
   "save": "Guardar",
   "cancel": "Cancelar",
-  "edit": "Editar"
+  "edit": "Editar",
+  "sectionPropertyInfo": "Información de la Propiedad",
+  "sectionSize": "Tamaño",
+  "sectionZoning": "Zonificación",
+  "sectionTax": "Impuesto de la Propiedad",
+  "sectionUtilities": "Servicios Públicos",
+  "sectionFlood": "Zona de Inundación",
+  "sectionPropertyDescription": "Descripción de la Propiedad",
+  "sectionLocation": "Ubicación Legal",
+  "sectionHOA": "Información HOA"
 
 
 }

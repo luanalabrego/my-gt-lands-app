@@ -126,28 +126,46 @@ export default function PropertyDetailPage() {
   }
 
   // Definição de seções
-  const sections = [
-    {
-      title: t('sectionPropertyInfo'),
-      indices: [1, 5, 6, 7, 21] // comprado em, endereço, condado, estado, descrição
-    },
-    {
-      title: t('sectionSize'),
-      indices: [8, 9] // SQFT, Acres
-    },
-    {
-      title: t('sectionZoning'),
-      indices: [10, 11] // Zoning Code, Zoning Type
-    },
-    {
-      title: t('sectionUtilities'),
-      indices: [14, 16, 18] // Água, Eletricidade, Esgoto
-    },
-    {
-      title: t('sectionHOA'),
-      indices: [28] // HOA
-    }
-  ]
+  // dentro do seu componente
+// defina as sessões com os índices corretos:
+const sections = [
+  {
+    title: t('sectionPropertyInfo'),       // Número, Descrição, Parcel, Endereço, Condado, Estado
+    indices: [0, 1, 2, 3, 4, 5],
+  },
+  {
+    title: t('sectionSize'),               // Square Feet, Acres, Medidas do Lote, Minimum Lot Area
+    indices: [6, 7, 10, 21],
+  },
+  {
+    title: t('sectionZoning'),             // Zoning Code, Zoning type, Notes Zone
+    indices: [8, 9, 20],
+  },
+  {
+    title: t('sectionTax'),                // Property Tax
+    indices: [11],
+  },
+  {
+    title: t('sectionUtilities'),          // Água, Descrição Água, Luz, Descrição Luz, Esgoto, Descrição Esgoto
+    indices: [12, 13, 14, 15, 16, 17],
+  },
+  {
+    title: t('sectionFlood'),              // Flood Zone
+    indices: [18],
+  },
+  {
+    title: t('sectionPropertyDescription'),// Descrição do Imóvel
+    indices: [19],
+  },
+  {
+    title: t('sectionLocation'),           // Coordinates, Legal Description
+    indices: [22, 23],
+  },
+  {
+    title: t('sectionHOA'),                // HOA, Nome do HOA, Valor (Hoa), Período (Hoa), Notas (Opcional)
+    indices: [24, 25, 26, 27, 28],
+  },
+];
 
   return (
     <div className="min-h-screen bg-[#1F1F1F] px-4 py-6">
