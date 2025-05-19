@@ -314,7 +314,7 @@ const sections = [
 
 
         {/* Botões de ação */}
-        <div className="mt-6 flex justify-end space-x-2">
+        <div className="mt-6 flex justify-end space-x-2 print:hidden">
         {!isEditing && (
             <button
               onClick={printCard}
