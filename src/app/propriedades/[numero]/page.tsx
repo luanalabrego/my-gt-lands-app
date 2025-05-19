@@ -106,45 +106,65 @@ export default function PropertyDetailPage() {
 
   const printCard = () => {
     if (!cardRef.current) return;
-    // clona só o conteúdo que queremos imprimir
     const clone = cardRef.current.cloneNode(true) as HTMLElement;
   
-    // abre a janela de print
     const win = window.open('', '_blank', 'width=800,height=600');
     if (!win) return;
   
-    // monta o HTML incluindo TODO head atual
+    // puxa todo o head (tailwind, fonts etc)
     const head = document.head.innerHTML;
+  
+    // injeta CSS extra para print
+    const style = `
+      <style>
+        @page { margin: 10mm; }
+        @media print {
+          body, html { margin:0; padding:0; }
+          *,
+          *::before,
+          *::after {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          body * { visibility: hidden !important; }
+          #to-print, #to-print * { visibility: visible !important; }
+          #to-print {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            background: black !important;
+          }
+        }
+      </style>
+    `;
+  
     const html = `
       <!doctype html>
       <html>
         <head>
           ${head}
-          <style>
-            /* ajustes específicos para print */
-            @page { margin: 10mm; }
-            body { margin:0; padding:0; }
-            #to-print { position: absolute; top:0; left:0; width:100%; }
-            /* remova cantos arredondados e sombras */
-            #to-print { border-radius: 0 !important; box-shadow: none !important; background: white !important; }
-          </style>
+          ${style}
         </head>
         <body>
           <div id="to-print">${clone.outerHTML}</div>
         </body>
-      </html>`;
+      </html>
+    `;
   
     win.document.open();
     win.document.write(html);
     win.document.close();
   
-    // aguarda carregar CSS
     win.onload = () => {
       win.focus();
       win.print();
       win.close();
     };
   };
+  
   
 
   // Definição de seções
