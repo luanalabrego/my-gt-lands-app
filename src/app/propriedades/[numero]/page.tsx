@@ -222,40 +222,6 @@ const sections = [
           {statusLabel}
         </span>
 
-        {/* Seções agrupadas */}
-<div className="space-y-8">
-  {sections.map(({ title, indices }) => (
-    <section key={title}>
-      <h2 className="text-lg font-bold text-[#D4AF37] border-b border-gray-600 pl-2 mb-4">
-        {title}
-      </h2>
-
-      <div className="flex flex-wrap gap-x-4 gap-y-2 text-white">
-                {indices.map(idx => (
-          <div key={idx} className="flex items-start space-x-1">
-            <span className="font-medium text-gray-300 flex-shrink-0 whitespace-nowrap">
-              {headers[idx] || `Col ${idx}`}:
-            </span>
-
-            {isEditing ? (
-              <input
-                type="text"
-                value={editValues[idx] || ''}
-                onChange={e => handleChangeField(idx, e.target.value)}
-                className="bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm break-words"
-              />
-            ) : (
-              <span className="text-white break-words">
-                {row[idx] || '—'}
-                </span>
-            )}
-          </div>
-        ))}
-      </div>
-    </section>
-  ))}
-</div>
-
 {/* Imagem e ações */}
 <div className="mt-8 flex flex-col items-end">
   {previewUrl && (
@@ -312,6 +278,37 @@ const sections = [
   </section>
 </div>
 
+{/* Demais seções na ordem desejada */}
+<div className="space-y-8 mt-8">
+  {sections.map(({ title, indices }) => (
+    <section key={title}>
+      <h2 className="text-lg font-bold text-[#D4AF37] border-b border-gray-600 pl-2 mb-4">
+        {title}
+      </h2>
+      <div className="flex flex-wrap gap-x-4 gap-y-2 text-white">
+        {indices.map(idx => (
+          <div key={idx} className="flex items-start space-x-1">
+            <span className="font-medium text-gray-300 flex-shrink-0 whitespace-nowrap">
+              {headers[idx] || `Col ${idx}`}:
+            </span>
+            {isEditing ? (
+              <input
+                type="text"
+                value={editValues[idx] || ''}
+                onChange={e => handleChangeField(idx, e.target.value)}
+                className="bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm break-words"
+              />
+            ) : (
+              <span className="text-white break-words">
+                {row[idx] || '—'}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  ))}
+</div>
 
         {/* Botões de ação */}
         <div className="mt-6 flex justify-end space-x-2 print:hidden">
