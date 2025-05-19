@@ -69,7 +69,7 @@ export default function PropertyDetailPage() {
 
   const statusLabel = isSold
     ? t('statusVendido')
-    : t('statusDisponivel')
+    : t('statusDisponível')
 
   const handleChangeField = (i: number, v: string) =>
     setEditValues(prev => ({ ...prev, [i]: v }))
