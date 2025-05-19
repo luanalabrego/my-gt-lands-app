@@ -212,7 +212,53 @@ const sections = [
   ))}
 </div>
 
+{/* Valor da Venda */}
+<section className="mt-8">
+  <h2 className="text-lg font-bold text-[#D4AF37] border-b border-gray-600 border-l-4 border-[#D4AF37] pl-4 mb-4">
+    {t('sectionSaleValue')}
+  </h2>
+  <div className="flex items-start space-x-2 text-white">
+    <span className="font-medium text-gray-300 flex-shrink-0 whitespace-nowrap">
+      {headers[50]}:
+    </span>
+    <span className="break-words">
+      {row[50] || '—'}
+    </span>
+  </div>
+</section>
 
+{/* Condições de Pagamento */}
+<section className="mt-6">
+  <h2 className="text-lg font-bold text-[#D4AF37] border-b border-gray-600 border-l-4 border-[#D4AF37] pl-4 mb-4">
+    {t('sectionPaymentTerms')}
+  </h2>
+  <table className="w-full text-white border-collapse">
+    <thead>
+      <tr>
+        {[56, 57, 58].map(idx => (
+          <th
+            key={idx}
+            className="border px-2 py-1 text-gray-300 whitespace-nowrap text-left"
+          >
+            {headers[idx]}
+          </th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        {[56, 57, 58].map(idx => (
+          <td
+            key={idx}
+            className="border px-2 py-1 break-words"
+          >
+            {row[idx] || '—'}
+          </td>
+        ))}
+      </tr>
+    </tbody>
+  </table>
+</section>
         {/* Imagem e ações */}
         <div className="mt-8 flex flex-col items-end">
           {previewUrl && (
