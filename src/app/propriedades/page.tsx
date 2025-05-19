@@ -186,29 +186,38 @@ export default function PropriedadesPage() {
         </select>
 
         {/* DatePickers */}
-        <div className="flex space-x-2">
-          <DatePicker
-            selected={dateFromObj}
-            onChange={d => {
-              setDateFromObj(d)
-              setDateFrom(d ? d.toISOString().slice(0, 10) : '')
-            }}
-            placeholderText={t('fromDate')}
-            className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-            dateFormat="yyyy-MM-dd"
-          />
-          <DatePicker
-            selected={dateToObj}
-            onChange={d => {
-              setDateToObj(d)
-              setDateTo(d ? d.toISOString().slice(0, 10) : '')
-            }}
-            placeholderText={t('toDate')}
-            className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-            dateFormat="yyyy-MM-dd"
-          />
-        </div>
-      </div>
+<div className="flex flex-col sm:flex-row sm:space-x-2 mb-4">
+  {/* De */}
+  <div className="w-28 sm:w-auto">
+    <DatePicker
+      selected={dateFromObj}
+      onChange={d => {
+        setDateFromObj(d)
+        setDateFrom(d ? d.toISOString().slice(0, 10) : '')
+      }}
+      placeholderText={t('fromDate')}
+      dateFormat="yyyy-MM-dd"
+      wrapperClassName="w-full"
+      className="w-full px-2 py-1 rounded-lg bg-black border border-gray-600 text-white text-xs sm:text-sm focus:outline-none focus:border-gold"
+    />
+  </div>
+
+  {/* Até */}
+  <div className="w-28 sm:w-auto mt-2 sm:mt-0">
+    <DatePicker
+      selected={dateToObj}
+      onChange={d => {
+        setDateToObj(d)
+        setDateTo(d ? d.toISOString().slice(0, 10) : '')
+      }}
+      placeholderText={t('toDate')}
+      dateFormat="yyyy-MM-dd"
+      wrapperClassName="w-full"
+      className="w-full px-2 py-1 rounded-lg bg-black border border-gray-600 text-white text-xs sm:text-sm focus:outline-none focus:border-gold"
+    />
+  </div>
+</div>
+
 
       {/* Botões de visualização */}
       <div className="flex mb-6 space-x-2">
