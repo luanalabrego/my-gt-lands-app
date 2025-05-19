@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -22,12 +22,12 @@ export default function PropriedadesPage() {
   const { t } = useTranslation()
 
   // filtros
-  const [searchTerm, setSearchTerm]       = useState('')
-  const [selectedState, setSelectedState] = useState('')
+  const [searchTerm, setSearchTerm]         = useState('')
+  const [selectedState, setSelectedState]   = useState('')
   const [selectedCounty, setSelectedCounty] = useState('')
-  const [statusFilter, setStatusFilter]   = useState<'all' | 'sold' | 'pending'>('all')
-  const [dateFrom, setDateFrom]           = useState('')
-  const [dateTo, setDateTo]               = useState('')
+  const [statusFilter, setStatusFilter]     = useState<'all' | 'sold' | 'pending'>('all')
+  const [dateFrom, setDateFrom]             = useState('')
+  const [dateTo, setDateTo]                 = useState('')
 
   // índice da coluna de data de venda (AI) = 34 (0-based)
   const saleDateIndex = 34
@@ -69,10 +69,10 @@ export default function PropriedadesPage() {
   const counties  = Array.from(new Set(validRows.map(r => r[6]).filter(Boolean)))
 
   const filtered = validRows.filter(r => {
-    const address     = r[5] || ''
-    const numero      = r[2] || ''
-    const state       = r[7] || ''
-    const county      = r[6] || ''
+    const address      = r[5] || ''
+    const numero       = r[2] || ''
+    const state        = r[7] || ''
+    const county       = r[6] || ''
     const purchaseDate = new Date(r[1] || '')
     const saleDateRaw  = (r[saleDateIndex] || '').toString().trim()
     const sold         = saleDateRaw !== ''
@@ -210,7 +210,7 @@ export default function PropriedadesPage() {
         </div>
       </div>
 
-      {/* Botões de visualização (fora do filtro) */}
+      {/* Botões de visualização */}
       <div className="flex mb-6 space-x-2">
         <button
           onClick={() => setViewMode('card')}
@@ -245,13 +245,12 @@ export default function PropriedadesPage() {
             const condado      = r[6]
             const estado       = r[7]
             const acres        = r[9]   // coluna J
-            const medidas      = r[12]
             const descImovel   = r[21]
             const saleDateRaw  = (r[saleDateIndex] || '').trim()
             const status       = saleDateRaw ? t('statusVendido') : t('statusPendente')
-            const copyParcel = () => {
-              navigator.clipboard.writeText(parcelNumber)
-            }
+
+            const copyParcel   = () => navigator.clipboard.writeText(parcelNumber)
+            const copyAddress  = () => navigator.clipboard.writeText(endereco)
 
             return (
               <div
@@ -259,18 +258,53 @@ export default function PropriedadesPage() {
                 className="bg-[#2C2C2C] rounded-2xl p-6 shadow-lg flex flex-col justify-between"
               >
                 <div className="space-y-2">
-                  <h2 className="text-xl font-bold text-white line-clamp-2">
-                    <span className="text-gold">#{numero}</span> {endereco}
+                  {/* Número do pedido acima */}
+                  <h2 className="text-xl font-bold text-white">
+                    <span className="text-gold">#{numero}</span>
                   </h2>
+
+                  {/* Endereço em linha separada + botão copiar */}
+                  <h3 className="text-white flex items-center">
+                    {endereco}
+                    <button
+                      onClick={copyAddress}
+                      className="ml-2 text-gray-400 hover:text-white"
+                      title="Copiar endereço"
+                    >
+                      📋
+                    </button>
+                  </h3>
+
+                  {/* Parcel Number + botão copiar */}
+                  <div className="flex items-center space-x-2 text-gray-300 text-sm">
+                    <span>Parcel: {parcelNumber}</span>
+                    <button
+                      onClick={copyParcel}
+                      className="text-gray-400 hover:text-white"
+                      title="Copiar parcel"
+                    >
+                      📋
+                    </button>
+                  </div>
+
+                  {/* Acres */}
+                  <p className="text-gray-300 text-sm">
+                    Acres: {acres}
+                  </p>
+
+                  {/* Condado, estado */}
                   <p className="text-gray-300 text-sm">
                     {condado}, {estado}
                   </p>
+
                   {descImovel && (
                     <p className="text-gray-400 text-sm italic line-clamp-3">
                       {descImovel}
                     </p>
                   )}
                 </div>
+
+                {/* Rodapé do card */}
                 <div className="mt-4 flex items-center justify-between">
                   <span className="text-gray-500 text-xs">
                     {t('boughtOn')} {dataCompra}
