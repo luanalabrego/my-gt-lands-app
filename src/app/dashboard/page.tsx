@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useTranslation } from '@/hooks/useTranslation'
-import '../styles/globals.css'
+
 
 type PropertyRow = string[]
 
