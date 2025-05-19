@@ -12,7 +12,7 @@ type ApiResponse = {
   message?: string
 }
 
-// --- date parsers ---
+// Helpers para parse das datas US e BR
 function parseUS(dateStr: string): Date {
   const [m, d, y] = dateStr.split(/[\/\-]/)
   return new Date(+y, +m - 1, +d)
@@ -56,34 +56,34 @@ export default function DashboardPage() {
     )
   }
 
-  // --- filters & basic calcs ---
+  // --- cálculos ---
   const total       = rows.length
   const soldRows    = rows.filter(r => Boolean(r[34]?.toString().trim()))
   const pendingRows = rows.filter(r => !r[34]?.toString().trim())
 
-  // avg stock time
+  // Média de dias em estoque
   const daysInStock = pendingRows
     .map(r => {
       const s = r[1]?.toString().trim()
       if (!s) return NaN
-      const dt = parseUS(s)
-      return isNaN(dt.getTime())
+      const d = parseUS(s)
+      return isNaN(d.getTime())
         ? NaN
-        : (Date.now() - dt.getTime()) / (1000 * 60 * 60 * 24)
+        : (Date.now() - d.getTime()) / (1000 * 60 * 60 * 24)
     })
     .filter(v => !isNaN(v))
   const avgStockTime = daysInStock.length
     ? daysInStock.reduce((a, b) => a + b, 0) / daysInStock.length
     : 0
 
-  // avg sold time
+  // Média de tempo de venda
   const soldDurations = soldRows
     .map(r => {
-      const buy  = r[1]?.toString().trim()
-      const sell = r[34]?.toString().trim()
-      if (!buy || !sell) return NaN
-      const d1 = parseUS(buy)
-      const d2 = parseBR(sell)
+      const b = r[1]?.toString().trim()
+      const s = r[34]?.toString().trim()
+      if (!b || !s) return NaN
+      const d1 = parseUS(b)
+      const d2 = parseBR(s)
       if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return NaN
       return (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)
     })
@@ -92,7 +92,7 @@ export default function DashboardPage() {
     ? soldDurations.reduce((a, b) => a + b, 0) / soldDurations.length
     : 0
 
-  // avg market aging
+  // Média do aging de mercado
   const marketAgingVals = rows
     .map(r => parseFloat(r[41]?.toString().replace(',', '.')) || 0)
     .filter(v => v > 0)
@@ -100,7 +100,7 @@ export default function DashboardPage() {
     ? marketAgingVals.reduce((a, b) => a + b, 0) / marketAgingVals.length
     : 0
 
-  // financials
+  // Valores financeiros
   const totalInStock   = pendingRows.reduce((sum, r) => {
     const v = parseFloat(r[48]?.toString().replace(/[^0-9.-]+/g, '')) || 0
     return sum + v
@@ -113,19 +113,16 @@ export default function DashboardPage() {
     const v = parseFloat(r[51]?.toString().replace(/[^0-9.-]+/g, '')) || 0
     return sum + v
   }, 0)
-
-  // avg ROI with decimals
   const roiVals = soldRows
     .map(r => parseFloat(r[52]?.toString().replace(',', '.')) || 0)
     .filter(v => !isNaN(v))
   const avgROI = roiVals.length
     ? roiVals.reduce((a, b) => a + b, 0) / roiVals.length
     : 0
-  // formatted with comma decimals
-  const avgROIFormatted = avgROI
+  const avgROIFmt = avgROI
     .toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-  // cards data
+  // Dados para os cards
   const cards = [
     { key: 'totalProps',     value: total },
     { key: 'soldProps',      value: soldRows.length },
@@ -136,29 +133,40 @@ export default function DashboardPage() {
     { key: 'totalInStock',   value: `U$ ${totalInStock.toLocaleString('pt-BR')}` },
     { key: 'totalToReceive', value: `U$ ${totalToReceive.toLocaleString('pt-BR')}` },
     { key: 'totalProfit',    value: `U$ ${totalProfit.toLocaleString('pt-BR')}` },
-    { key: 'avgROI',         value: `${avgROIFormatted}%` },
+    { key: 'avgROI',         value: `${avgROIFmt}%` },
   ]
 
   const overviewKeys = ['totalProps','soldProps','pendingProps']
   const timeKeys     = ['avgMarketAging','avgSoldTime','avgStockTime']
   const financeKeys  = ['totalInStock','totalToReceive','totalProfit','avgROI']
 
-  const renderCard = ({ key, value }: { key: string; value: string|number }) => (
-    <div
-      key={key}
-      className="bg-[#2C2C2C] rounded-2xl shadow-lg p-4 flex flex-col justify-between"
-    >
-      <span className="text-sm text-gray-300 mb-2">{t(key)}</span>
-      <span className="text-2xl font-bold text-gold">{value}</span>
-    </div>
-  )
+  // Renderiza um card com cor condicional nos tempos
+  const renderCard = ({ key, value }: { key: string; value: string|number }) => {
+    const isTime  = timeKeys.includes(key)
+    const num     = parseFloat(value.toString())
+    const color   = isTime
+      ? (num < avgMarketAging ? 'text-green-400' : 'text-red-400')
+      : 'text-gold'
+
+    return (
+      <div
+        key={key}
+        className="bg-[#2C2C2C] rounded-2xl shadow-lg p-4 flex flex-col justify-between"
+      >
+        <span className="text-sm text-gray-300 mb-2">{t(key)}</span>
+        <span className={`text-2xl font-bold ${color}`}>{value}</span>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-dark text-white px-4 py-6">
+      {/* Título */}
       <h1 className="text-2xl sm:text-3xl font-semibold mb-8 text-gold">
         {t('greeting')}, Gustavo
       </h1>
 
+      {/* Seções lado a lado em desktop */}
       <div className="flex flex-col space-y-12 md:flex-row md:space-y-0 md:space-x-8 mb-12">
         {/* Visão Geral */}
         <div className="flex-1">
@@ -191,13 +199,13 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Pendências (vazio por enquanto) */}
+      {/* Pendências (vazio) */}
       <div>
         <h2 className="text-xl sm:text-2xl font-semibold mb-6 text-gold">
           {t('pendingHeading')}
         </h2>
         <div className="bg-[#2C2C2C] rounded-2xl p-4 shadow-lg">
-          {/* conteúdo a definir */}
+          {/* Aqui você define depois */}
         </div>
       </div>
     </div>
