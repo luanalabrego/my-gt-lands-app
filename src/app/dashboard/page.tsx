@@ -12,7 +12,7 @@ type ApiResponse = {
   message?: string
 }
 
-// Helpers para parse das datas US e BR
+// Parsers de data US e BR
 function parseUS(dateStr: string): Date {
   const [m, d, y] = dateStr.split(/[\/\-]/)
   return new Date(+y, +m - 1, +d)
@@ -100,16 +100,12 @@ export default function DashboardPage() {
     ? marketAgingVals.reduce((a, b) => a + b, 0) / marketAgingVals.length
     : 0
 
-  // Valores financeiros
-  const totalInStock   = pendingRows.reduce((sum, r) => {
+  // Financeiro
+  const totalInStock = pendingRows.reduce((sum, r) => {
     const v = parseFloat(r[48]?.toString().replace(/[^0-9.-]+/g, '')) || 0
     return sum + v
   }, 0)
-  const totalToReceive = soldRows.reduce((sum, r) => {
-    const v = parseFloat(r[48]?.toString().replace(/[^0-9.-]+/g, '')) || 0
-    return sum + v
-  }, 0)
-  const totalProfit    = soldRows.reduce((sum, r) => {
+  const totalProfit = soldRows.reduce((sum, r) => {
     const v = parseFloat(r[51]?.toString().replace(/[^0-9.-]+/g, '')) || 0
     return sum + v
   }, 0)
@@ -119,10 +115,12 @@ export default function DashboardPage() {
   const avgROI = roiVals.length
     ? roiVals.reduce((a, b) => a + b, 0) / roiVals.length
     : 0
-  const avgROIFmt = avgROI
-    .toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const avgROIFmt = avgROI.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
 
-  // Dados para os cards
+  // Monta os cards, removendo "totalToReceive"
   const cards = [
     { key: 'totalProps',     value: total },
     { key: 'soldProps',      value: soldRows.length },
@@ -131,21 +129,22 @@ export default function DashboardPage() {
     { key: 'avgSoldTime',    value: `${avgSoldTime.toFixed(0)} ${t('days')}` },
     { key: 'avgStockTime',   value: `${avgStockTime.toFixed(0)} ${t('days')}` },
     { key: 'totalInStock',   value: `U$ ${totalInStock.toLocaleString('pt-BR')}` },
-    { key: 'totalToReceive', value: `U$ ${totalToReceive.toLocaleString('pt-BR')}` },
     { key: 'totalProfit',    value: `U$ ${totalProfit.toLocaleString('pt-BR')}` },
     { key: 'avgROI',         value: `${avgROIFmt}%` },
   ]
 
   const overviewKeys = ['totalProps','soldProps','pendingProps']
   const timeKeys     = ['avgMarketAging','avgSoldTime','avgStockTime']
-  const financeKeys  = ['totalInStock','totalToReceive','totalProfit','avgROI']
+  const financeKeys  = ['totalInStock','totalProfit','avgROI']
 
-  // Renderiza um card com cor condicional nos tempos
+  // Renderização condicional de cor nos tempos
   const renderCard = ({ key, value }: { key: string; value: string|number }) => {
-    const isTime  = timeKeys.includes(key)
-    const num     = parseFloat(value.toString())
-    const color   = isTime
-      ? (num < avgMarketAging ? 'text-green-400' : 'text-red-400')
+    const isTime = timeKeys.includes(key)
+    const num    = parseFloat(value.toString())
+    const color  = isTime
+      ? num < avgMarketAging
+        ? 'text-green-400'
+        : 'text-red-400'
       : 'text-gold'
 
     return (
@@ -161,12 +160,12 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-dark text-white px-4 py-6">
-      {/* Título */}
+      {/* Saudação */}
       <h1 className="text-2xl sm:text-3xl font-semibold mb-8 text-gold">
         {t('greeting')}, Gustavo
       </h1>
 
-      {/* Seções lado a lado em desktop */}
+      {/* Seções em colunas no desktop */}
       <div className="flex flex-col space-y-12 md:flex-row md:space-y-0 md:space-x-8 mb-12">
         {/* Visão Geral */}
         <div className="flex-1">
@@ -205,7 +204,7 @@ export default function DashboardPage() {
           {t('pendingHeading')}
         </h2>
         <div className="bg-[#2C2C2C] rounded-2xl p-4 shadow-lg">
-          {/* Aqui você define depois */}
+          {/* conteúdo a definir */}
         </div>
       </div>
     </div>
