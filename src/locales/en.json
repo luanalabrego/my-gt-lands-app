@@ -110,5 +110,7 @@
   "Notas (Opcional)": "Optional Notes",
   "Imagens": "Images",
   "Documentos": "Documents",
-  "Filtro": "Filter"
+  "Filtro": "Filter",
+  "avgSoldTime": "Average Sale Time",
+  "avgMarketAging": "Average Market Aging"
 }
