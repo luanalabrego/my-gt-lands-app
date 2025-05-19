@@ -274,6 +274,10 @@ export default function PropriedadesPage() {
                       📋
                     </button>
                   </h3>
+                   {/* Condado, estado */}
+                   <p className="text-gray-300 text-sm">
+                    {condado}, {estado}
+                  </p>
 
                   {/* Parcel Number + botão copiar */}
                   <div className="flex items-center space-x-2 text-gray-300 text-sm">
@@ -292,10 +296,7 @@ export default function PropriedadesPage() {
                     Acres: {acres}
                   </p>
 
-                  {/* Condado, estado */}
-                  <p className="text-gray-300 text-sm">
-                    {condado}, {estado}
-                  </p>
+                
 
                   {descImovel && (
                     <p className="text-gray-400 text-sm italic line-clamp-3">
