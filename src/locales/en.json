@@ -112,5 +112,8 @@
   "Documentos": "Documents",
   "Filtro": "Filter",
   "avgSoldTime": "Average Sale Time",
-  "avgMarketAging": "Average Market Aging"
+  "avgMarketAging": "Average Market Aging",
+  "overviewHeading": "Overview",
+  "timeHeading": "Time Metrics",
+  "financeHeading": "Financials"
 }

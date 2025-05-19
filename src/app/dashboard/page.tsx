@@ -146,7 +146,7 @@ export default function DashboardPage() {
     { key: 'totalProfit',    value: `U$ ${totalProfit.toLocaleString()}` },
   ]
 
-  // definindo categorias
+  // categorias de cards
   const overviewKeys = ['totalProps', 'soldProps', 'pendingProps']
   const timeKeys     = ['avgMarketAging', 'avgSoldTime', 'avgStockTime']
   const financeKeys  = ['totalInStock', 'totalToReceive', 'totalProfit']
@@ -190,18 +190,13 @@ export default function DashboardPage() {
         {cards.filter(c => financeKeys.includes(c.key)).map(renderCard)}
       </Section>
 
+      {/* Pendências (vazio por enquanto) */}
       <div className="mb-12">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4 border-b-2 border-gold inline-block pb-1">
           {t('pendingHeading')}
         </h2>
         <div className="bg-[#2C2C2C] rounded-2xl p-4 sm:p-6 shadow-lg">
-          {pendingRows.length > 0 ? (
-            pendingRows.map((r, idx) => (
-              <p key={idx} className="text-sm sm:text-base mb-2">{r[5]}</p>
-            ))
-          ) : (
-            <p className="text-gray-400">{t('noPending')}</p>
-          )}
+          {/* conteúdo a definir */}
         </div>
       </div>
     </div>

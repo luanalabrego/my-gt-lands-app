@@ -112,5 +112,9 @@
   "Documentos": "Documentos",
   "Filtro": "Filtrar",
   "avgSoldTime": "Tiempo Promedio de Venta",
-  "avgMarketAging": "Promedio de Antigüedad de Mercado"
+  "avgMarketAging": "Promedio de Antigüedad de Mercado",
+  "overviewHeading": "Visión General",
+  "timeHeading": "Métricas de Tiempo",
+  "financeHeading": "Finanzas"
+
 }

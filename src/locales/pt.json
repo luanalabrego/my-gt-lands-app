@@ -112,5 +112,8 @@
   "Documentos": "Documentos",
   "Filtro": "Filtro",
   "avgSoldTime": "Tempo Médio de Venda",
-  "avgMarketAging": "Média do Aging de Mercado"
+  "avgMarketAging": "Média do Aging de Mercado",
+  "overviewHeading": "Visão Geral",
+  "timeHeading": "Desempenho de Tempo",
+  "financeHeading": "Financeiro"
 }
