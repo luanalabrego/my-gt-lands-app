@@ -5,7 +5,7 @@ import { useTranslation } from '@/hooks/useTranslation'
 
 type PropertyRow = string[]
 
-// Tipo da resposta da API, agora com `error` e `message`
+// Tipo da resposta da API, agora incluindo error/message
 type ApiResponse = {
   ok: boolean
   rows?: PropertyRow[]
@@ -13,7 +13,7 @@ type ApiResponse = {
   message?: string
 }
 
-// --- helpers de parse de datas ---
+// helpers de parse de datas
 function parseUS(dateStr: string): Date {
   const [m, d, y] = dateStr.split(/[\/\-]/)
   return new Date(Number(y), Number(m) - 1, Number(d))
@@ -21,6 +21,20 @@ function parseUS(dateStr: string): Date {
 function parseBR(dateStr: string): Date {
   const [d, m, y] = dateStr.split('/')
   return new Date(Number(y), Number(m) - 1, Number(d))
+}
+
+// componente de seção com título dourado
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-12">
+      <h2 className="text-xl sm:text-2xl font-semibold mb-4 border-b-2 border-gold inline-block pb-1">
+        {title}
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {children}
+      </div>
+    </div>
+  )
 }
 
 export default function DashboardPage() {
@@ -59,12 +73,12 @@ export default function DashboardPage() {
     )
   }
 
-  // --- cálculos básicos ---
+  // cálculos básicos
   const total       = rows.length
   const soldRows    = rows.filter(r => Boolean(r[34]?.toString().trim()))
   const pendingRows = rows.filter(r => !r[34]?.toString().trim())
 
-  // 1) Média do aging de estoque (pendentes)
+  // 1) Média aging em estoque (pendentes)
   const daysInStock = pendingRows
     .map(r => {
       const str = r[1]?.toString().trim()
@@ -95,7 +109,7 @@ export default function DashboardPage() {
     ? Math.round(soldDurations.reduce((a, b) => a + b, 0) / soldDurations.length)
     : 0
 
-  // 3) Média de aging de mercado (coluna AP = índice 41)
+  // 3) Média de aging de mercado (coluna AP índice 41)
   const marketAgingVals = rows
     .map(r => parseFloat(r[41]?.toString().replace(',', '.')) || 0)
     .filter(v => v > 0)
@@ -113,13 +127,13 @@ export default function DashboardPage() {
     return sum + v
   }, 0)
 
-  // 5) Lucro total (coluna AZ = índice 51)
+  // 5) Lucro total (coluna AZ índice 51)
   const totalProfit = soldRows.reduce((sum, r) => {
     const v = parseFloat(r[51]?.toString().replace(/[^0-9.-]+/g, '')) || 0
     return sum + v
   }, 0)
 
-  // --- ordem dos cards ---
+  // monta cards
   const cards = [
     { key: 'totalProps',     value: total },
     { key: 'soldProps',      value: soldRows.length },
@@ -132,48 +146,63 @@ export default function DashboardPage() {
     { key: 'totalProfit',    value: `U$ ${totalProfit.toLocaleString()}` },
   ]
 
+  // definindo categorias
+  const overviewKeys = ['totalProps', 'soldProps', 'pendingProps']
+  const timeKeys     = ['avgMarketAging', 'avgSoldTime', 'avgStockTime']
+  const financeKeys  = ['totalInStock', 'totalToReceive', 'totalProfit']
+
+  // renderiza um card
+  const renderCard = ({ key, value }: { key: string; value: string | number }) => {
+    const compact = overviewKeys.includes(key)
+    return (
+      <div
+        key={key}
+        className={`
+          bg-[#2C2C2C] rounded-2xl shadow-lg flex flex-col justify-between
+          ${compact ? 'p-3 sm:p-4' : 'p-4 sm:p-6'}
+        `}
+      >
+        <span className="text-sm sm:text-base text-gray-300 mb-2">
+          {t(key)}
+        </span>
+        <span className="text-2xl sm:text-3xl font-bold text-gold">
+          {value}
+        </span>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-[#1F1F1F] text-white px-4 py-6">
-      <h1 className="text-2xl sm:text-3xl font-semibold mb-8">
+      <h1 className="text-2xl sm:text-3xl font-semibold mb-8 text-gold">
         {t('greeting')}, Gustavo
       </h1>
 
-      {/* Grid de 3 colunas a partir de md */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-12">
-        {cards.map(({ key, value }) => {
-          const compact = ['totalProps','soldProps','pendingProps'].includes(key)
-          return (
-            <div
-              key={key}
-              className={`
-                bg-[#2C2C2C] rounded-2xl shadow-lg flex flex-col justify-between
-                ${compact ? 'p-3 sm:p-4' : 'p-4 sm:p-6'}
-              `}
-            >
-              <span className="text-sm sm:text-base text-gray-300 mb-2">
-                {t(key)}
-              </span>
-              <span className="text-2xl sm:text-3xl font-bold text-gold">
-                {value}
-              </span>
-            </div>
-          )
-        })}
-      </div>
+      <Section title={t('overviewHeading')}>
+        {cards.filter(c => overviewKeys.includes(c.key)).map(renderCard)}
+      </Section>
 
-      <h2 className="text-xl sm:text-2xl font-semibold mb-4">
-        {t('pendingHeading')}
-      </h2>
-      <div className="bg-[#2C2C2C] rounded-2xl p-4 sm:p-6 shadow-lg">
-        {pendingRows.length > 0 ? (
-          pendingRows.map((r, idx) => (
-            <p key={idx} className="text-sm sm:text-base mb-2">
-              {r[5]}
-            </p>
-          ))
-        ) : (
-          <p className="text-gray-400">{t('noPending')}</p>
-        )}
+      <Section title={t('timeHeading')}>
+        {cards.filter(c => timeKeys.includes(c.key)).map(renderCard)}
+      </Section>
+
+      <Section title={t('financeHeading')}>
+        {cards.filter(c => financeKeys.includes(c.key)).map(renderCard)}
+      </Section>
+
+      <div className="mb-12">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4 border-b-2 border-gold inline-block pb-1">
+          {t('pendingHeading')}
+        </h2>
+        <div className="bg-[#2C2C2C] rounded-2xl p-4 sm:p-6 shadow-lg">
+          {pendingRows.length > 0 ? (
+            pendingRows.map((r, idx) => (
+              <p key={idx} className="text-sm sm:text-base mb-2">{r[5]}</p>
+            ))
+          ) : (
+            <p className="text-gray-400">{t('noPending')}</p>
+          )}
+        </div>
       </div>
     </div>
   )
