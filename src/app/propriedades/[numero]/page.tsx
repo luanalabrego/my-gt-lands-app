@@ -1,101 +1,124 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { useTranslation } from '../../../hooks/useTranslation'
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useTranslation } from '../../../hooks/useTranslation';
 
-type PropertyRow = string[]
+type PropertyRow = string[];
 
 export default function PropertyDetailPage() {
-  const { t } = useTranslation()
-  const { numero } = useParams<{ numero: string }>()
-  const router = useRouter()
-  const cardRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation();
+  const { numero } = useParams<{ numero: string }>();
+  const router = useRouter();
+  const cardRef = useRef<HTMLDivElement>(null);
 
-  const [headers, setHeaders] = useState<string[]>([])
-  const [row, setRow] = useState<PropertyRow | null>(null)
-  const [isEditing, setIsEditing] = useState(false)
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [editValues, setEditValues] = useState<Record<number, string>>({})
+  const [headers, setHeaders] = useState<string[]>([]);
+  const [row, setRow] = useState<PropertyRow | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Record<number, string>>({});
 
   // índices fixos
-  const saleDateIdx   = 34
-  const photoIdx      = 33
+  const saleDateIdx = 34;
+  const photoIdx = 33;
 
   // carrega dados
   useEffect(() => {
-    if (!numero) return
-    ;(async () => {
+    if (!numero) return;
+    (async () => {
       try {
-        const res = await fetch('/api/propriedades', { cache: 'no-store' })
-        const body = (await res.json()) as { ok: boolean; rows?: PropertyRow[] }
-        if (!body.ok) return
-        const allRows = body.rows || []
-        if (!allRows.length) return
-        setHeaders(allRows[0])
-        const content = allRows.slice(1)
-        const found = content.find(r => r[2] === numero) || null
-        setRow(found)
+        const res = await fetch('/api/propriedades', { cache: 'no-store' });
+        const body = (await res.json()) as { ok: boolean; rows?: PropertyRow[] };
+        if (!body.ok) return;
+        const allRows = body.rows || [];
+        if (!allRows.length) return;
+        setHeaders(allRows[0]);
+        const content = allRows.slice(1);
+        const found = content.find(r => r[2] === numero) || null;
+        setRow(found);
         if (found) {
-          setPreviewUrl(found[photoIdx])
-          const initial: Record<number, string> = {}
-          found.forEach((cell, idx) => { initial[idx] = cell })
-          setEditValues(initial)
+          setPreviewUrl(found[photoIdx]);
+          const initial: Record<number, string> = {};
+          found.forEach((cell, idx) => { initial[idx] = cell; });
+          setEditValues(initial);
         }
       } catch (err) {
-        console.error(err)
+        console.error(err);
       }
-    })()
-  }, [numero])
+    })();
+  }, [numero]);
 
   if (!row) {
-    return <p className="p-6 text-white">{t('loading')}</p>
+    return <p className="p-6 text-white">{t('loading')}</p>;
   }
 
-  const saleDateRaw = (row[saleDateIdx] || '').trim()
-  const isSold      = Boolean(saleDateRaw)
-  const statusLabel = isSold ? t('statusVendido') : t('statusDisponível')
+  const saleDateRaw = (row[saleDateIdx] || '').trim();
+  const isSold = Boolean(saleDateRaw);
+  const statusLabel = isSold ? t('statusVendido') : t('statusDisponível');
 
   const handleChangeField = (i: number, v: string) =>
-    setEditValues(prev => ({ ...prev, [i]: v }))
+    setEditValues(prev => ({ ...prev, [i]: v }));
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0] ?? null
-    setImageFile(f)
-    if (f) setPreviewUrl(URL.createObjectURL(f))
-  }
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      // 1) Pego o signed URL + publicUrl
+      const { uploadUrl, publicUrl } = await fetch(
+        `/api/propriedades/upload-url?filename=${encodeURIComponent(file.name)}`
+      ).then(r => r.json());
+      if (!uploadUrl) throw new Error('Não obteve signed URL');
+
+      // 2) Envio direto ao bucket
+      const putRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
+      if (!putRes.ok) throw new Error('Falha no upload ao bucket');
+
+      // 3) Atualizo a planilha com a publicUrl
+      const res = await fetch('/api/propriedades/upload-foto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ numero, url: publicUrl }),
+      });
+      const body = await res.json();
+      if (!body.ok) {
+        alert(`${t('photoUploadError')}: ${body.message}`);
+        return;
+      }
+
+      // 4) Atualizo o preview e o estado local
+      setPreviewUrl(body.url);
+      setRow(prev => {
+        if (!prev) return prev;
+        const updated = [...prev];
+        updated[photoIdx] = body.url;
+        return updated;
+      });
+      setEditValues(prev => ({ ...prev, [photoIdx]: body.url }));
+    } catch (err: any) {
+      console.error(err);
+      alert(`${t('photoUploadError')}: ${err.message || err}`);
+    }
+  };
 
   const handleSave = async () => {
-    if (imageFile) {
-      const form = new FormData()
-      form.append('numero', numero!)
-      form.append('foto', imageFile)
-      const resFoto = await fetch('/api/propriedades/upload-foto', {
-        method: 'POST',
-        body: form,
-      })
-      const bodyFoto = await resFoto.json()
-      if (!bodyFoto.ok) {
-        alert(`${t('photoUploadError')}: ${bodyFoto.message}`)
-        return
-      }
-      row[photoIdx] = bodyFoto.url
-      setPreviewUrl(bodyFoto.url)
-    }
     const res = await fetch('/api/propriedades/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ numero, updates: editValues }),
-    })
-    const result = await res.json()
+    });
+    const result = await res.json();
     if (!result.ok) {
-      alert(`${t('saveError')}: ${result.message}`)
-      return
+      alert(`${t('saveError')}: ${result.message}`);
+      return;
     }
-    setIsEditing(false)
-    router.refresh()
-  }
+    setIsEditing(false);
+    router.refresh();
+  };
 
   const stripClasses = (el: HTMLElement) => {
     el.removeAttribute('class')
