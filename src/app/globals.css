@@ -21,41 +21,38 @@
 
   /* 2) força cores de fundo/texto */
   html, body {
-    margin: 0; padding: 0; height: 100%;
+    margin: 0;
+    padding: 0;
+    height: 100%;
     background: #1F1F1F !important;
     color: var(--foreground) !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* 3) esconde tudo por visibilidade */
+  /* 3) esconde TODO o resto da UI */
   body * {
     visibility: hidden !important;
   }
 
-  /* 4) mostra só o seu cartão e todo o seu conteúdo */
-  .print-container {
-    visibility: visible !important;
-    position: absolute !important;
-    top: 0; left: 0;
-    width: 100% !important;
-    height: 100% !important;
-    background: #1F1F1F !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-  }
+  /* 4) mostra apenas o container com os detalhes completos */
+  .print-container,
   .print-container * {
     visibility: visible !important;
-    /* aqui opcionalmente você pode ajustar display se algum elemento ficar estranho:
-       display: initial !important; */
   }
 
-  /* 5) esconda botões, inputs, links etc com esta classe */
+  /* 5) deixa o print-container no topo da página */
+  .print-container {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    /* evita cortar cards no meio de uma página */
+    page-break-inside: avoid;
+  }
+
+  /* 6) caso tenha usado print-hidden, garante que esconda */
   .print-hidden {
     display: none !important;
-    
   }
-  .card-details { display: block !important;
-  }
-
 }

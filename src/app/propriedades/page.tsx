@@ -28,6 +28,9 @@ export default function PropriedadesPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'sold' | 'pending' | 'available'>('all')
   const [dateFrom, setDateFrom]             = useState('')
   const [dateTo, setDateTo]                 = useState('')
+  const [headers, setHeaders] = useState<string[]>([])
+  const [printMode, setPrintMode] = useState(false)
+
 
   // índice da coluna de data de venda (AI) = 34 (0-based)
   const saleDateIndex = 34
@@ -45,24 +48,27 @@ export default function PropriedadesPage() {
           message?: string
         }
         console.log('[PropriedadesPage] body recebido:', body)
-
+  
         if (!body.ok) {
           console.error('[PropriedadesPage] API retornou erro:', body.error, body.message)
           return
         }
-
+  
         const allRows = body.rows || []
         console.log('[PropriedadesPage] rows totais:', allRows.length)
-
-        const contentRows = allRows.length > 1 ? allRows.slice(1) : []
-        console.log('[PropriedadesPage] rows de conteúdo:', contentRows.length)
-
-        setData(contentRows)
+  
+        if (allRows.length > 0) {
+          setHeaders(allRows[0])
+          const contentRows = allRows.slice(1)
+          console.log('[PropriedadesPage] rows de conteúdo:', contentRows.length)
+          setData(contentRows)
+        }
       } catch (err) {
         console.error('[PropriedadesPage] falha no fetch:', err)
       }
     })()
   }, [])
+  
 
   const validRows = data.filter(r => r[2]?.trim() !== '')
   const states    = Array.from(new Set(validRows.map(r => r[7]).filter(Boolean)))
@@ -112,14 +118,24 @@ export default function PropriedadesPage() {
           {t('properties')}
         </h1>
         <div className="flex space-x-2">
-          {/* Botão Imprimir */}
-          <button
-            onClick={() => window.print()}
-            className="flex items-center gap-2 bg-[#2C2C2C] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#2C2C2C]/90 transition"
-            title={t('print')}
-          >
-            <Printer size={16} />
-            {t('print')}
+        {/* Botão Imprimir Tudo */}
+<button
+  onClick={async () => {
+    // 1) ativa o modo de impressão de detalhes completos
+    setPrintMode(true)
+    // 2) espera o React renderizar o layout de detalhes
+    await new Promise(res => setTimeout(res, 100))
+    // 3) dispara a impressão
+    window.print()
+    // 4) volta ao modo normal
+    setPrintMode(false)
+  }}
+  className="flex items-center gap-2 bg-[#2C2C2C] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#2C2C2C]/90 transition"
+  title={t('printAll')}
+>
+  <Printer size={16} />
+  {t('printAll')}
+
           </button>
           {/* Botão Nova Propriedade */}
           <Link
@@ -254,100 +270,170 @@ export default function PropriedadesPage() {
       </div>
 
       {/* Renderização em Cards */}
-      {viewMode === 'card' && (
-        <div className="print-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((r, i) => {
-            const dataCompra   = r[1]
-            const numero       = r[2]
-            const parcelNumber = r[4]   // coluna E
-            const endereco     = r[5]
-            const condado      = r[6]
-            const estado       = r[7]
-            const acres        = r[9]   // coluna J
-            const descImovel   = r[21]
-            const saleDateRaw  = (r[saleDateIndex] || '').trim()
-            const status       = saleDateRaw ? t('statusVendido') : t('statusDisponível')
+{viewMode === 'card' && !printMode && (
+  // modo normal: mostra só os cards resumidos
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {filtered.map((r, i) => {
+      const dataCompra   = r[1]
+      const numero       = r[2]
+      const parcelNumber = r[4]
+      const endereco     = r[5]
+      const condado      = r[6]
+      const estado       = r[7]
+      const acres        = r[9]
+      const saleDateRaw  = (r[saleDateIndex] || '').trim()
+      const status       = saleDateRaw ? t('statusVendido') : t('statusDisponível')
 
-            const copyParcel   = () => navigator.clipboard.writeText(parcelNumber)
-            const copyAddress  = () => navigator.clipboard.writeText(endereco)
+      const copyParcel  = () => navigator.clipboard.writeText(parcelNumber)
+      const copyAddress = () => navigator.clipboard.writeText(endereco)
 
-            return (
-              <div
-                key={i}
-                className="bg-[#2C2C2C] rounded-2xl p-6 shadow-lg flex flex-col justify-between"
+      return (
+        <div
+          key={i}
+          className="bg-[#2C2C2C] rounded-2xl p-6 shadow-lg flex flex-col justify-between"
+        >
+          <div className="space-y-2">
+            {/* Número do pedido */}
+            <h2 className="text-xl font-bold text-white">
+              <span className="text-[#D4AF37]">#{numero}</span>
+            </h2>
+
+            {/* Endereço + copiar */}
+            <h3 className="text-white flex items-center">
+              {endereco}
+              <button onClick={copyAddress} className="ml-2" title="Copiar endereço">
+                <ClipboardCopy size={18} className="text-gray-400 hover:text-white transition-colors" />
+              </button>
+            </h3>
+
+            {/* Condado, estado */}
+            <p className="text-gray-300 text-sm">{condado}, {estado}</p>
+
+            {/* Parcel + copiar */}
+            <div className="flex items-center space-x-2 text-gray-300 text-sm">
+              <span>Parcel: {parcelNumber}</span>
+              <button onClick={copyParcel} title="Copiar parcel">
+                <ClipboardCopy size={18} className="text-gray-400 hover:text-white transition-colors" />
+              </button>
+            </div>
+
+            {/* Acres */}
+            <p className="text-gray-300 text-sm">Acres: {acres}</p>
+          </div>
+
+          {/* Rodapé */}
+          <div className="mt-4 flex items-center justify-between">
+            <span className="text-gray-500 text-xs">
+              {t('boughtOn')} {dataCompra}
+            </span>
+            <div className="flex items-center space-x-2">
+              <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                saleDateRaw ? 'bg-red-500 text-white' : 'bg-green-400 text-black'
+              }`}>
+                {status}
+              </span>
+              <Link
+                href={`/propriedades/${numero}`}
+                className="bg-[#D4AF37] text-black border border-[#D4AF37] px-3 py-1 rounded-lg text-sm font-medium hover:bg-[#D4AF37]/90 transition"
               >
-                <div className="space-y-2">
-                  {/* Número do pedido acima */}
-                  <h2 className="text-xl font-bold text-white">
-                    <span className="text-[#D4AF37]">#{numero}</span>
-                  </h2>
-
-                  {/* Endereço em linha separada + botão copiar */}
-                  <h3 className="text-white flex items-center">
-                    {endereco}
-                    <button
-                      onClick={copyAddress}
-                      className="ml-2"
-                      title="Copiar endereço"
-                    >
-                      <ClipboardCopy
-                        size={18}
-                        className="text-gray-400 hover:text-white transition-colors"
-                      />
-                    </button>
-                  </h3>
-
-                  {/* Condado, estado */}
-                  <p className="text-gray-300 text-sm">
-                    {condado}, {estado}
-                  </p>
-
-                  {/* Parcel Number + botão copiar */}
-                  <div className="flex items-center space-x-2 text-gray-300 text-sm">
-                    <span>Parcel: {parcelNumber}</span>
-                    <button
-                      onClick={copyParcel}
-                      title="Copiar parcel"
-                    >
-                      <ClipboardCopy
-                        size={18}
-                        className="text-gray-400 hover:text-white transition-colors"
-                      />
-                    </button>
-                  </div>
-
-                  {/* Acres */}
-                  <p className="text-gray-300 text-sm">
-                    Acres: {acres}
-                  </p>
-                </div>
-
-                {/* Rodapé do card */}
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="text-gray-500 text-xs">
-                    {t('boughtOn')} {dataCompra}
-                  </span>
-                  <div className="flex items-center space-x-2">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-bold ${
-                        saleDateRaw ? 'bg-red-500 text-white' : 'bg-green-400 text-black'
-                      }`}
-                    >
-                      {status}
-                    </span>
-                    <Link
-                      href={`/propriedades/${numero}`}
-                      className="bg-[#D4AF37] text-black border border-[#D4AF37] px-3 py-1 rounded-lg text-sm font-medium hover:bg-[#D4AF37]/90 transition"
-                    >
-                      {t('actions')}
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
+                {t('actions')}
+              </Link>
+            </div>
+          </div>
         </div>
-      )}
+    )})}
+  </div>
+)}
+
+{viewMode === 'card' && printMode && (
+  // modo printMode: imprime detalhes completos de cada propriedade
+  <div className="print-container space-y-8">
+    {filtered.map(r => {
+      const numero      = r[2]
+      const saleDateRaw = (r[saleDateIndex] || '').trim()
+      const isSold      = Boolean(saleDateRaw)
+      const statusLabel = isSold ? t('statusVendido') : t('statusDisponível')
+
+      const sections = [
+        { title: t('sectionPropertyInfo'), indices: [4,5,6,7,24,21] },
+        { title: t('sectionSize'),         indices: [8,9,12,23] },
+        { title: t('sectionZoning'),       indices: [10,11,22] },
+        { title: t('sectionTax'),          indices: [13] },
+        { title: t('sectionUtilities'),    indices: [14,15,16,17,18,19] },
+        { title: t('sectionFlood'),        indices: [20] },
+        { title: t('sectionHOA'),          indices: [26,27,28,29] },
+      ]
+
+      return (
+        <div key={numero} className="bg-[#2C2C2C] rounded-2xl p-6 shadow-lg">
+          <h1 className="text-2xl font-bold text-[#D4AF37] mb-4">
+            {t('property')} #{numero}
+          </h1>
+          <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+            isSold ? 'bg-red-500 text-white' : 'bg-green-400 text-black'
+          }`}>
+            {statusLabel}
+          </span>
+
+          {sections.map(({ title, indices }) => (
+            <section key={title} className="mt-6">
+              <h2 className="text-lg font-bold text-[#D4AF37] mb-2">{title}</h2>
+              <div className="flex flex-wrap gap-4 text-white">
+                {indices.map(idx => (
+                  <div key={idx} className="flex space-x-1">
+                    <span className="font-medium text-gray-300 whitespace-nowrap">
+                      {headers[idx] || `Col ${idx}`}:
+                    </span>
+                    <span className="break-words">{r[idx] || '—'}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+
+          {/* Imagem */}
+          {r[33] && (
+            <img
+              src={r[33]}
+              alt={t('photoAlt')}
+              className="w-full object-cover rounded-lg mt-6"
+            />
+          )}
+
+          {/* Venda da Propriedade */}
+          <section className="mt-6">
+            <h2 className="text-lg font-semibold text-white border-b border-gray-600 pb-1 mb-4">
+              {t('sectionSaleValue')}
+            </h2>
+            <div className="flex items-start space-x-2 text-white">
+              <span className="font-medium text-gray-300 whitespace-nowrap">
+                {headers[50]}:
+              </span>
+              <span>{r[50] || '—'}</span>
+            </div>
+          </section>
+
+          {/* Condições de Pagamento */}
+          <section className="mt-6">
+            <h2 className="text-lg font-semibold text-white border-b border-gray-600 pb-1 mb-4">
+              {t('sectionPaymentTerms')}
+            </h2>
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-white">
+              {[56,57,58].map(idx => (
+                <div key={idx} className="flex items-start space-x-1">
+                  <span className="font-medium text-gray-300 whitespace-nowrap">
+                    {headers[idx]}:
+                  </span>
+                  <span className="break-words">{r[idx] || '—'}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+    )})}
+  </div>
+)}
+
 
       {/* Renderização em Lista */}
       {viewMode === 'list' && (
