@@ -186,10 +186,10 @@ const sections = [
         {title}
       </h2>
 
-      <div className="flex flex-wrap gap-x-6 gap-y-4 text-white">
+      <div className="flex flex-wrap gap-x-4 gap-y-2 text-white">
                 {indices.map(idx => (
-          <div key={idx} className="flex items-center space-x-1">
-            <span className="w-24 font-medium text-gray-300">
+          <div key={idx} className="flex items-start space-x-1">
+            <span className="font-medium text-gray-300 flex-shrink-0 whitespace-nowrap">
               {headers[idx] || `Col ${idx}`}:
             </span>
 
@@ -198,10 +198,12 @@ const sections = [
                 type="text"
                 value={editValues[idx] || ''}
                 onChange={e => handleChangeField(idx, e.target.value)}
-                className="bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm"
+                className="bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm break-words"
               />
             ) : (
-              <span className="text-white">{row[idx] || '—'}</span>
+              <span className="text-white break-words">
+                {row[idx] || '—'}
+                </span>
             )}
           </div>
         ))}
