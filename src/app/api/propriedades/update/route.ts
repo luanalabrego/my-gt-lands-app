@@ -1,3 +1,4 @@
+
 // src/app/api/propriedades/update/route.ts
 
 import { NextResponse } from 'next/server'
@@ -70,19 +71,26 @@ export async function POST(request: Request) {
     }
     const sheetRow = rowIdx + 8
 
-    // 5) grava cada campo editado
-    for (const [idxStr, valor] of Object.entries(updates)) {
+    // 5) prepara batch de updates apenas com os campos editados
+    const data = Object.entries(updates).map(([idxStr, valor]) => {
       const idx = parseInt(idxStr, 10)
       const col = indexToColumn(idx)
       const cell = `${col}${sheetRow}`
       console.log(`[Update] gravando ${valor} em ${cell}`)
-      await sheets.spreadsheets.values.update({
-        spreadsheetId,
+      return {
         range: `Cadastro de Propriedades!${cell}`,
+        values: [[valor]],
+      }
+    })
+
+    // 6) executa todas as escritas em uma única chamada
+    await sheets.spreadsheets.values.batchUpdate({
+      spreadsheetId,
+      requestBody: {
         valueInputOption: 'RAW',
-        requestBody: { values: [[valor]] },
-      })
-    }
+        data,
+      },
+    })
 
     return NextResponse.json({ ok: true })
   } catch (err: unknown) {
