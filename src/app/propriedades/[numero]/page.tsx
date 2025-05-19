@@ -31,6 +31,15 @@ export default function PropertyDetailPage() {
     (_, i) => i + displayStart
   )
 
+  // Seções desejadas
+  const sections = [
+    { title: t('sectionTamanho'),          indices: [8, 9, 12]            },
+    { title: t('sectionInfoPropriedade'),   indices: [1,5,6,7,10,11,21]    },
+    { title: t('sectionHOA'),               indices: [28]                  },
+    { title: t('sectionServicos'),          indices: [14,16,18]            },
+    { title: t('sectionCoordenadas'),       indices: [24]                  },
+  ]
+
   useEffect(() => {
     if (!numero) return
     ;(async () => {
@@ -67,7 +76,7 @@ export default function PropertyDetailPage() {
   const isSold      = Boolean(saleDateRaw)
   const statusLabel = isSold
     ? t('statusVendido')
-    : t('statusDisponível')
+    : t('statusDisponivel')
 
   const handleChangeField = (i: number, v: string) =>
     setEditValues(prev => ({ ...prev, [i]: v }))
@@ -106,7 +115,6 @@ export default function PropertyDetailPage() {
       alert(`${t('saveError')}: ${result.message}`)
       return
     }
-
     setIsEditing(false)
     router.refresh()
   }
@@ -129,8 +137,7 @@ export default function PropertyDetailPage() {
           #to-print, #to-print * { visibility: visible !important; }
           #to-print { position: absolute; top:0; left:0; }
         }</style>
-      </head>
-      <body style="margin:0;padding:0;">
+      </head><body style="margin:0;padding:0;">
         <div id="to-print">${clone.outerHTML}</div>
       </body></html>`
     const win = window.open('', '_blank', 'width=800,height=600')
@@ -158,23 +165,30 @@ export default function PropertyDetailPage() {
           {statusLabel}
         </span>
 
-        {/* Informações em grade de duas colunas */}
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-white">
-          {displayIndices.map(idx => (
-            <div key={idx} className="flex">
-              <span className="w-40 font-medium text-gray-300">
-                {headers[idx] || `Col ${idx}`}:
-              </span>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={editValues[idx] || ''}
-                  onChange={e => handleChangeField(idx, e.target.value)}
-                  className="ml-2 flex-1 bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm"
-                />
-              ) : (
-                <span className="ml-2 break-words">{row[idx] || '—'}</span>
-              )}
+        {/* Seções de campos */}
+        <div className="mt-6 space-y-8 text-white">
+          {sections.map(({ title, indices }) => (
+            <div key={title}>
+              <h2 className="text-lg font-semibold mb-2">{title}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                {indices.map(idx => (
+                  <div key={idx} className="flex">
+                    <span className="w-40 font-medium text-gray-300">
+                      {headers[idx] || `Col ${idx}`}:
+                    </span>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editValues[idx] || ''}
+                        onChange={e => handleChangeField(idx, e.target.value)}
+                        className="ml-2 flex-1 bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm"
+                      />
+                    ) : (
+                      <span className="ml-2 break-words">{row[idx] || '—'}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
@@ -206,7 +220,7 @@ export default function PropertyDetailPage() {
           )}
         </div>
 
-        {/* Botões de ação */}
+        {/* Botões */}
         <div className="mt-6 flex justify-end space-x-2">
           <button
             onClick={() => router.back()}
