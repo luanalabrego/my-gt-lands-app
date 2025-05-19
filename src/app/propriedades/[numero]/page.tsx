@@ -23,23 +23,7 @@ export default function PropertyDetailPage() {
   const saleDateIdx   = 34
   const photoIdx      = 33
 
-  // exibir colunas B (idx 1) até AE (idx 30)
-  const displayStart = 1
-  const displayEnd   = 30
-  const displayIndices = Array.from(
-    { length: displayEnd - displayStart + 1 },
-    (_, i) => i + displayStart
-  )
-
-  // Seções desejadas
-  const sections = [
-    { title: t('sectionTamanho'),          indices: [8, 9, 12]            },
-    { title: t('sectionInfoPropriedade'),   indices: [1,5,6,7,10,11,21]    },
-    { title: t('sectionHOA'),               indices: [28]                  },
-    { title: t('sectionServicos'),          indices: [14,16,18]            },
-    { title: t('sectionCoordenadas'),       indices: [24]                  },
-  ]
-
+  // carrega dados
   useEffect(() => {
     if (!numero) return
     ;(async () => {
@@ -47,15 +31,12 @@ export default function PropertyDetailPage() {
         const res = await fetch('/api/propriedades', { cache: 'no-store' })
         const body = (await res.json()) as { ok: boolean; rows?: PropertyRow[] }
         if (!body.ok) return
-
         const allRows = body.rows || []
         if (!allRows.length) return
-
         setHeaders(allRows[0])
         const content = allRows.slice(1)
         const found = content.find(r => r[2] === numero) || null
         setRow(found)
-
         if (found) {
           setPreviewUrl(found[photoIdx])
           const initial: Record<number, string> = {}
@@ -74,9 +55,7 @@ export default function PropertyDetailPage() {
 
   const saleDateRaw = (row[saleDateIdx] || '').trim()
   const isSold      = Boolean(saleDateRaw)
-  const statusLabel = isSold
-    ? t('statusVendido')
-    : t('statusDisponivel')
+  const statusLabel = isSold ? t('statusVendido') : t('statusDisponível')
 
   const handleChangeField = (i: number, v: string) =>
     setEditValues(prev => ({ ...prev, [i]: v }))
@@ -104,7 +83,6 @@ export default function PropertyDetailPage() {
       row[photoIdx] = bodyFoto.url
       setPreviewUrl(bodyFoto.url)
     }
-
     const res = await fetch('/api/propriedades/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -147,14 +125,38 @@ export default function PropertyDetailPage() {
     win.onload = () => { win.print(); win.close() }
   }
 
+  // Definição de seções
+  const sections = [
+    {
+      title: t('sectionPropertyInfo'),
+      indices: [1, 5, 6, 7, 21] // comprado em, endereço, condado, estado, descrição
+    },
+    {
+      title: t('sectionSize'),
+      indices: [8, 9] // SQFT, Acres
+    },
+    {
+      title: t('sectionZoning'),
+      indices: [10, 11] // Zoning Code, Zoning Type
+    },
+    {
+      title: t('sectionUtilities'),
+      indices: [14, 16, 18] // Água, Eletricidade, Esgoto
+    },
+    {
+      title: t('sectionHOA'),
+      indices: [28] // HOA
+    }
+  ]
+
   return (
     <div className="min-h-screen bg-[#1F1F1F] px-4 py-6">
       <div
         ref={cardRef}
-        className="relative bg-[#2C2C2C] rounded-2xl p-6 shadow-lg max-w-4xl mx-auto flex flex-col"
+        className="relative bg-[#2C2C2C] rounded-2xl p-6 shadow-lg max-w-3xl mx-auto flex flex-col"
       >
         {/* Título e status */}
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#D4AF37] border-b border-[#D4AF37] pb-2 mb-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#D4AF37] border-b border-[#D4AF37] pb-2 mb-6">
           {t('property')} #{numero}
         </h1>
         <span
@@ -165,12 +167,14 @@ export default function PropertyDetailPage() {
           {statusLabel}
         </span>
 
-        {/* Seções de campos */}
-        <div className="mt-6 space-y-8 text-white">
+        {/* Seções agrupadas */}
+        <div className="space-y-8">
           {sections.map(({ title, indices }) => (
-            <div key={title}>
-              <h2 className="text-lg font-semibold mb-2">{title}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+            <section key={title}>
+              <h2 className="text-lg font-semibold text-white border-b border-gray-600 pb-1 mb-4">
+                {title}
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-white">
                 {indices.map(idx => (
                   <div key={idx} className="flex">
                     <span className="w-40 font-medium text-gray-300">
@@ -189,12 +193,12 @@ export default function PropertyDetailPage() {
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
           ))}
         </div>
 
-        {/* Imagem / Ações */}
-        <div className="mt-6 flex flex-col items-end">
+        {/* Imagem e ações */}
+        <div className="mt-8 flex flex-col items-end">
           {previewUrl && (
             <img
               src={previewUrl}
@@ -220,7 +224,7 @@ export default function PropertyDetailPage() {
           )}
         </div>
 
-        {/* Botões */}
+        {/* Botões de ação */}
         <div className="mt-6 flex justify-end space-x-2">
           <button
             onClick={() => router.back()}

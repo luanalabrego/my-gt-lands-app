@@ -119,7 +119,22 @@
   "financeHeading": "Financials",
   "totalProfit": "Total Profit",
   "avgROI": "Average ROI",
-  "parcelLabel": "Parcel"
+  "parcelLabel": "Parcel",
+  "sectionPropertyInfo": "Property Information",
+  "sectionSize": "Size",
+  "sectionZoning": "Zoning",
+  "sectionUtilities": "Utilities",
+  "sectionHOA": "HOA Information",
+  "property": "Property",
+  "loading": "Loading",
+  "statusVendido": "Sold",
+  "statusDisponivel": "Available",
+  "photoAlt": "Property photo",
+  "back": "Back",
+  "print": "Print",
+  "save": "Save",
+  "cancel": "Cancel",
+  "edit": "Edit"
 
 
 }

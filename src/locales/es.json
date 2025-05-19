@@ -119,7 +119,22 @@
   "financeHeading": "Finanzas",
   "totalProfit": "Beneficio Total",
   "avgROI": "ROI Medio",
-  "parcelLabel": "Parcel"
+  "parcelLabel": "Parcel",
+  "sectionPropertyInfo": "Información de la Propiedad",
+  "sectionSize": "Tamaño",
+  "sectionZoning": "Zonificación",
+  "sectionUtilities": "Servicios Públicos",
+  "sectionHOA": "Asociación de Propietarios (HOA)",
+  "property": "Propiedad",
+  "loading": "Cargando",
+  "statusVendido": "Vendido",
+  "statusDisponivel": "Disponible",
+  "photoAlt": "Foto de la propiedad",
+  "back": "Atrás",
+  "print": "Imprimir",
+  "save": "Guardar",
+  "cancel": "Cancelar",
+  "edit": "Editar"
 
 
 }
