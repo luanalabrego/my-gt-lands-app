@@ -131,35 +131,32 @@ export default function PropertyDetailPage() {
 const sections = [
   {
     title: t('sectionPropertyInfo'),       // Parcel, Endereço, Condado, Estado
-    indices: [ 4, 5,6,7,21],
+    indices: [ 4, 5,6,7,24,21],
   },
   {
     title: t('sectionSize'),               // Square Feet, Acres, Medidas do Lote, Minimum Lot Area
-    indices: [6, 7, 10, 21],
+    indices: [8, 9, 12, 23],
   },
   {
     title: t('sectionZoning'),             // Zoning Code, Zoning type, Notes Zone
-    indices: [8, 9, 20],
+    indices: [10, 11, 22],
   },
   {
     title: t('sectionTax'),                // Property Tax
-    indices: [11],
+    indices: [13],
   },
   {
     title: t('sectionUtilities'),          // Água, Descrição Água, Luz, Descrição Luz, Esgoto, Descrição Esgoto
-    indices: [12, 13, 14, 15, 16, 17],
+    indices: [14, 15, 16, 17, 18, 19],
   },
   {
     title: t('sectionFlood'),              // Flood Zone
-    indices: [18],
+    indices: [20],
   },
-  {
-    title: t('sectionLocation'),           // Coordinates, Legal Description
-    indices: [22, 23],
-  },
+  
   {
     title: t('sectionHOA'),                // HOA, Nome do HOA, Valor (Hoa), Período (Hoa), Notas (Opcional)
-    indices: [24, 25, 26, 27, 28],
+    indices: [26, 27, 28, 29],
   },
 ];
 
