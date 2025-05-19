@@ -341,6 +341,7 @@ export default function PropriedadesPage() {
                 {[
                   t('boughtOn'),
                   t('nrLabel'),
+                  t('parcelLabel'),    // ← novo cabeçalho para Parcel
                   t('addressLabel'),
                   t('countyLabel'),
                   t('stateLabel'),

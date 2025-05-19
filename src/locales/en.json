@@ -41,6 +41,7 @@
   "property": "Property",
   "statusVendido": "Sold",
   "statusPendente": "Pending",
+  "statusDisponível": "Available",
   "photoUploadError": "Photo upload failed",
   "saveError": "Save failed",
 

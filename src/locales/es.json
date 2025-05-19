@@ -41,6 +41,7 @@
   "property": "Propiedad",
   "statusVendido": "Vendido",
   "statusPendente": "Pendiente",
+  "statusDisponível": "Disponible",
   "photoUploadError": "Error al subir foto",
   "saveError": "Error al guardar datos",
 
