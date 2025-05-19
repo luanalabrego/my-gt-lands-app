@@ -13,42 +13,35 @@
 @tailwind utilities;
 
 @media print {
-  /* 1. define A4 sem margens */
+  /* 1) Define A4 sem margens */
   @page {
     size: A4;
     margin: 0;
-    /* força a cor de fundo da página */
-    background: #1F1F1F;
   }
 
-  /* 2. remove qualquer espaço extra */
+  /* 2) Zera as margens de html e body */
   html, body {
-    height: 100%;
     margin: 0;
     padding: 0;
-    /* força impressão de cor de fundo */
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    background: #1F1F1F !important;
-    color: var(--foreground) !important;
   }
 
-  /* 3. mostra só o que está dentro do print-container */
+  /* 3) Mostra só o seu container de print */
   body * {
     visibility: hidden !important;
   }
-  .print-container, .print-container * {
+  .print-container,
+  .print-container * {
     visibility: visible !important;
   }
 
-  /* 4. garante que o seu cartão preencha toda a página */
+  /* 4) Faz seu card ocupar 100% da folha */
   .print-container {
     position: absolute !important;
     top: 0;
     left: 0;
-    width: 100%;
-    min-height: 100%;
-    background: #1F1F1F !important;
+    width: 100% !important;
+    min-height: 100% !important;
+    background: var(--background) !important;
     box-shadow: none !important;
     border-radius: 0 !important;
   }
