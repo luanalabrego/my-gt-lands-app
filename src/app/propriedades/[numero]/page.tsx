@@ -105,25 +105,47 @@ export default function PropertyDetailPage() {
   }
 
   const printCard = () => {
-    if (!cardRef.current) return
-    const clone = cardRef.current.cloneNode(true) as HTMLElement
-    stripClasses(clone)
+    if (!cardRef.current) return;
+    // clona só o conteúdo que queremos imprimir
+    const clone = cardRef.current.cloneNode(true) as HTMLElement;
+  
+    // abre a janela de print
+    const win = window.open('', '_blank', 'width=800,height=600');
+    if (!win) return;
+  
+    // monta o HTML incluindo TODO head atual
+    const head = document.head.innerHTML;
     const html = `
-      <html><head><title>${t('print')}</title>
-        <style>@media print {
-          body * { visibility: hidden !important; }
-          #to-print, #to-print * { visibility: visible !important; }
-          #to-print { position: absolute; top:0; left:0; }
-        }</style>
-      </head><body style="margin:0;padding:0;">
-        <div id="to-print">${clone.outerHTML}</div>
-      </body></html>`
-    const win = window.open('', '_blank', 'width=800,height=600')
-    if (!win) return
-    win.document.write(html)
-    win.document.close()
-    win.onload = () => { win.print(); win.close() }
-  }
+      <!doctype html>
+      <html>
+        <head>
+          ${head}
+          <style>
+            /* ajustes específicos para print */
+            @page { margin: 10mm; }
+            body { margin:0; padding:0; }
+            #to-print { position: absolute; top:0; left:0; width:100%; }
+            /* remova cantos arredondados e sombras */
+            #to-print { border-radius: 0 !important; box-shadow: none !important; background: white !important; }
+          </style>
+        </head>
+        <body>
+          <div id="to-print">${clone.outerHTML}</div>
+        </body>
+      </html>`;
+  
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+  
+    // aguarda carregar CSS
+    win.onload = () => {
+      win.focus();
+      win.print();
+      win.close();
+    };
+  };
+  
 
   // Definição de seções
   // dentro do seu componente
