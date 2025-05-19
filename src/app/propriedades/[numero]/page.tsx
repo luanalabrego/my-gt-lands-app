@@ -211,42 +211,7 @@ const sections = [
     </section>
   ))}
 </div>
-{/* Card de Venda e Condições */}
-<div className="bg-gray-800 p-4 rounded-xl shadow-lg space-y-6 mb-8">
-  {/* Valor da Venda */}
-  <section>
-    <h2 className="text-lg font-bold text-[#D4AF37] border-b border-gray-600 border-l-4 border-[#D4AF37] pl-4 mb-4">
-      {t('sectionSaleValue')}
-    </h2>
-    <div className="flex items-start space-x-2 text-white">
-      <span className="font-medium text-gray-300 flex-shrink-0 whitespace-nowrap">
-        {headers[50]}:
-      </span>
-      <span className="break-words">
-        {row[50] || '—'}
-      </span>
-    </div>
-  </section>
 
-  {/* Condições de Pagamento */}
-  <section>
-    <h2 className="text-lg font-bold text-[#D4AF37] border-b border-gray-600 border-l-4 border-[#D4AF37] pl-4 mb-4">
-      {t('sectionPaymentTerms')}
-    </h2>
-    <div className="flex flex-wrap gap-x-6 gap-y-2 text-white">
-      {[56, 57, 58].map(idx => (
-        <div key={idx} className="flex items-start space-x-1">
-          <span className="font-medium text-gray-300 flex-shrink-0 whitespace-nowrap">
-            {headers[idx]}:
-          </span>
-          <span className="break-words">
-            {row[idx] || '—'}
-          </span>
-        </div>
-      ))}
-    </div>
-  </section>
-</div>
 
         {/* Imagem e ações */}
         <div className="mt-8 flex flex-col items-end">
@@ -274,6 +239,44 @@ const sections = [
             />
           )}
         </div>
+
+        {/* Venda da Propriedade & Condições de Pagamento */}
+<div className="bg-black rounded-2xl p-6 shadow-lg mt-8">
+  {/* Venda da Propriedade */}
+  <section>
+    <h2 className="text-lg font-semibold text-white border-b border-gray-600 pb-1 mb-4">
+      {t('sectionSaleValue')}
+    </h2>
+    <div className="flex items-start space-x-2 text-white">
+      <span className="font-medium text-gray-300 whitespace-nowrap">
+        {headers[50]}:
+      </span>
+      <span className="break-words">
+        {row[50] || '—'}
+      </span>
+    </div>
+  </section>
+
+  {/* Condições de Pagamento */}
+  <section className="mt-6">
+    <h2 className="text-lg font-semibold text-white border-b border-gray-600 pb-1 mb-4">
+      {t('sectionPaymentTerms')}
+    </h2>
+    <div className="flex flex-wrap gap-x-6 gap-y-2 text-white">
+      {[56, 57, 58].map(idx => (
+        <div key={idx} className="flex items-start space-x-1">
+          <span className="font-medium text-gray-300 whitespace-nowrap">
+            {headers[idx]}:
+          </span>
+          <span className="break-words">
+            {row[idx] || '—'}
+          </span>
+        </div>
+      ))}
+    </div>
+  </section>
+</div>
+
 
         {/* Botões de ação */}
         <div className="mt-6 flex justify-end space-x-2">
