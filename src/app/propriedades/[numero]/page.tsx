@@ -186,10 +186,10 @@ const sections = [
         {title}
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-4 gap-y-2 text-white">
-        {indices.map(idx => (
-          <div key={idx} className="flex items-center space-x-1">
-            <span className="w-24 font-medium text-gray-300">
+      <div className="flex flex-wrap gap-x-6 gap-y-4 text-white">
+                {indices.map(idx => (
+                  <div key={idx} className="flex items-start space-x-1 min-w-[150px]">
+                                <span className="w-24 font-medium text-gray-300">
               {headers[idx] || `Col ${idx}`}:
             </span>
 
@@ -201,7 +201,7 @@ const sections = [
                 className="bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm"
               />
             ) : (
-              <span className="text-white">{row[idx] || '—'}</span>
+<span className="text-white">{row[idx] || '—'}</span>
             )}
           </div>
         ))}
