@@ -179,34 +179,37 @@ const sections = [
         </span>
 
         {/* Seções agrupadas */}
-        <div className="space-y-8">
-          {sections.map(({ title, indices }) => (
-            <section key={title}>
-              <h2 className="text-lg font-semibold text-white border-b border-gray-600 pb-1 mb-4">
-                {title}
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-white">
-                {indices.map(idx => (
-                  <div key={idx} className="flex">
-                    <span className="w-40 font-medium text-gray-300">
-                      {headers[idx] || `Col ${idx}`}:
-                    </span>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editValues[idx] || ''}
-                        onChange={e => handleChangeField(idx, e.target.value)}
-                        className="ml-2 flex-1 bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm"
-                      />
-                    ) : (
-                      <span className="ml-2 break-words">{row[idx] || '—'}</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+<div className="space-y-8">
+  {sections.map(({ title, indices }) => (
+    <section key={title}>
+      <h2 className="text-lg font-semibold text-white border-b border-gray-600 pb-1 mb-4">
+        {title}
+      </h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-4 gap-y-2 text-white">
+        {indices.map(idx => (
+          <div key={idx} className="flex items-center space-x-1">
+            <span className="w-24 font-medium text-gray-300">
+              {headers[idx] || `Col ${idx}`}:
+            </span>
+
+            {isEditing ? (
+              <input
+                type="text"
+                value={editValues[idx] || ''}
+                onChange={e => handleChangeField(idx, e.target.value)}
+                className="bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm"
+              />
+            ) : (
+              <span className="text-white">{row[idx] || '—'}</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  ))}
+</div>
+
 
         {/* Imagem e ações */}
         <div className="mt-8 flex flex-col items-end">
