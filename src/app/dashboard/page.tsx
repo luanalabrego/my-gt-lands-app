@@ -18,36 +18,21 @@ function parseBRDate(s: string): Date {
 
 export default function DashboardPage() {
   const { t } = useTranslation()
-
   const [rows, setRows] = useState<PropertyRow[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    console.log('[DashboardPage] iniciando fetch de /api/propriedades')
     ;(async () => {
       try {
         const res = await fetch('/api/propriedades', { cache: 'no-store' })
-        console.log('[DashboardPage] status da resposta:', res.status)
-        const body = (await res.json()) as {
-          ok: boolean
-          rows?: PropertyRow[]
-          error?: string
-          message?: string
-        }
-        console.log('[DashboardPage] body recebido:', body)
-
-        if (!body.ok) {
-          console.error('[DashboardPage] API retornou erro:', body.error, body.message)
-          setLoading(false)
-          return
-        }
+        const body = (await res.json()) as { ok: boolean; rows?: PropertyRow[] }
+        if (!body.ok) return setLoading(false)
 
         const all = body.rows || []
         const content = all.length > 1 ? all.slice(1) : []
         const filtered = content.filter(r => r[2]?.toString().trim() !== '')
         setRows(filtered)
-      } catch (err) {
-        console.error('[DashboardPage] falha no fetch:', err)
+      } catch {
       } finally {
         setLoading(false)
       }
@@ -62,29 +47,26 @@ export default function DashboardPage() {
     )
   }
 
-  // --- cálculos básicos ---
   const total = rows.length
   const soldRows = rows.filter(r => Boolean(r[34]?.toString().trim()))   // coluna AI: data de venda
   const pendingRows = rows.filter(r => !r[34]?.toString().trim())
 
-  // 1) Tempo médio em estoque para pendentes (hoje - data compra em B=idx1)
+  // aging pendentes (hoje - data compra em B=idx1)
   const today = new Date()
+  const msInDay = 1000 * 60 * 60 * 24
   const daysInStock = pendingRows
     .map(r => {
-      const rawBuy = r[1]  // coluna B
-      const buyDate = parseBRDate(rawBuy)
-      if (isNaN(buyDate.getTime())) {
-        console.warn('[DashboardPage] data de compra inválida:', rawBuy)
-        return null
-      }
-      return (today.getTime() - buyDate.getTime()) / (1000 * 60 * 60 * 24)
+      const buyDate = parseBRDate(r[1] || '')
+      return isNaN(buyDate.getTime())
+        ? null
+        : (today.getTime() - buyDate.getTime()) / msInDay
     })
     .filter((d): d is number => d !== null)
   const avgDays = daysInStock.length
     ? Math.round(daysInStock.reduce((a, b) => a + b, 0) / daysInStock.length)
     : 0
 
-  // 2) Valores totais
+  // valores totais
   const totalValue = pendingRows.reduce((sum, r) => {
     const v = parseFloat(r[48]?.toString().replace(/[^0-9.-]+/g, '')) || 0
     return sum + v
@@ -94,43 +76,31 @@ export default function DashboardPage() {
     return sum + v
   }, 0)
 
-  // 3) Tempo médio de venda: (data de venda AI=idx34) – (data compra B=idx1)
-  const soldDays = soldRows
-    .map(r => {
-      const rawBuy  = r[1]
-      const rawSell = r[34]
-      console.log('[DashboardPage] compra:', rawBuy, '| venda:', rawSell)
-      const buyDate  = parseBRDate(rawBuy)
-      const sellDate = parseBRDate(rawSell)
-      if (isNaN(buyDate.getTime()) || isNaN(sellDate.getTime())) {
-        console.warn('[DashboardPage] data inválida:', rawBuy, rawSell)
-        return null
-      }
-      return (sellDate.getTime() - buyDate.getTime()) / (1000 * 60 * 60 * 24)
-    })
-    .filter((d): d is number => d !== null)
-  const avgSoldAging = soldDays.length
-    ? Math.round(soldDays.reduce((a, b) => a + b, 0) / soldDays.length)
+  // aging propriedades vendidas (coluna AG = idx32)
+  const soldAgingValues = soldRows
+    .map(r => parseFloat(r[32]?.toString().replace(/[^0-9.-]+/g, '')))
+    .filter(v => !isNaN(v))
+  const avgSoldAging = soldAgingValues.length
+    ? Math.round(soldAgingValues.reduce((a, b) => a + b, 0) / soldAgingValues.length)
     : 0
 
-  // 4) Média do aging de mercado (coluna AP = idx41)
+  // média do aging de mercado (coluna AP = idx41)
   const marketAgingValues = rows
-    .map(r => parseFloat(r[41]?.toString().replace(/[^0-9.-]+/g, '')) || NaN)
+    .map(r => parseFloat(r[41]?.toString().replace(/[^0-9.-]+/g, '')))
     .filter(v => !isNaN(v))
   const avgMarketAging = marketAgingValues.length
     ? Math.round(marketAgingValues.reduce((a, b) => a + b, 0) / marketAgingValues.length)
     : 0
 
-  // --- montagem dos cards ---
   const cards = [
-    { key: 'totalProps',       value: total },
-    { key: 'soldProps',        value: soldRows.length },
-    { key: 'pendingProps',     value: pendingRows.length },
-    { key: 'avgStockTime',     value: `${avgDays} ${t('days')}` },
-    { key: 'avgSoldTime',      value: `${avgSoldAging} ${t('days')}` },
-    { key: 'avgMarketAging',   value: `${avgMarketAging} ${t('days')}` },
-    { key: 'totalInStock',     value: `U$ ${totalValue.toLocaleString()}` },
-    { key: 'totalToReceive',   value: `U$ ${totalReceive.toLocaleString()}` },
+    { key: 'totalProps',     value: total },
+    { key: 'soldProps',      value: soldRows.length },
+    { key: 'pendingProps',   value: pendingRows.length },
+    { key: 'avgStockTime',   value: `${avgDays} ${t('days')}` },
+    { key: 'avgSoldTime',    value: `${avgSoldAging} ${t('days')}` },
+    { key: 'avgMarketAging', value: `${avgMarketAging} ${t('days')}` },
+    { key: 'totalInStock',   value: `U$ ${totalValue.toLocaleString()}` },
+    { key: 'totalToReceive', value: `U$ ${totalReceive.toLocaleString()}` },
   ]
 
   return (
