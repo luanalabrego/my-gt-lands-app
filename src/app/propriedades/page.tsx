@@ -25,7 +25,7 @@ export default function PropriedadesPage() {
   const [searchTerm, setSearchTerm]         = useState('')
   const [selectedState, setSelectedState]   = useState('')
   const [selectedCounty, setSelectedCounty] = useState('')
-  const [statusFilter, setStatusFilter]     = useState<'all' | 'sold' | 'pending'>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'sold' | 'pending' | 'available'>('all')
   const [dateFrom, setDateFrom]             = useState('')
   const [dateTo, setDateTo]                 = useState('')
 
@@ -88,6 +88,7 @@ export default function PropriedadesPage() {
     if (selectedCounty && county !== selectedCounty) return false
     if (statusFilter === 'sold' && !sold) return false
     if (statusFilter === 'pending' && sold) return false
+    if (statusFilter === 'available' && sold)   return false
 
     if (dateFrom) {
       const from = new Date(dateFrom)
