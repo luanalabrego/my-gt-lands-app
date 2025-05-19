@@ -148,6 +148,9 @@
   "sectionPaymentTerms": "Condições de Pagamento",
   "filter": "Filtro",
   "available": "Disponível",
-  "printAll": "Imprimir tudo"
+  "printAll": "Imprimir tudo",
+  "sectionPurchaseInfo": "Informações da Compra",
+  "sectionSaleInfo": "Informações da Venda",
+  "sectionFinancial": "Dados Financeiros"
 
 }
