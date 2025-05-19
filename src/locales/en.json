@@ -143,7 +143,9 @@
   "sectionFlood": "Flood Zone",
   "sectionPropertyDescription": "Property Description",
   "sectionLocation": "Legal Location",
-  "sectionHOA": "HOA Information"
+  "sectionHOA": "HOA Information",
+  "sectionSaleValue": "Sale Value",
+  "sectionPaymentTerms": "Payment Terms"
 
 
 }

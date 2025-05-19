@@ -143,6 +143,8 @@
   "sectionFlood": "Zona de Inundação",
   "sectionPropertyDescription": "Descrição do Imóvel",
   "sectionLocation": "Localização Legal",
-  "sectionHOA": "Condomínio (HOA)"
+  "sectionHOA": "Condomínio (HOA)",
+  "sectionSaleValue": "Venda da Propriedade",
+  "sectionPaymentTerms": "Condições de Pagamento"
 
 }
