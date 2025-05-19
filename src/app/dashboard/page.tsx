@@ -12,34 +12,14 @@ type ApiResponse = {
   message?: string
 }
 
-// Helpers para parse de datas US e BR
+// --- date parsers ---
 function parseUS(dateStr: string): Date {
   const [m, d, y] = dateStr.split(/[\/\-]/)
-  return new Date(Number(y), Number(m) - 1, Number(d))
+  return new Date(+y, +m - 1, +d)
 }
 function parseBR(dateStr: string): Date {
   const [d, m, y] = dateStr.split('/')
-  return new Date(Number(y), Number(m) - 1, Number(d))
-}
-
-// Seção com título em dourado e sem underline
-function Section({
-  title,
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="mb-12">
-      <h2 className="text-xl sm:text-2xl font-semibold mb-6 text-gold">
-        {title}
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {children}
-      </div>
-    </div>
-  )
+  return new Date(+y, +m - 1, +d)
 }
 
 export default function DashboardPage() {
@@ -52,21 +32,16 @@ export default function DashboardPage() {
       try {
         const res = await fetch('/api/propriedades', { cache: 'no-store' })
         const body = (await res.json()) as ApiResponse
-
         if (!body.ok) {
-          console.error(
-            '[DashboardPage] API retornou erro:',
-            body.error ?? body.message
-          )
+          console.error('[DashboardPage] API error:', body.error ?? body.message)
           setLoading(false)
           return
         }
-
-        const all = body.rows || []
+        const all     = body.rows || []
         const content = all.length > 1 ? all.slice(1) : []
-        setRows(content.filter((r) => r[2]?.toString().trim() !== ''))
+        setRows(content.filter(r => r[2]?.toString().trim() !== ''))
       } catch (err) {
-        console.error('[DashboardPage] falha no fetch:', err)
+        console.error('[DashboardPage] fetch failed:', err)
       } finally {
         setLoading(false)
       }
@@ -75,59 +50,57 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1F1F1F] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-gray-dark text-white flex items-center justify-center">
         {t('loading')}
       </div>
     )
   }
 
-  // Cálculos principais
+  // --- filters & basic calcs ---
   const total       = rows.length
-  const soldRows    = rows.filter((r) => Boolean(r[34]?.toString().trim()))
-  const pendingRows = rows.filter((r) => !r[34]?.toString().trim())
+  const soldRows    = rows.filter(r => Boolean(r[34]?.toString().trim()))
+  const pendingRows = rows.filter(r => !r[34]?.toString().trim())
 
-  // 1) Média de dias em estoque (pendentes)
+  // avg stock time (pending)
   const daysInStock = pendingRows
-    .map((r) => {
-      const str = r[1]?.toString().trim()
-      if (!str) return NaN
-      const dt = parseUS(str)
+    .map(r => {
+      const s = r[1]?.toString().trim()
+      if (!s) return NaN
+      const dt = parseUS(s)
       return isNaN(dt.getTime())
         ? NaN
         : (Date.now() - dt.getTime()) / (1000 * 60 * 60 * 24)
     })
-    .filter((v) => !isNaN(v))
+    .filter(v => !isNaN(v))
   const avgStockTime = daysInStock.length
     ? Math.round(daysInStock.reduce((a, b) => a + b, 0) / daysInStock.length)
     : 0
 
-  // 2) Tempo médio de venda (compra US x venda BR)
+  // avg sold time
   const soldDurations = soldRows
-    .map((r) => {
-      const buyStr  = r[1]?.toString().trim()
-      const sellStr = r[34]?.toString().trim()
-      if (!buyStr || !sellStr) return NaN
-      const buy  = parseUS(buyStr)
-      const sell = parseBR(sellStr)
-      if (isNaN(buy.getTime()) || isNaN(sell.getTime())) return NaN
-      return (sell.getTime() - buy.getTime()) / (1000 * 60 * 60 * 24)
+    .map(r => {
+      const buy  = r[1]?.toString().trim()
+      const sell = r[34]?.toString().trim()
+      if (!buy || !sell) return NaN
+      const d1 = parseUS(buy)
+      const d2 = parseBR(sell)
+      if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return NaN
+      return (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)
     })
-    .filter((v) => !isNaN(v))
+    .filter(v => !isNaN(v))
   const avgSoldTime = soldDurations.length
     ? Math.round(soldDurations.reduce((a, b) => a + b, 0) / soldDurations.length)
     : 0
 
-  // 3) Média de aging de mercado (coluna AP índice 41)
+  // avg market aging
   const marketAgingVals = rows
-    .map((r) => parseFloat(r[41]?.toString().replace(',', '.')) || 0)
-    .filter((v) => v > 0)
+    .map(r => parseFloat(r[41]?.toString().replace(',', '.')) || 0)
+    .filter(v => v > 0)
   const avgMarketAging = marketAgingVals.length
-    ? Math.round(
-        marketAgingVals.reduce((a, b) => a + b, 0) / marketAgingVals.length
-      )
+    ? Math.round(marketAgingVals.reduce((a, b) => a + b, 0) / marketAgingVals.length)
     : 0
 
-  // 4) Valores monetários
+  // financials
   const totalInStock   = pendingRows.reduce((sum, r) => {
     const v = parseFloat(r[48]?.toString().replace(/[^0-9.-]+/g, '')) || 0
     return sum + v
@@ -136,22 +109,18 @@ export default function DashboardPage() {
     const v = parseFloat(r[48]?.toString().replace(/[^0-9.-]+/g, '')) || 0
     return sum + v
   }, 0)
-
-  // 5) Lucro total (coluna AZ índice 51)
-  const totalProfit = soldRows.reduce((sum, r) => {
+  const totalProfit    = soldRows.reduce((sum, r) => {
     const v = parseFloat(r[51]?.toString().replace(/[^0-9.-]+/g, '')) || 0
     return sum + v
   }, 0)
-
-  // 6) ROI médio (coluna BA índice 52)
   const roiVals = soldRows
-    .map((r) => parseFloat(r[52]?.toString().replace(',', '.')) || 0)
-    .filter((v) => !isNaN(v))
+    .map(r => parseFloat(r[52]?.toString().replace(',', '.')) || 0)
+    .filter(v => !isNaN(v))
   const avgROI = roiVals.length
     ? Math.round(roiVals.reduce((a, b) => a + b, 0) / roiVals.length)
     : 0
 
-  // Definição dos cards e categorias
+  // cards data
   const cards = [
     { key: 'totalProps',     value: total },
     { key: 'soldProps',      value: soldRows.length },
@@ -164,62 +133,70 @@ export default function DashboardPage() {
     { key: 'totalProfit',    value: `U$ ${totalProfit.toLocaleString()}` },
     { key: 'avgROI',         value: `${avgROI}%` },
   ]
-  const overviewKeys = ['totalProps', 'soldProps', 'pendingProps']
-  const timeKeys     = ['avgMarketAging', 'avgSoldTime', 'avgStockTime']
-  const financeKeys  = ['totalInStock', 'totalToReceive', 'totalProfit', 'avgROI']
 
-  // Função para renderizar cada card
-  const renderCard = ({
-    key,
-    value,
-  }: {
-    key: string
-    value: string | number
-  }) => {
-    const compact = overviewKeys.includes(key)
-    return (
-      <div
-        key={key}
-        className={`
-          bg-[#2C2C2C] rounded-2xl shadow-lg flex flex-col justify-between
-          ${compact ? 'p-3 sm:p-4' : 'p-4 sm:p-6'}
-        `}
-      >
-        <span className="text-sm sm:text-base text-gray-300 mb-2">
-          {t(key)}
-        </span>
-        <span className="text-2xl sm:text-3xl font-bold text-gold">
-          {value}
-        </span>
-      </div>
-    )
-  }
+  const overviewKeys = ['totalProps','soldProps','pendingProps']
+  const timeKeys     = ['avgMarketAging','avgSoldTime','avgStockTime']
+  const financeKeys  = ['totalInStock','totalToReceive','totalProfit','avgROI']
+
+  const renderCard = ({ key, value }: { key: string; value: string|number }) => (
+    <div
+      key={key}
+      className={`
+        bg-[#2C2C2C] rounded-2xl shadow-lg
+        p-4 flex flex-col justify-between
+      `}
+    >
+      <span className="text-sm text-gray-300 mb-2">{t(key)}</span>
+      <span className="text-2xl font-bold text-gold">{value}</span>
+    </div>
+  )
 
   return (
-    <div className="min-h-screen bg-[#1F1F1F] text-white px-4 py-6">
-      <h1 className="text-2xl sm:text-3xl font-semibold mb-8 text-gold">
+    <div className="min-h-screen bg-gray-dark text-white px-4 py-6">
+      <h1 className="text-2xl sm:text-3xl font-semibold mb-8">
         {t('greeting')}, Gustavo
       </h1>
 
-      <Section title={t('overviewHeading')}>
-        {cards.filter((c) => overviewKeys.includes(c.key)).map(renderCard)}
-      </Section>
+      {/* categorias lado a lado em desktop */}
+      <div className="flex flex-col space-y-12 md:flex-row md:space-y-0 md:space-x-8 mb-12">
+        {/* Visão Geral */}
+        <div className="flex-1">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-6 text-gold">
+            {t('overviewHeading')}
+          </h2>
+          <div className="flex flex-col space-y-4">
+            {cards.filter(c => overviewKeys.includes(c.key)).map(renderCard)}
+          </div>
+        </div>
 
-      <Section title={t('timeHeading')}>
-        {cards.filter((c) => timeKeys.includes(c.key)).map(renderCard)}
-      </Section>
+        {/* Desempenho de Tempo */}
+        <div className="flex-1">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-6 text-gold">
+            {t('timeHeading')}
+          </h2>
+          <div className="flex flex-col space-y-4">
+            {cards.filter(c => timeKeys.includes(c.key)).map(renderCard)}
+          </div>
+        </div>
 
-      <Section title={t('financeHeading')}>
-        {cards.filter((c) => financeKeys.includes(c.key)).map(renderCard)}
-      </Section>
+        {/* Financeiro */}
+        <div className="flex-1">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-6 text-gold">
+            {t('financeHeading')}
+          </h2>
+          <div className="flex flex-col space-y-4">
+            {cards.filter(c => financeKeys.includes(c.key)).map(renderCard)}
+          </div>
+        </div>
+      </div>
 
       {/* Pendências (vazio por enquanto) */}
-      <div className="mb-12">
+      <div>
         <h2 className="text-xl sm:text-2xl font-semibold mb-6 text-gold">
           {t('pendingHeading')}
         </h2>
-        <div className="bg-[#2C2C2C] rounded-2xl p-4 sm:p-6 shadow-lg">
-          {/* Conteúdo a definir */}
+        <div className="bg-[#2C2C2C] rounded-2xl p-4 shadow-lg">
+          {/* conteúdo a definir */}
         </div>
       </div>
     </div>
