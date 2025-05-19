@@ -135,89 +135,89 @@ export default function PropriedadesPage() {
       </div>
 
       {/* Contêiner de filtros completo */}
-      <div
-        className={`
-          ${showFilters ? 'flex flex-wrap gap-4 mb-6' : 'hidden'}
-          md:flex flex-wrap gap-4 mb-6
-        `}
-      >
-        {/* Busca */}
-        <input
-          type="text"
-          placeholder={t('placeholder')}
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          className="flex-1 min-w-[200px] px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-        />
+<div
+  className={`
+    ${showFilters ? 'flex flex-wrap gap-4 mb-6' : 'hidden'}
+    md:flex flex-wrap gap-4 mb-6
+  `}
+>
+  {/* Busca */}
+  <input
+    type="text"
+    placeholder={t('placeholder')}
+    value={searchTerm}
+    onChange={e => setSearchTerm(e.target.value)}
+    className="flex-1 min-w-[200px] px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
+  />
 
-        {/* Estado */}
-        <select
-          value={selectedState}
-          onChange={e => setSelectedState(e.target.value)}
-          className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-        >
-          <option value="">{t('allStates')}</option>
-          {states.map(s => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
+  {/* Estado */}
+  <select
+    value={selectedState}
+    onChange={e => setSelectedState(e.target.value)}
+    className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
+  >
+    <option value="">{t('allStates')}</option>
+    {states.map(s => (
+      <option key={s} value={s}>{s}</option>
+    ))}
+  </select>
 
-        {/* Condado */}
-        <select
-          value={selectedCounty}
-          onChange={e => setSelectedCounty(e.target.value)}
-          className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-        >
-          <option value="">{t('allCounties')}</option>
-          {counties.map(c => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
+  {/* Condado */}
+  <select
+    value={selectedCounty}
+    onChange={e => setSelectedCounty(e.target.value)}
+    className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
+  >
+    <option value="">{t('allCounties')}</option>
+    {counties.map(c => (
+      <option key={c} value={c}>{c}</option>
+    ))}
+  </select>
 
-        {/* Status */}
-        <select
-          value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value as any)}
-          className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-        >
-          <option value="all">{t('allStatus')}</option>
-          <option value="sold">{t('sold')}</option>
-          <option value="pending">{t('pending')}</option>
-        </select>
+  {/* Status */}
+  <select
+    value={statusFilter}
+    onChange={e => setStatusFilter(e.target.value as any)}
+    className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
+  >
+    <option value="all">{t('allStatus')}</option>
+    <option value="sold">{t('sold')}</option>
+    <option value="pending">{t('pending')}</option>
+  </select>
 
-        {/* DatePickers */}
-<div className="flex flex-col sm:flex-row sm:space-x-2 mb-4">
-  {/* De */}
-  <div className="w-28 sm:w-auto">
-    <DatePicker
-      selected={dateFromObj}
-      onChange={d => {
-        setDateFromObj(d)
-        setDateFrom(d ? d.toISOString().slice(0, 10) : '')
-      }}
-      placeholderText={t('fromDate')}
-      dateFormat="yyyy-MM-dd"
-      wrapperClassName="w-full"
-      className="w-full px-2 py-1 rounded-lg bg-black border border-gray-600 text-white text-xs sm:text-sm focus:outline-none focus:border-gold"
-    />
+  {/* DatePickers */}
+  <div className="flex flex-col sm:flex-row sm:space-x-2 mb-4">
+    {/* De */}
+    <div className="w-28 sm:w-auto">
+      <DatePicker
+        selected={dateFromObj}
+        onChange={d => {
+          setDateFromObj(d)
+          setDateFrom(d ? d.toISOString().slice(0, 10) : '')
+        }}
+        placeholderText={t('fromDate')}
+        dateFormat="yyyy-MM-dd"
+        wrapperClassName="w-full"
+        className="w-full px-2 py-1 rounded-lg bg-black border border-gray-600 text-white text-xs sm:text-sm focus:outline-none focus:border-gold"
+      />
+    </div>
+
+    {/* Até */}
+    <div className="w-28 sm:w-auto mt-2 sm:mt-0">
+      <DatePicker
+        selected={dateToObj}
+        onChange={d => {
+          setDateToObj(d)
+          setDateTo(d ? d.toISOString().slice(0, 10) : '')
+        }}
+        placeholderText={t('toDate')}
+        dateFormat="yyyy-MM-dd"
+        wrapperClassName="w-full"
+        className="w-full px-2 py-1 rounded-lg bg-black border border-gray-600 text-white text-xs sm:text-sm focus:outline-none focus:border-gold"
+      />
+    </div>
   </div>
-
-  {/* Até */}
-  <div className="w-28 sm:w-auto mt-2 sm:mt-0">
-    <DatePicker
-      selected={dateToObj}
-      onChange={d => {
-        setDateToObj(d)
-        setDateTo(d ? d.toISOString().slice(0, 10) : '')
-      }}
-      placeholderText={t('toDate')}
-      dateFormat="yyyy-MM-dd"
-      wrapperClassName="w-full"
-      className="w-full px-2 py-1 rounded-lg bg-black border border-gray-600 text-white text-xs sm:text-sm focus:outline-none focus:border-gold"
-    />
-  </div>
-</div>
-
+</div>  {/* ← fechamento do container de filtros */}
 
       {/* Botões de visualização */}
       <div className="flex mb-6 space-x-2">
