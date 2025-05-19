@@ -131,7 +131,7 @@ export default function PropertyDetailPage() {
 const sections = [
   {
     title: t('sectionPropertyInfo'),       // Parcel, Endereço, Condado, Estado
-    indices: [ 3, 4, 5, 19],
+    indices: [ 4, 5,6,7,21],
   },
   {
     title: t('sectionSize'),               // Square Feet, Acres, Medidas do Lote, Minimum Lot Area
