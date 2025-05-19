@@ -13,30 +13,29 @@
 }
 
 @media print {
-  /* 1) mantém A4 sem margens */
+  /* 1) página A4 sem margens */
   @page {
     size: A4;
     margin: 0;
   }
 
-  /* 2) zera margens/padding e força cores */
+  /* 2) força cores de fundo/texto */
   html, body {
-    margin: 0;
-    padding: 0;
-    width: 210mm;
-    height: 297mm;
+    margin: 0; padding: 0; height: 100%;
+    background: #1F1F1F !important;
+    color: var(--foreground) !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    background: #1F1F1F !important;
   }
 
-  /* 3) esconde tudo menos .print-container */
-  body * { visibility: hidden !important; }
-  .print-container,
-  .print-container * { visibility: visible !important; }
+  /* 3) esconde tudo por visibilidade */
+  body * {
+    visibility: hidden !important;
+  }
 
-  /* 4) faz o card ocupar 100% da página */
+  /* 4) mostra só o seu cartão e todo o seu conteúdo */
   .print-container {
+    visibility: visible !important;
     position: absolute !important;
     top: 0; left: 0;
     width: 100% !important;
@@ -44,15 +43,15 @@
     background: #1F1F1F !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-
-    /* Evita quebras internas */
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
+  }
+  .print-container * {
+    visibility: visible !important;
+    /* aqui opcionalmente você pode ajustar display se algum elemento ficar estranho:
+       display: initial !important; */
   }
 
-  /* 5) redimensiona todo o body para caber numa página */
-  body {
-    transform: scale(0.85);
-    transform-origin: top left;
+  /* 5) esconda botões, inputs, links etc com esta classe */
+  .print-hidden {
+    display: none !important;
   }
 }
