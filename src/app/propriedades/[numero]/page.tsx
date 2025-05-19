@@ -182,7 +182,7 @@ const sections = [
 <div className="space-y-8">
   {sections.map(({ title, indices }) => (
     <section key={title}>
-      <h2 className="text-lg font-semibold text-white border-b border-gray-600 pb-1 mb-4">
+      <h2 className="text-lg font-bold text-[#D4AF37] border-b border-gray-600 pl-2 mb-4">
         {title}
       </h2>
 
