@@ -194,36 +194,15 @@ export default function PropertyDetailPage() {
   // dentro do seu componente
 // defina as sessões com os índices corretos:
 const sections = [
-  {
-    title: t('sectionPropertyInfo'),       // Parcel, Endereço, Condado, Estado
-    indices: [ 4, 5,6,7,24,21],
-  },
-  {
-    title: t('sectionSize'),               // Square Feet, Acres, Medidas do Lote, Minimum Lot Area
-    indices: [8, 9, 12, 23],
-  },
-  {
-    title: t('sectionZoning'),             // Zoning Code, Zoning type, Notes Zone
-    indices: [10, 11, 22],
-  },
-  {
-    title: t('sectionTax'),                // Property Tax
-    indices: [13],
-  },
-  {
-    title: t('sectionUtilities'),          // Água, Descrição Água, Luz, Descrição Luz, Esgoto, Descrição Esgoto
-    indices: [14, 15, 16, 17, 18, 19],
-  },
-  {
-    title: t('sectionFlood'),              // Flood Zone
-    indices: [20],
-  },
-  
-  {
-    title: t('sectionHOA'),                // HOA, Nome do HOA, Valor (Hoa), Período (Hoa), Notas (Opcional)
-    indices: [26, 27, 28, 29],
-  },
+  { title: t('sectionPropertyInfo'), indices: [4, 5, 6, 7, 24, 21] },
+  { title: t('sectionSize'),           indices: [8, 9, 12, 23] },
+  { title: t('sectionZoning'),         indices: [10, 11, 22] },
+  { title: t('sectionUtilities'),      indices: [14, 15, 16, 17, 18, 19] },
+  { title: t('sectionFlood'),          indices: [20] },
+  { title: t('sectionHOA'),            indices: [26, 27, 28, 29] },
+  { title: t('sectionTax'),            indices: [13] },  // imposto anual por último
 ];
+
 
   return (
     <div className="min-h-screen bg-[#1F1F1F] px-4 py-6">
@@ -277,28 +256,26 @@ const sections = [
   ))}
 </div>
 
+{/* Imagem e ações */}
+<div className="mt-8 flex flex-col items-end">
+  {previewUrl && (
+    <img
+      src={previewUrl}
+      alt={t('photoAlt')}
+      className="w-full max-h-60 object-cover rounded-lg mb-4"
+    />
+  )}
+  {isEditing && (
+    <input
+      type="file"
+      accept="image/*"
+      onChange={handleFileChange}
+      className="mb-4 w-full sm:w-auto text-white text-sm"
+    />
+  )}
+</div>
 
-        {/* Imagem e ações */}
-        <div className="mt-8 flex flex-col items-end">
-          {previewUrl && (
-            <img
-              src={previewUrl}
-              alt={t('photoAlt')}
-              className="w-full max-h-60 object-cover rounded-lg mb-4"
-            />
-          )}
-          
-          {isEditing && (
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="mb-4 w-full sm:w-auto text-white text-sm"
-            />
-          )}
-        </div>
-
-        {/* Venda da Propriedade & Condições de Pagamento */}
+{/* Venda da Propriedade & Condições de Pagamento */}
 <div className="bg-black rounded-2xl p-6 shadow-lg mt-8">
   {/* Venda da Propriedade */}
   <section>
