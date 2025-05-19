@@ -64,11 +64,11 @@ export default function PropertyDetailPage() {
     if (!file) return;
 
     try {
-      // 1) Pego o signed URL + publicUrl
       const { uploadUrl, publicUrl } = await fetch(
-        `/api/propriedades/upload-url?filename=${encodeURIComponent(file.name)}`
-      ).then(r => r.json());
-      if (!uploadUrl) throw new Error('Não obteve signed URL');
+        `/api/propriedades/upload-url?filename=${encodeURIComponent(file.name)}` +
+        `&contentType=${encodeURIComponent(file.type)}`
+      ).then(res => res.json());
+      
 
       // 2) Envio direto ao bucket
       const putRes = await fetch(uploadUrl, {
