@@ -260,7 +260,7 @@ export default function PropriedadesPage() {
                 <div className="space-y-2">
                   {/* Número do pedido acima */}
                   <h2 className="text-xl font-bold text-white">
-                    <span className="text-gold">#{numero}</span>
+                  <span className="text-[#D4AF37]">#{numero}</span>
                   </h2>
 
                   {/* Endereço em linha separada + botão copiar */}

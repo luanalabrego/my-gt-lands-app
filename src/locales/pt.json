@@ -118,6 +118,7 @@
   "timeHeading": "Desempenho de Tempo",
   "financeHeading": "Financeiro",
   "totalProfit": "Lucro Total",
-  "avgROI": "ROI Médio"
+  "avgROI": "ROI Médio",
+  "parcelLabel": "Parcel"
 
 }

@@ -118,6 +118,8 @@
   "timeHeading": "Time Metrics",
   "financeHeading": "Financials",
   "totalProfit": "Total Profit",
-  "avgROI": "Average ROI"
+  "avgROI": "Average ROI",
+  "parcelLabel": "Parcel"
+
 
 }
