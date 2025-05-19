@@ -5,6 +5,14 @@ import { useTranslation } from '@/hooks/useTranslation'
 
 type PropertyRow = string[]
 
+// Tipo da resposta da API, agora com `error` e `message`
+type ApiResponse = {
+  ok: boolean
+  rows?: PropertyRow[]
+  error?: string
+  message?: string
+}
+
 // --- helpers de parse de datas ---
 function parseUS(dateStr: string): Date {
   const [m, d, y] = dateStr.split(/[\/\-]/)
@@ -24,13 +32,19 @@ export default function DashboardPage() {
     ;(async () => {
       try {
         const res = await fetch('/api/propriedades', { cache: 'no-store' })
-        const body = (await res.json()) as { ok: boolean; rows?: PropertyRow[] }
-        if (!body.ok) throw new Error(body.error || 'Erro na API')
-        const all = body.rows || []
+        const body = (await res.json()) as ApiResponse
+
+        if (!body.ok) {
+          console.error('[DashboardPage] API retornou erro:', body.error ?? body.message)
+          setLoading(false)
+          return
+        }
+
+        const all     = body.rows || []
         const content = all.length > 1 ? all.slice(1) : []
         setRows(content.filter(r => r[2]?.toString().trim() !== ''))
       } catch (err) {
-        console.error(err)
+        console.error('[DashboardPage] falha no fetch:', err)
       } finally {
         setLoading(false)
       }
@@ -46,7 +60,7 @@ export default function DashboardPage() {
   }
 
   // --- cálculos básicos ---
-  const total = rows.length
+  const total       = rows.length
   const soldRows    = rows.filter(r => Boolean(r[34]?.toString().trim()))
   const pendingRows = rows.filter(r => !r[34]?.toString().trim())
 
