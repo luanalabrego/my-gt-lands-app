@@ -118,16 +118,28 @@ export default function PropriedadesPage() {
           {t('properties')}
         </h1>
         <div className="flex space-x-2">
-        {/* Botão Imprimir Tudo */}
+    {/* Botão Imprimir Tudo */}
 <button
   onClick={async () => {
-    // 1) ativa o modo de impressão de detalhes completos
+    // 1) ativa o modo de detalhes para impressão
     setPrintMode(true)
-    // 2) espera o React renderizar o layout de detalhes
+    // 2) espera o React montar o container de detalhes
     await new Promise(res => setTimeout(res, 100))
-    // 3) dispara a impressão
+
+    // 3) aguarda todas as imagens dentro de .print-container carregarem
+    const imgs = Array.from(document.querySelectorAll('.print-container img'))
+    await Promise.all(
+      imgs.map(img =>
+        new Promise<void>(res => {
+          if ((img as HTMLImageElement).complete) return res()
+          img.addEventListener('load', () => res(), { once: true })
+        })
+      )
+    )
+
+    // 4) dispara a impressão
     window.print()
-    // 4) volta ao modo normal
+    // 5) volta ao modo normal
     setPrintMode(false)
   }}
   className="flex items-center gap-2 bg-[#2C2C2C] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#2C2C2C]/90 transition"
@@ -135,8 +147,9 @@ export default function PropriedadesPage() {
 >
   <Printer size={16} />
   {t('printAll')}
+</button>
 
-          </button>
+
           {/* Botão Nova Propriedade */}
           <Link
             href="/propriedades/new"
