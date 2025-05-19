@@ -1,12 +1,20 @@
 // src/app/api/propriedades/upload-foto/route.ts
 
 import { NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
+import { Storage } from '@google-cloud/storage'
 import { google } from 'googleapis'
 
 export const runtime = 'nodejs'
 export const config = { api: { bodyParser: false } }
+
+const storage = new Storage({
+  credentials: {
+    client_email: process.env.GOOGLE_CLIENT_EMAIL!,
+    private_key: process.env.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, '\n'),
+  },
+})
+const bucketName = process.env.GCS_BUCKET_NAME!
+const bucket = storage.bucket(bucketName)
 
 export async function POST(request: Request) {
   try {
@@ -24,23 +32,26 @@ export async function POST(request: Request) {
       throw new Error('Campo "foto" inválido')
     }
 
-    // 2) salvar arquivo em public/uploads
+    // 2) upload para o bucket
     const buffer = Buffer.from(await file.arrayBuffer())
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true })
-    }
     const filename = `${Date.now()}-${file.name}`
-    const outPath = path.join(uploadsDir, filename)
-    fs.writeFileSync(outPath, buffer)
-    const url = `/uploads/${filename}`
-    console.log('upload-foto: arquivo salvo em', outPath)
+    const remotePath = `uploads/${filename}`
+    const gcFile = bucket.file(remotePath)
+
+    await gcFile.save(buffer, {
+      metadata: { contentType: file.type },
+      public: true,
+      resumable: false,
+    })
+    console.log(`upload-foto: arquivo enviado para bucket em ${remotePath}`)
+
+    const publicUrl = `https://storage.googleapis.com/${bucketName}/${remotePath}`
 
     // 3) configurar Google Sheets via env vars
     const {
       GOOGLE_CLIENT_EMAIL: clientEmail,
       GOOGLE_PRIVATE_KEY: privateKey,
-      SPREADSHEET_ID
+      SPREADSHEET_ID,
     } = process.env
 
     if (!clientEmail || !privateKey || !SPREADSHEET_ID) {
@@ -54,7 +65,6 @@ export async function POST(request: Request) {
       },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     })
-
     const sheets = google.sheets({ version: 'v4', auth })
     const spreadsheetId = SPREADSHEET_ID
 
@@ -68,24 +78,25 @@ export async function POST(request: Request) {
     console.log('upload-foto: rowIndex encontrado =', rowIndex)
 
     if (rowIndex > 0) {
-      const columnLetter = 'AH'
       const sheetRowNum = rowIndex + 1
-      console.log(`upload-foto: escrevendo URL em ${columnLetter}${sheetRowNum}`)
+      console.log(`upload-foto: escrevendo publicUrl em AH${sheetRowNum}`)
       await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: `Cadastro de Propriedades!${columnLetter}${sheetRowNum}`,
+        range: `Cadastro de Propriedades!AH${sheetRowNum}`,
         valueInputOption: 'RAW',
-        requestBody: { values: [[url]] },
+        requestBody: { values: [[publicUrl]] },
       })
       console.log('upload-foto: planilha atualizada com sucesso')
     } else {
       console.warn('upload-foto: propriedade não encontrada, não foi atualizado')
     }
 
-    return NextResponse.json({ ok: true, url })
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err)
-    console.error('Erro em upload-foto:', message)
-    return NextResponse.json({ ok: false, message }, { status: 500 })
+    return NextResponse.json({ ok: true, url: publicUrl })
+  } catch (err: any) {
+    console.error('Erro em upload-foto:', err)
+    return NextResponse.json(
+      { ok: false, message: err.message || 'Erro desconhecido' },
+      { status: 500 }
+    )
   }
 }

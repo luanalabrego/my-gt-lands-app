@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@google-cloud/storage": "^7.16.0",
     "date-fns": "^4.1.0",
     "firebase": "^11.7.1",
     "formidable": "^3.5.4",
