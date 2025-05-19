@@ -13,36 +13,53 @@
 @tailwind utilities;
 
 @media print {
-  /* 1) Define A4 sem margens */
+  /* 1) Configura página A4 sem margens */
   @page {
     size: A4;
     margin: 0;
   }
 
-  /* 2) Zera as margens de html e body */
+  /* 2) Zera margens/padding e força cores de fundo/texto */
   html, body {
     margin: 0;
     padding: 0;
+    height: 100%;
+    background: #1F1F1F !important;
+    color: var(--foreground) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  /* 3) Mostra só o seu container de print */
+  /* 3) Esconde tudo no body */
   body * {
+    display: none !important;
     visibility: hidden !important;
   }
-  .print-container,
-  .print-container * {
-    visibility: visible !important;
-  }
 
-  /* 4) Faz seu card ocupar 100% da folha */
+  /* 4) Exibe apenas o container de impressão */
   .print-container {
+    display: block !important;
+    visibility: visible !important;
+
     position: absolute !important;
     top: 0;
     left: 0;
     width: 100% !important;
-    min-height: 100% !important;
-    background: var(--background) !important;
+    height: 100% !important;
+
+    background: #1F1F1F !important;
     box-shadow: none !important;
     border-radius: 0 !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* 5) Dentro do print-container, tudo visível por padrão */
+  .print-container * {
+    visibility: visible !important;
+  }
+
+  /* 6) E esconda manualmente elementos indesejados */
+  .print-container .print-hidden {
+    display: none !important;
   }
 }
