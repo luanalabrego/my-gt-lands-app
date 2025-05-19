@@ -145,6 +145,7 @@
   "sectionLocation": "Localização Legal",
   "sectionHOA": "Condomínio (HOA)",
   "sectionSaleValue": "Valor de Venda",
-  "sectionPaymentTerms": "Condições de Pagamento"
+  "sectionPaymentTerms": "Condições de Pagamento",
+  "filtered": "Filtro"
 
 }
