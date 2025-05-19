@@ -47,11 +47,22 @@
     top: 0;
     left: 0;
     width: 100% !important;
-    /* evita cortar cards no meio de uma página */
-    page-break-inside: avoid;
   }
 
-  /* 6) caso tenha usado print-hidden, garante que esconda */
+  /* 6) evita que um card seja partido no meio e força quebra depois de cada um */
+  .print-container > div {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    page-break-after: always;
+    break-after: page;
+  }
+  /* 7) não gera página extra após o último card */
+  .print-container > div:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  /* 8) caso tenha usado print-hidden, garante que esconda */
   .print-hidden {
     display: none !important;
   }

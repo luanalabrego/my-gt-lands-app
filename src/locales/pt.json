@@ -147,6 +147,7 @@
   "sectionSaleValue": "Valor de Venda",
   "sectionPaymentTerms": "Condições de Pagamento",
   "filter": "Filtro",
-  "available": "Disponível"
+  "available": "Disponível",
+  "printAll": "Imprimir tudo"
 
 }
