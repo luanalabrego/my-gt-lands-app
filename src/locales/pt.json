@@ -116,6 +116,7 @@
   "overviewHeading": "Visão Geral",
   "timeHeading": "Desempenho de Tempo",
   "financeHeading": "Financeiro",
-  "totalProfit": "Lucro Total"
+  "totalProfit": "Lucro Total",
+  "avgROI": "ROI médio"
 
 }

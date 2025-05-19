@@ -116,5 +116,7 @@
   "overviewHeading": "Overview",
   "timeHeading": "Time Metrics",
   "financeHeading": "Financials",
-  "totalProfit": "Total Profit"
+  "totalProfit": "Total Profit",
+  "avgROI": "Average ROI"
+
 }

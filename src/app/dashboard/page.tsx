@@ -82,8 +82,8 @@ export default function DashboardPage() {
   }
 
   // Cálculos principais
-  const total = rows.length
-  const soldRows = rows.filter((r) => Boolean(r[34]?.toString().trim()))
+  const total       = rows.length
+  const soldRows    = rows.filter((r) => Boolean(r[34]?.toString().trim()))
   const pendingRows = rows.filter((r) => !r[34]?.toString().trim())
 
   // 1) Média de dias em estoque (pendentes)
@@ -104,10 +104,10 @@ export default function DashboardPage() {
   // 2) Tempo médio de venda (compra US x venda BR)
   const soldDurations = soldRows
     .map((r) => {
-      const buyStr = r[1]?.toString().trim()
+      const buyStr  = r[1]?.toString().trim()
       const sellStr = r[34]?.toString().trim()
       if (!buyStr || !sellStr) return NaN
-      const buy = parseUS(buyStr)
+      const buy  = parseUS(buyStr)
       const sell = parseBR(sellStr)
       if (isNaN(buy.getTime()) || isNaN(sell.getTime())) return NaN
       return (sell.getTime() - buy.getTime()) / (1000 * 60 * 60 * 24)
@@ -128,7 +128,7 @@ export default function DashboardPage() {
     : 0
 
   // 4) Valores monetários
-  const totalInStock = pendingRows.reduce((sum, r) => {
+  const totalInStock   = pendingRows.reduce((sum, r) => {
     const v = parseFloat(r[48]?.toString().replace(/[^0-9.-]+/g, '')) || 0
     return sum + v
   }, 0)
@@ -143,21 +143,30 @@ export default function DashboardPage() {
     return sum + v
   }, 0)
 
+  // 6) ROI médio (coluna BA índice 52)
+  const roiVals = soldRows
+    .map((r) => parseFloat(r[52]?.toString().replace(',', '.')) || 0)
+    .filter((v) => !isNaN(v))
+  const avgROI = roiVals.length
+    ? Math.round(roiVals.reduce((a, b) => a + b, 0) / roiVals.length)
+    : 0
+
   // Definição dos cards e categorias
   const cards = [
-    { key: 'totalProps', value: total },
-    { key: 'soldProps', value: soldRows.length },
-    { key: 'pendingProps', value: pendingRows.length },
+    { key: 'totalProps',     value: total },
+    { key: 'soldProps',      value: soldRows.length },
+    { key: 'pendingProps',   value: pendingRows.length },
     { key: 'avgMarketAging', value: `${avgMarketAging} ${t('days')}` },
-    { key: 'avgSoldTime', value: `${avgSoldTime} ${t('days')}` },
-    { key: 'avgStockTime', value: `${avgStockTime} ${t('days')}` },
-    { key: 'totalInStock', value: `U$ ${totalInStock.toLocaleString()}` },
+    { key: 'avgSoldTime',    value: `${avgSoldTime} ${t('days')}` },
+    { key: 'avgStockTime',   value: `${avgStockTime} ${t('days')}` },
+    { key: 'totalInStock',   value: `U$ ${totalInStock.toLocaleString()}` },
     { key: 'totalToReceive', value: `U$ ${totalToReceive.toLocaleString()}` },
-    { key: 'totalProfit', value: `U$ ${totalProfit.toLocaleString()}` },
+    { key: 'totalProfit',    value: `U$ ${totalProfit.toLocaleString()}` },
+    { key: 'avgROI',         value: `${avgROI}%` },
   ]
   const overviewKeys = ['totalProps', 'soldProps', 'pendingProps']
-  const timeKeys = ['avgMarketAging', 'avgSoldTime', 'avgStockTime']
-  const financeKeys = ['totalInStock', 'totalToReceive', 'totalProfit']
+  const timeKeys     = ['avgMarketAging', 'avgSoldTime', 'avgStockTime']
+  const financeKeys  = ['totalInStock', 'totalToReceive', 'totalProfit', 'avgROI']
 
   // Função para renderizar cada card
   const renderCard = ({
@@ -193,9 +202,7 @@ export default function DashboardPage() {
       </h1>
 
       <Section title={t('overviewHeading')}>
-        {cards
-          .filter((c) => overviewKeys.includes(c.key))
-          .map(renderCard)}
+        {cards.filter((c) => overviewKeys.includes(c.key)).map(renderCard)}
       </Section>
 
       <Section title={t('timeHeading')}>

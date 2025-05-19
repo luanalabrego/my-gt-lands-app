@@ -115,6 +115,8 @@
   "avgMarketAging": "Promedio de Antigüedad de Mercado",
   "overviewHeading": "Visión General",
   "timeHeading": "Métricas de Tiempo",
-  "financeHeading": "Finanzas"
+  "financeHeading": "Finanzas",
+  "avgROI": "ROI medio"
+
 
 }
