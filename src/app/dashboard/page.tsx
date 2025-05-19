@@ -7,47 +7,30 @@ type PropertyRow = string[]
 
 // --- helpers de parse de datas ---
 function parseUS(dateStr: string): Date {
-  // formata MM/DD/YYYY ou M/D/YYYY
   const [m, d, y] = dateStr.split(/[\/\-]/)
   return new Date(Number(y), Number(m) - 1, Number(d))
 }
-
 function parseBR(dateStr: string): Date {
-  // formata DD/MM/YYYY
   const [d, m, y] = dateStr.split('/')
   return new Date(Number(y), Number(m) - 1, Number(d))
 }
 
 export default function DashboardPage() {
   const { t } = useTranslation()
-
   const [rows, setRows] = useState<PropertyRow[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    console.log('[DashboardPage] iniciando fetch de /api/propriedades')
     ;(async () => {
       try {
         const res = await fetch('/api/propriedades', { cache: 'no-store' })
-        console.log('[DashboardPage] status da resposta:', res.status)
-        const body = (await res.json()) as {
-          ok: boolean
-          rows?: PropertyRow[]
-          error?: string
-          message?: string
-        }
-        if (!body.ok) {
-          console.error('[DashboardPage] API retornou erro:', body.error, body.message)
-          setLoading(false)
-          return
-        }
+        const body = (await res.json()) as { ok: boolean; rows?: PropertyRow[] }
+        if (!body.ok) throw new Error(body.error || 'Erro na API')
         const all = body.rows || []
         const content = all.length > 1 ? all.slice(1) : []
-        // filtra apenas linhas com número de propriedade (coluna C)
-        const filtered = content.filter(r => r[2]?.toString().trim() !== '')
-        setRows(filtered)
+        setRows(content.filter(r => r[2]?.toString().trim() !== ''))
       } catch (err) {
-        console.error('[DashboardPage] falha no fetch:', err)
+        console.error(err)
       } finally {
         setLoading(false)
       }
@@ -67,7 +50,7 @@ export default function DashboardPage() {
   const soldRows    = rows.filter(r => Boolean(r[34]?.toString().trim()))
   const pendingRows = rows.filter(r => !r[34]?.toString().trim())
 
-  // 1) Dias em estoque (pendentes) — parseUS na coluna B
+  // 1) Aging em estoque (pendentes)
   const daysInStock = pendingRows
     .map(r => {
       const str = r[1]?.toString().trim()
@@ -78,11 +61,11 @@ export default function DashboardPage() {
         : (Date.now() - dt.getTime()) / (1000 * 60 * 60 * 24)
     })
     .filter(v => !isNaN(v))
-  const avgDays = daysInStock.length
+  const avgStockTime = daysInStock.length
     ? Math.round(daysInStock.reduce((a, b) => a + b, 0) / daysInStock.length)
     : 0
 
-  // 2) Tempo médio de venda — compra em B (US) x venda em AI (BR)
+  // 2) Tempo médio de venda
   const soldDurations = soldRows
     .map(r => {
       const buyStr  = r[1]?.toString().trim()
@@ -98,7 +81,7 @@ export default function DashboardPage() {
     ? Math.round(soldDurations.reduce((a, b) => a + b, 0) / soldDurations.length)
     : 0
 
-  // 3) Média do aging de mercado (coluna AP = índice 41)
+  // 3) Média de aging de mercado (coluna AP = índice 41)
   const marketAgingVals = rows
     .map(r => parseFloat(r[41]?.toString().replace(',', '.')) || 0)
     .filter(v => v > 0)
@@ -107,44 +90,44 @@ export default function DashboardPage() {
     : 0
 
   // 4) Valores monetários
-  const totalValue = pendingRows.reduce((sum, r) => {
+  const totalInStock   = pendingRows.reduce((sum, r) => {
     const v = parseFloat(r[48]?.toString().replace(/[^0-9.-]+/g, '')) || 0
     return sum + v
   }, 0)
-  const totalReceive = soldRows.reduce((sum, r) => {
+  const totalToReceive = soldRows.reduce((sum, r) => {
     const v = parseFloat(r[48]?.toString().replace(/[^0-9.-]+/g, '')) || 0
     return sum + v
   }, 0)
 
-  // --- cards (com 4 colunas a partir de md) ---
+  // --- ordem dos cards ---
   const cards = [
     { key: 'totalProps',     value: total },
     { key: 'soldProps',      value: soldRows.length },
     { key: 'pendingProps',   value: pendingRows.length },
-    { key: 'avgStockTime',   value: `${avgDays} ${t('days')}` },
-    { key: 'avgSoldTime',    value: `${avgSoldTime} ${t('days')}` },
     { key: 'avgMarketAging', value: `${avgMarketAging} ${t('days')}` },
-    { key: 'totalInStock',   value: `U$ ${totalValue.toLocaleString()}` },
-    { key: 'totalToReceive', value: `U$ ${totalReceive.toLocaleString()}` },
+    { key: 'avgSoldTime',    value: `${avgSoldTime} ${t('days')}` },
+    { key: 'avgStockTime',   value: `${avgStockTime} ${t('days')}` },
+    { key: 'totalInStock',   value: `U$ ${totalInStock.toLocaleString()}` },
+    { key: 'totalToReceive', value: `U$ ${totalToReceive.toLocaleString()}` },
   ]
 
   return (
     <div className="min-h-screen bg-[#1F1F1F] text-white px-4 py-6">
-      {/* Saudação */}
       <h1 className="text-2xl sm:text-3xl font-semibold mb-8">
         {t('greeting')}, Gustavo
       </h1>
 
-      {/* Grid de cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+      {/* Grid de 3 colunas a partir de md */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-12">
         {cards.map(({ key, value }, i) => {
-          const isCompact = ['totalProps','soldProps','pendingProps'].includes(key)
+          // só deixamos os 3 primeiros mais compactos
+          const compact = ['totalProps','soldProps','pendingProps'].includes(key)
           return (
             <div
               key={key}
               className={`
                 bg-[#2C2C2C] rounded-2xl shadow-lg flex flex-col justify-between
-                ${isCompact ? 'p-3 sm:p-4' : 'p-4 sm:p-6'}
+                ${compact ? 'p-3 sm:p-4' : 'p-4 sm:p-6'}
               `}
             >
               <span className="text-sm sm:text-base text-gray-300 mb-2">
@@ -158,7 +141,6 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* Pendências */}
       <h2 className="text-xl sm:text-2xl font-semibold mb-4">
         {t('pendingHeading')}
       </h2>
