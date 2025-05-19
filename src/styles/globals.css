@@ -53,5 +53,9 @@
   /* 5) esconda botões, inputs, links etc com esta classe */
   .print-hidden {
     display: none !important;
+    
   }
+  .card-details { display: block !important;
+  }
+
 }

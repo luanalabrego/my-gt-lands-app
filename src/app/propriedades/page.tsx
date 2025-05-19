@@ -107,7 +107,7 @@ export default function PropriedadesPage() {
   return (
     <div className="min-h-screen bg-[#1F1F1F] px-4 py-6">
       {/* Cabeçalho */}
-      <div className="flex flex-wrap items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between mb-6 print-hidden">
         <h1 className="text-3xl font-semibold text-white mb-4 md:mb-0">
           {t('properties')}
         </h1>
@@ -132,7 +132,7 @@ export default function PropriedadesPage() {
       </div>
 
       {/* Botão “Filtro” mobile */}
-      <div className="flex items-center justify-between mb-4 md:hidden">
+      <div className="flex items-center justify-between mb-4 md:hidden print-hidden">
         <button
           onClick={() => setShowFilters(v => !v)}
           className="flex items-center gap-2 px-4 py-2 bg-[#2C2C2C] rounded-lg text-white"
@@ -144,11 +144,12 @@ export default function PropriedadesPage() {
 
       {/* Contêiner de filtros completo */}
       <div
-        className={`
-          ${showFilters ? 'flex flex-wrap gap-4 mb-6' : 'hidden'}
-          md:flex flex-wrap gap-4 mb-6
-        `}
-      >
+  className={`
+    ${showFilters ? 'flex flex-wrap gap-4 mb-6' : 'hidden'}
+    md:flex flex-wrap gap-4 mb-6
+    print-hidden
+  `}
+>
         {/* Busca */}
         <input
           type="text"
@@ -229,7 +230,7 @@ export default function PropriedadesPage() {
       </div>
 
       {/* Botões de visualização */}
-      <div className="flex mb-6 space-x-2">
+      <div className="flex mb-6 space-x-2 print-hidden">
         <button
           onClick={() => setViewMode('card')}
           className={`px-3 py-1 rounded-lg font-medium ${
@@ -254,7 +255,7 @@ export default function PropriedadesPage() {
 
       {/* Renderização em Cards */}
       {viewMode === 'card' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="print-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((r, i) => {
             const dataCompra   = r[1]
             const numero       = r[2]
