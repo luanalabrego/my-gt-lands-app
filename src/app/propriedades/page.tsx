@@ -240,14 +240,18 @@ export default function PropriedadesPage() {
           {filtered.map((r, i) => {
             const dataCompra   = r[1]
             const numero       = r[2]
+            const parcelNumber = r[4]   // coluna E
             const endereco     = r[5]
             const condado      = r[6]
             const estado       = r[7]
-            const acres        = r[9]
+            const acres        = r[9]   // coluna J
             const medidas      = r[12]
             const descImovel   = r[21]
             const saleDateRaw  = (r[saleDateIndex] || '').trim()
             const status       = saleDateRaw ? t('statusVendido') : t('statusPendente')
+            const copyParcel = () => {
+              navigator.clipboard.writeText(parcelNumber)
+            }
 
             return (
               <div
