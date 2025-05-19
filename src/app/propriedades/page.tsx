@@ -183,6 +183,8 @@ export default function PropriedadesPage() {
     <option value="all">{t('allStatus')}</option>
     <option value="sold">{t('sold')}</option>
     <option value="pending">{t('pending')}</option>
+    <option value="available">{t('available')}</option>
+    
   </select>
 
   {/* DatePickers */}
