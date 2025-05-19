@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://my-gt-lands-app-git-restore-css-labrego-solucoes.vercel.app"],
+    "method": ["GET", "PUT", "HEAD"],
+    "responseHeader": ["Content-Type", "x-goog-resumable"],
+    "maxAgeSeconds": 3600
+  }
+]

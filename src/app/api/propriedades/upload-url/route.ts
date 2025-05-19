@@ -1,3 +1,5 @@
+// src/app/api/propriedades/upload-url/route.ts
+
 import { NextResponse } from 'next/server'
 import { Storage } from '@google-cloud/storage'
 import path from 'path'
@@ -13,23 +15,36 @@ const storage = new Storage({
 const bucket = storage.bucket(process.env.GCS_BUCKET_NAME!)
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const filename = searchParams.get('filename')
-  if (!filename) {
-    return NextResponse.json({ ok: false, message: 'filename é obrigatório' }, { status: 400 })
+  try {
+    const url = new URL(request.url)
+    const filename = url.searchParams.get('filename')
+    const contentType = url.searchParams.get('contentType') || 'application/octet-stream'
+
+    if (!filename) {
+      return NextResponse.json(
+        { ok: false, message: 'Parâmetro "filename" é obrigatório' },
+        { status: 400 }
+      )
+    }
+
+    const remotePath = `uploads/${Date.now()}-${path.basename(filename)}`
+    const file = bucket.file(remotePath)
+
+    const [uploadUrl] = await file.getSignedUrl({
+      version: 'v4',
+      action: 'write',
+      expires: Date.now() + 15 * 60 * 1000, // 15 minutos
+      contentType,                          // utiliza o tipo de conteúdo real
+    })
+
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${remotePath}`
+
+    return NextResponse.json({ ok: true, uploadUrl, publicUrl })
+  } catch (err: any) {
+    console.error('Erro em upload-url:', err)
+    return NextResponse.json(
+      { ok: false, message: err.message || 'Erro desconhecido' },
+      { status: 500 }
+    )
   }
-
-  const remotePath = `uploads/${Date.now()}-${path.basename(filename)}`
-  const file = bucket.file(remotePath)
-
-  const [uploadUrl] = await file.getSignedUrl({
-    version: 'v4',
-    action: 'write',
-    expires: Date.now() + 15 * 60 * 1000, // 15 minutos
-    contentType: 'application/octet-stream',
-  })
-
-  const publicUrl = `https://storage.googleapis.com/${bucket.name}/${remotePath}`
-
-  return NextResponse.json({ ok: true, uploadUrl, publicUrl })
 }
