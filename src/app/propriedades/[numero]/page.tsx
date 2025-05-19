@@ -186,10 +186,10 @@ const sections = [
         {title}
       </h2>
 
-      <div className="flex flex-wrap gap-x-6 gap-y-4 text-white">
+      <div className="flex flex-wrap justify-start gap-x-6 gap-y-4 text-white">
                 {indices.map(idx => (
-                  <div key={idx} className="flex items-start space-x-1 min-w-[150px]">
-                                <span className="w-24 font-medium text-gray-300">
+                  <div key={idx} className="flex items-center justify-start space-x-2 whitespace-nowrap">
+                                                    <span className="w-24 font-medium text-gray-300">
               {headers[idx] || `Col ${idx}`}:
             </span>
 
