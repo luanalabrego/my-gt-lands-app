@@ -130,8 +130,8 @@ export default function PropertyDetailPage() {
 // defina as sessões com os índices corretos:
 const sections = [
   {
-    title: t('sectionPropertyInfo'),       // Número, Descrição, Parcel, Endereço, Condado, Estado
-    indices: [0, 1, 2, 3, 4, 5],
+    title: t('sectionPropertyInfo'),       // Parcel, Endereço, Condado, Estado
+    indices: [ 3, 4, 5, 19],
   },
   {
     title: t('sectionSize'),               // Square Feet, Acres, Medidas do Lote, Minimum Lot Area
@@ -152,10 +152,6 @@ const sections = [
   {
     title: t('sectionFlood'),              // Flood Zone
     indices: [18],
-  },
-  {
-    title: t('sectionPropertyDescription'),// Descrição do Imóvel
-    indices: [19],
   },
   {
     title: t('sectionLocation'),           // Coordinates, Legal Description
