@@ -6,7 +6,7 @@ import { useLanguage } from '../../context/LanguageContext'
 import { useTranslation } from '../../hooks/useTranslation'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import { ChevronDown, ChevronUp, ClipboardCopy } from 'lucide-react'
+import { ChevronDown, ChevronUp, ClipboardCopy, Printer } from 'lucide-react'
 
 type PropertyRow = string[]
 
@@ -88,7 +88,7 @@ export default function PropriedadesPage() {
     if (selectedCounty && county !== selectedCounty) return false
     if (statusFilter === 'sold' && !sold) return false
     if (statusFilter === 'pending' && sold) return false
-    if (statusFilter === 'available' && sold)   return false
+    if (statusFilter === 'available' && sold) return false
 
     if (dateFrom) {
       const from = new Date(dateFrom)
@@ -111,17 +111,24 @@ export default function PropriedadesPage() {
         <h1 className="text-3xl font-semibold text-white mb-4 md:mb-0">
           {t('properties')}
         </h1>
-        <Link
-          href="/propriedades/new"
-          className="
-            bg-[#D4AF37] text-black
-            border border-[#D4AF37]
-            px-4 py-2 rounded-lg font-medium
-            hover:bg-[#D4AF37]/90 transition
-          "
-        >
-          {t('newProperty')}
-        </Link>
+        <div className="flex space-x-2">
+          {/* Botão Imprimir */}
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 bg-[#2C2C2C] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#2C2C2C]/90 transition"
+            title={t('print')}
+          >
+            <Printer size={16} />
+            {t('print')}
+          </button>
+          {/* Botão Nova Propriedade */}
+          <Link
+            href="/propriedades/new"
+            className="bg-[#D4AF37] text-black border border-[#D4AF37] px-4 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 transition"
+          >
+            {t('newProperty')}
+          </Link>
+        </div>
       </div>
 
       {/* Botão “Filtro” mobile */}
@@ -136,91 +143,90 @@ export default function PropriedadesPage() {
       </div>
 
       {/* Contêiner de filtros completo */}
-<div
-  className={`
-    ${showFilters ? 'flex flex-wrap gap-4 mb-6' : 'hidden'}
-    md:flex flex-wrap gap-4 mb-6
-  `}
->
-  {/* Busca */}
-  <input
-    type="text"
-    placeholder={t('placeholder')}
-    value={searchTerm}
-    onChange={e => setSearchTerm(e.target.value)}
-    className="flex-1 min-w-[200px] px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-  />
+      <div
+        className={`
+          ${showFilters ? 'flex flex-wrap gap-4 mb-6' : 'hidden'}
+          md:flex flex-wrap gap-4 mb-6
+        `}
+      >
+        {/* Busca */}
+        <input
+          type="text"
+          placeholder={t('placeholder')}
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          className="flex-1 min-w-[200px] px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
+        />
 
-  {/* Estado */}
-  <select
-    value={selectedState}
-    onChange={e => setSelectedState(e.target.value)}
-    className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-  >
-    <option value="">{t('allStates')}</option>
-    {states.map(s => (
-      <option key={s} value={s}>{s}</option>
-    ))}
-  </select>
+        {/* Estado */}
+        <select
+          value={selectedState}
+          onChange={e => setSelectedState(e.target.value)}
+          className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
+        >
+          <option value="">{t('allStates')}</option>
+          {states.map(s => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
 
-  {/* Condado */}
-  <select
-    value={selectedCounty}
-    onChange={e => setSelectedCounty(e.target.value)}
-    className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-  >
-    <option value="">{t('allCounties')}</option>
-    {counties.map(c => (
-      <option key={c} value={c}>{c}</option>
-    ))}
-  </select>
+        {/* Condado */}
+        <select
+          value={selectedCounty}
+          onChange={e => setSelectedCounty(e.target.value)}
+          className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
+        >
+          <option value="">{t('allCounties')}</option>
+          {counties.map(c => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
 
-  {/* Status */}
-  <select
-    value={statusFilter}
-    onChange={e => setStatusFilter(e.target.value as any)}
-    className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
-  >
-    <option value="all">{t('allStatus')}</option>
-    <option value="sold">{t('sold')}</option>
-    <option value="pending">{t('pending')}</option>
-    <option value="available">{t('available')}</option>
-    
-  </select>
+        {/* Status */}
+        <select
+          value={statusFilter}
+          onChange={e => setStatusFilter(e.target.value as any)}
+          className="px-4 py-2 rounded-lg bg-black border border-gray-600 text-white focus:outline-none focus:border-gold"
+        >
+          <option value="all">{t('allStatus')}</option>
+          <option value="sold">{t('sold')}</option>
+          <option value="pending">{t('pending')}</option>
+          <option value="available">{t('available')}</option>
+        </select>
 
-  {/* DatePickers */}
-  <div className="flex flex-col sm:flex-row sm:space-x-2 mb-4">
-    {/* De */}
-    <div className="w-28 sm:w-auto">
-      <DatePicker
-        selected={dateFromObj}
-        onChange={d => {
-          setDateFromObj(d)
-          setDateFrom(d ? d.toISOString().slice(0, 10) : '')
-        }}
-        placeholderText={t('fromDate')}
-        dateFormat="yyyy-MM-dd"
-        wrapperClassName="w-full"
-        className="w-full px-2 py-1 rounded-lg bg-black border border-gray-600 text-white text-xs sm:text-sm focus:outline-none focus:border-gold"
-      />
-    </div>
+        {/* DatePickers */}
+        <div className="flex flex-col sm:flex-row sm:space-x-2 mb-4">
+          {/* De */}
+          <div className="w-28 sm:w-auto">
+            <DatePicker
+              selected={dateFromObj}
+              onChange={d => {
+                setDateFromObj(d)
+                setDateFrom(d ? d.toISOString().slice(0, 10) : '')
+              }}
+              placeholderText={t('fromDate')}
+              dateFormat="yyyy-MM-dd"
+              wrapperClassName="w-full"
+              className="w-full px-2 py-1 rounded-lg bg-black border border-gray-600 text-white text-xs sm:text-sm focus:outline-none focus:border-gold"
+            />
+          </div>
 
-    {/* Até */}
-    <div className="w-28 sm:w-auto mt-2 sm:mt-0">
-      <DatePicker
-        selected={dateToObj}
-        onChange={d => {
-          setDateToObj(d)
-          setDateTo(d ? d.toISOString().slice(0, 10) : '')
-        }}
-        placeholderText={t('toDate')}
-        dateFormat="yyyy-MM-dd"
-        wrapperClassName="w-full"
-        className="w-full px-2 py-1 rounded-lg bg-black border border-gray-600 text-white text-xs sm:text-sm focus:outline-none focus:border-gold"
-      />
-    </div>
-  </div>
-</div>  {/* ← fechamento do container de filtros */}
+          {/* Até */}
+          <div className="w-28 sm:w-auto mt-2 sm:mt-0">
+            <DatePicker
+              selected={dateToObj}
+              onChange={d => {
+                setDateToObj(d)
+                setDateTo(d ? d.toISOString().slice(0, 10) : '')
+              }}
+              placeholderText={t('toDate')}
+              dateFormat="yyyy-MM-dd"
+              wrapperClassName="w-full"
+              className="w-full px-2 py-1 rounded-lg bg-black border border-gray-600 text-white text-xs sm:text-sm focus:outline-none focus:border-gold"
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Botões de visualização */}
       <div className="flex mb-6 space-x-2">
@@ -264,63 +270,56 @@ export default function PropriedadesPage() {
             const copyParcel   = () => navigator.clipboard.writeText(parcelNumber)
             const copyAddress  = () => navigator.clipboard.writeText(endereco)
 
+            return (
+              <div
+                key={i}
+                className="bg-[#2C2C2C] rounded-2xl p-6 shadow-lg flex flex-col justify-between"
+              >
+                <div className="space-y-2">
+                  {/* Número do pedido acima */}
+                  <h2 className="text-xl font-bold text-white">
+                    <span className="text-[#D4AF37]">#{numero}</span>
+                  </h2>
 
-return (
-  <div
-    key={i}
-    className="bg-[#2C2C2C] rounded-2xl p-6 shadow-lg flex flex-col justify-between"
-  >
-    <div className="space-y-2">
-      {/* Número do pedido acima */}
-      <h2 className="text-xl font-bold text-white">
-        <span className="text-[#D4AF37]">#{numero}</span>
-      </h2>
+                  {/* Endereço em linha separada + botão copiar */}
+                  <h3 className="text-white flex items-center">
+                    {endereco}
+                    <button
+                      onClick={copyAddress}
+                      className="ml-2"
+                      title="Copiar endereço"
+                    >
+                      <ClipboardCopy
+                        size={18}
+                        className="text-gray-400 hover:text-white transition-colors"
+                      />
+                    </button>
+                  </h3>
 
-      {/* Endereço em linha separada + botão copiar */}
-      <h3 className="text-white flex items-center">
-        {endereco}
-        <button
-          onClick={copyAddress}
-          className="ml-2"
-          title="Copiar endereço"
-        >
-          <ClipboardCopy
-            size={18}
-            className="text-gray-400 hover:text-white transition-colors"
-          />
-        </button>
-      </h3>
+                  {/* Condado, estado */}
+                  <p className="text-gray-300 text-sm">
+                    {condado}, {estado}
+                  </p>
 
-      {/* Condado, estado */}
-      <p className="text-gray-300 text-sm">
-        {condado}, {estado}
-      </p>
+                  {/* Parcel Number + botão copiar */}
+                  <div className="flex items-center space-x-2 text-gray-300 text-sm">
+                    <span>Parcel: {parcelNumber}</span>
+                    <button
+                      onClick={copyParcel}
+                      title="Copiar parcel"
+                    >
+                      <ClipboardCopy
+                        size={18}
+                        className="text-gray-400 hover:text-white transition-colors"
+                      />
+                    </button>
+                  </div>
 
-      {/* Parcel Number + botão copiar */}
-      <div className="flex items-center space-x-2 text-gray-300 text-sm">
-        <span>Parcel: {parcelNumber}</span>
-        <button
-          onClick={copyParcel}
-          title="Copiar parcel"
-        >
-          <ClipboardCopy
-            size={18}
-            className="text-gray-400 hover:text-white transition-colors"
-          />
-        </button>
-      </div>
-
-      {/* Acres */}
-      <p className="text-gray-300 text-sm">
-        Acres: {acres}
-      </p>
-
-      {descImovel && (
-        <p className="text-gray-400 text-sm italic line-clamp-3">
-          {descImovel}
-        </p>
-      )}
-    </div>
+                  {/* Acres */}
+                  <p className="text-gray-300 text-sm">
+                    Acres: {acres}
+                  </p>
+                </div>
 
                 {/* Rodapé do card */}
                 <div className="mt-4 flex items-center justify-between">
@@ -330,8 +329,7 @@ return (
                   <div className="flex items-center space-x-2">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-bold ${
-                        saleDateRaw ? 'bg-red-500 text-white'   // vendido: vermelho
-                        : 'bg-green-400 text-black' // disponível: verde
+                        saleDateRaw ? 'bg-red-500 text-white' : 'bg-green-400 text-black'
                       }`}
                     >
                       {status}
@@ -356,25 +354,15 @@ return (
           <table className="min-w-full divide-y divide-gray-700">
             <thead className="bg-gray-dark">
               <tr>
-                {[
-                  t('boughtOn'),
-                  t('nrLabel'),
-                  t('parcelLabel'),    // ← novo cabeçalho para Parcel
-                  t('addressLabel'),
-                  t('countyLabel'),
-                  t('stateLabel'),
-                  t('descriptionLabel'),
-                  t('acresLabel'),
-                  t('measuresLabel'),
-                  t('sold')
-                ].map((h, j) => (
-                  <th
-                    key={j}
-                    className="px-4 py-2 text-left text-sm font-medium text-gray-300"
-                  >
-                    {h}
-                  </th>
-                ))}
+                {[t('boughtOn'), t('nrLabel'), t('parcelLabel'), t('addressLabel'),
+                  t('countyLabel'), t('stateLabel'), t('descriptionLabel'),
+                  t('acresLabel'), t('measuresLabel'), t('sold')]
+                  .map((h, j) => (
+                    <th key={j} className="px-4 py-2 text-left text-sm font-medium text-gray-300">
+                      {h}
+                    </th>
+                  ))
+                }
                 <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">
                   {t('actions')}
                 </th>
@@ -396,7 +384,7 @@ return (
                     <td className="px-4 py-2 text-sm text-white">{r[9]}</td>
                     <td className="px-4 py-2 text-sm text-white">{r[12]}</td>
                     <td className="px-4 py-2 text-sm">
-                    <span className={saleDateRaw ? 'text-red-500' : 'text-green-400'}>
+                      <span className={saleDateRaw ? 'text-red-500' : 'text-green-400'}>
                         {status}
                       </span>
                     </td>
