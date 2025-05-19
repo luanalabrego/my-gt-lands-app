@@ -13,42 +13,45 @@
 @tailwind utilities;
 
 @media print {
-  /* remove margens e garante impressão de cores de fundo */
+  /* remove margens de página e força cores de fundo */
   @page {
-    margin: 0;
+    margin: 10mm;
     size: auto;
   }
   html, body {
     margin: 0;
     padding: 0;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  /* oculta tudo na página */
+  /* esconde tudo */
   body * {
     display: none !important;
     visibility: hidden !important;
   }
 
-  /* exibe apenas o container com classe print-container */
+  /* exibe apenas o container de print */
   .print-container,
   .print-container * {
     display: block !important;
     visibility: visible !important;
   }
 
-  /* posiciona e dimensiona o card */
+  /* posiciona e estiliza o cartão */
   .print-container {
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
-    width: auto !important;
+    width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    background-color: #2C2C2C !important; /* seu fundo escuro */
-    page-break-inside: avoid !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    /* usa suas variáveis para manter o tema */
+    background-color: var(--background) !important;
+    color: var(--foreground) !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
