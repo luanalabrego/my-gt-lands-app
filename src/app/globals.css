@@ -1,17 +1,9 @@
-@import "tailwindcss";
-
+/* 1) Primeiro: variáveis de tema e background padrão */
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/* dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -19,6 +11,24 @@
   }
 }
 
+/* 2) Tailwind: base, componentes, utilities */
+@tailwind base;
+@tailwind components;
+
+@layer components {
+  .btn      { @apply px-4 py-2 rounded-lg font-medium transition; }
+  .btn-gold { @apply bg-gold text-black border border-gold hover:bg-gold/90; }
+  .btn-sm   { @apply px-3 py-1 text-sm; }
+}
+
+@tailwind utilities;
+
+/* 3) Se precisar manter impressão */
+@media print {
+  /* suas regras de print aqui... */
+}
+
+/* 4) Por fim, garantimos que o body use nossas variáveis */
 body {
   background: var(--background);
   color: var(--foreground);
