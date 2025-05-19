@@ -61,7 +61,7 @@ export default function DashboardPage() {
   const soldRows    = rows.filter(r => Boolean(r[34]?.toString().trim()))
   const pendingRows = rows.filter(r => !r[34]?.toString().trim())
 
-  // avg stock time (pending)
+  // avg stock time
   const daysInStock = pendingRows
     .map(r => {
       const s = r[1]?.toString().trim()
@@ -73,7 +73,7 @@ export default function DashboardPage() {
     })
     .filter(v => !isNaN(v))
   const avgStockTime = daysInStock.length
-    ? Math.round(daysInStock.reduce((a, b) => a + b, 0) / daysInStock.length)
+    ? daysInStock.reduce((a, b) => a + b, 0) / daysInStock.length
     : 0
 
   // avg sold time
@@ -89,7 +89,7 @@ export default function DashboardPage() {
     })
     .filter(v => !isNaN(v))
   const avgSoldTime = soldDurations.length
-    ? Math.round(soldDurations.reduce((a, b) => a + b, 0) / soldDurations.length)
+    ? soldDurations.reduce((a, b) => a + b, 0) / soldDurations.length
     : 0
 
   // avg market aging
@@ -97,7 +97,7 @@ export default function DashboardPage() {
     .map(r => parseFloat(r[41]?.toString().replace(',', '.')) || 0)
     .filter(v => v > 0)
   const avgMarketAging = marketAgingVals.length
-    ? Math.round(marketAgingVals.reduce((a, b) => a + b, 0) / marketAgingVals.length)
+    ? marketAgingVals.reduce((a, b) => a + b, 0) / marketAgingVals.length
     : 0
 
   // financials
@@ -113,25 +113,30 @@ export default function DashboardPage() {
     const v = parseFloat(r[51]?.toString().replace(/[^0-9.-]+/g, '')) || 0
     return sum + v
   }, 0)
+
+  // avg ROI with decimals
   const roiVals = soldRows
     .map(r => parseFloat(r[52]?.toString().replace(',', '.')) || 0)
     .filter(v => !isNaN(v))
   const avgROI = roiVals.length
-    ? Math.round(roiVals.reduce((a, b) => a + b, 0) / roiVals.length)
+    ? roiVals.reduce((a, b) => a + b, 0) / roiVals.length
     : 0
+  // formatted with comma decimals
+  const avgROIFormatted = avgROI
+    .toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
   // cards data
   const cards = [
     { key: 'totalProps',     value: total },
     { key: 'soldProps',      value: soldRows.length },
     { key: 'pendingProps',   value: pendingRows.length },
-    { key: 'avgMarketAging', value: `${avgMarketAging} ${t('days')}` },
-    { key: 'avgSoldTime',    value: `${avgSoldTime} ${t('days')}` },
-    { key: 'avgStockTime',   value: `${avgStockTime} ${t('days')}` },
-    { key: 'totalInStock',   value: `U$ ${totalInStock.toLocaleString()}` },
-    { key: 'totalToReceive', value: `U$ ${totalToReceive.toLocaleString()}` },
-    { key: 'totalProfit',    value: `U$ ${totalProfit.toLocaleString()}` },
-    { key: 'avgROI',         value: `${avgROI}%` },
+    { key: 'avgMarketAging', value: `${avgMarketAging.toFixed(0)} ${t('days')}` },
+    { key: 'avgSoldTime',    value: `${avgSoldTime.toFixed(0)} ${t('days')}` },
+    { key: 'avgStockTime',   value: `${avgStockTime.toFixed(0)} ${t('days')}` },
+    { key: 'totalInStock',   value: `U$ ${totalInStock.toLocaleString('pt-BR')}` },
+    { key: 'totalToReceive', value: `U$ ${totalToReceive.toLocaleString('pt-BR')}` },
+    { key: 'totalProfit',    value: `U$ ${totalProfit.toLocaleString('pt-BR')}` },
+    { key: 'avgROI',         value: `${avgROIFormatted}%` },
   ]
 
   const overviewKeys = ['totalProps','soldProps','pendingProps']
@@ -141,10 +146,7 @@ export default function DashboardPage() {
   const renderCard = ({ key, value }: { key: string; value: string|number }) => (
     <div
       key={key}
-      className={`
-        bg-[#2C2C2C] rounded-2xl shadow-lg
-        p-4 flex flex-col justify-between
-      `}
+      className="bg-[#2C2C2C] rounded-2xl shadow-lg p-4 flex flex-col justify-between"
     >
       <span className="text-sm text-gray-300 mb-2">{t(key)}</span>
       <span className="text-2xl font-bold text-gold">{value}</span>
@@ -153,11 +155,10 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-dark text-white px-4 py-6">
-      <h1 className="text-2xl sm:text-3xl font-semibold mb-8">
+      <h1 className="text-2xl sm:text-3xl font-semibold mb-8 text-gold">
         {t('greeting')}, Gustavo
       </h1>
 
-      {/* categorias lado a lado em desktop */}
       <div className="flex flex-col space-y-12 md:flex-row md:space-y-0 md:space-x-8 mb-12">
         {/* Visão Geral */}
         <div className="flex-1">
