@@ -244,14 +244,7 @@ const sections = [
               className="w-full max-h-60 object-cover rounded-lg mb-4"
             />
           )}
-          {!isEditing && (
-            <button
-              onClick={printCard}
-              className="self-end bg-[#D4AF37] text-black px-4 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 transition text-sm"
-            >
-              {t('print')}
-            </button>
-          )}
+          
           {isEditing && (
             <input
               type="file"
@@ -302,6 +295,14 @@ const sections = [
 
         {/* Botões de ação */}
         <div className="mt-6 flex justify-end space-x-2">
+        {!isEditing && (
+            <button
+              onClick={printCard}
+              className="self-end bg-[#D4AF37] text-black px-4 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 transition text-sm"
+            >
+              {t('print')}
+            </button>
+          )}
           <button
             onClick={() => router.back()}
             className="bg-[#D4AF37] text-black px-3 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 text-sm"
