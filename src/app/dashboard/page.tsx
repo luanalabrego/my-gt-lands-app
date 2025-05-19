@@ -5,6 +5,17 @@ import { useTranslation } from '@/hooks/useTranslation'
 
 type PropertyRow = string[]
 
+// parse datas no formato BR “DD/MM/YYYY” ou ISO “YYYY-MM-DD”
+function parseBRDate(s: string): Date {
+  if (!s) return new Date('')
+  const parts = s.split('/')
+  if (parts.length === 3) {
+    const [d, m, y] = parts
+    return new Date(`${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`)
+  }
+  return new Date(s)
+}
+
 export default function DashboardPage() {
   const { t } = useTranslation()
 
@@ -32,13 +43,8 @@ export default function DashboardPage() {
         }
 
         const all = body.rows || []
-        console.log('[DashboardPage] rows totais (incluindo header):', all.length)
         const content = all.length > 1 ? all.slice(1) : []
-        console.log('[DashboardPage] rows de conteúdo:', content.length)
-
         const filtered = content.filter(r => r[2]?.toString().trim() !== '')
-        console.log('[DashboardPage] rows após filtrar número:', filtered.length)
-
         setRows(filtered)
       } catch (err) {
         console.error('[DashboardPage] falha no fetch:', err)
@@ -58,16 +64,20 @@ export default function DashboardPage() {
 
   // --- cálculos básicos ---
   const total = rows.length
-  const soldRows = rows.filter(r => Boolean(r[34]?.toString().trim()))   // coluna AI = data de venda
+  const soldRows = rows.filter(r => Boolean(r[34]?.toString().trim()))   // coluna AI: data de venda
   const pendingRows = rows.filter(r => !r[34]?.toString().trim())
 
   // 1) Tempo médio em estoque para pendentes (hoje - data compra em B=idx1)
   const today = new Date()
   const daysInStock = pendingRows
     .map(r => {
-      const buy = new Date(r[1] || '')
-      if (isNaN(buy.getTime())) return null
-      return (today.getTime() - buy.getTime()) / (1000 * 60 * 60 * 24)
+      const rawBuy = r[1]  // coluna B
+      const buyDate = parseBRDate(rawBuy)
+      if (isNaN(buyDate.getTime())) {
+        console.warn('[DashboardPage] data de compra inválida:', rawBuy)
+        return null
+      }
+      return (today.getTime() - buyDate.getTime()) / (1000 * 60 * 60 * 24)
     })
     .filter((d): d is number => d !== null)
   const avgDays = daysInStock.length
@@ -84,20 +94,26 @@ export default function DashboardPage() {
     return sum + v
   }, 0)
 
-  // 3) Tempo médio de venda: diferença entre data de venda (AI=idx34) e data compra (B=idx1)
+  // 3) Tempo médio de venda: (data de venda AI=idx34) – (data compra B=idx1)
   const soldDays = soldRows
     .map(r => {
-      const buy = new Date(r[1] || '')
-      const soldDate = new Date(r[34] || '')
-      if (isNaN(buy.getTime()) || isNaN(soldDate.getTime())) return null
-      return (soldDate.getTime() - buy.getTime()) / (1000 * 60 * 60 * 24)
+      const rawBuy  = r[1]
+      const rawSell = r[34]
+      console.log('[DashboardPage] compra:', rawBuy, '| venda:', rawSell)
+      const buyDate  = parseBRDate(rawBuy)
+      const sellDate = parseBRDate(rawSell)
+      if (isNaN(buyDate.getTime()) || isNaN(sellDate.getTime())) {
+        console.warn('[DashboardPage] data inválida:', rawBuy, rawSell)
+        return null
+      }
+      return (sellDate.getTime() - buyDate.getTime()) / (1000 * 60 * 60 * 24)
     })
     .filter((d): d is number => d !== null)
   const avgSoldAging = soldDays.length
     ? Math.round(soldDays.reduce((a, b) => a + b, 0) / soldDays.length)
     : 0
 
-  // 4) Média do aging de mercado (coluna AP = idx41), caso queira manter esse indicador
+  // 4) Média do aging de mercado (coluna AP = idx41)
   const marketAgingValues = rows
     .map(r => parseFloat(r[41]?.toString().replace(/[^0-9.-]+/g, '')) || NaN)
     .filter(v => !isNaN(v))
@@ -119,12 +135,10 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#1F1F1F] text-white px-4 py-6">
-      {/* Saudação */}
       <h1 className="text-2xl sm:text-3xl font-semibold mb-8">
         {t('greeting')}, Gustavo
       </h1>
 
-      {/* Grid de cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         {cards.map(({ key, value }) => (
           <div
@@ -141,7 +155,6 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Pendências */}
       <h2 className="text-xl sm:text-2xl font-semibold mb-4">
         {t('pendingHeading')}
       </h2>
