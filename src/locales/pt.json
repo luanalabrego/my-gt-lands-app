@@ -115,5 +115,7 @@
   "avgMarketAging": "Média do Aging de Mercado",
   "overviewHeading": "Visão Geral",
   "timeHeading": "Desempenho de Tempo",
-  "financeHeading": "Financeiro"
+  "financeHeading": "Financeiro",
+  "totalProfit": "Lucro Total"
+
 }

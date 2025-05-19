@@ -5,7 +5,6 @@ import { useTranslation } from '@/hooks/useTranslation'
 
 type PropertyRow = string[]
 
-// Tipo da resposta da API, agora incluindo error/message
 type ApiResponse = {
   ok: boolean
   rows?: PropertyRow[]
@@ -13,7 +12,7 @@ type ApiResponse = {
   message?: string
 }
 
-// helpers de parse de datas
+// Helpers para parse de datas US e BR
 function parseUS(dateStr: string): Date {
   const [m, d, y] = dateStr.split(/[\/\-]/)
   return new Date(Number(y), Number(m) - 1, Number(d))
@@ -23,11 +22,17 @@ function parseBR(dateStr: string): Date {
   return new Date(Number(y), Number(m) - 1, Number(d))
 }
 
-// componente de seção com título dourado
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+// Seção com título em dourado e sem underline
+function Section({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
   return (
     <div className="mb-12">
-      <h2 className="text-xl sm:text-2xl font-semibold mb-4 border-b-2 border-gold inline-block pb-1">
+      <h2 className="text-xl sm:text-2xl font-semibold mb-6 text-gold">
         {title}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -49,14 +54,17 @@ export default function DashboardPage() {
         const body = (await res.json()) as ApiResponse
 
         if (!body.ok) {
-          console.error('[DashboardPage] API retornou erro:', body.error ?? body.message)
+          console.error(
+            '[DashboardPage] API retornou erro:',
+            body.error ?? body.message
+          )
           setLoading(false)
           return
         }
 
-        const all     = body.rows || []
+        const all = body.rows || []
         const content = all.length > 1 ? all.slice(1) : []
-        setRows(content.filter(r => r[2]?.toString().trim() !== ''))
+        setRows(content.filter((r) => r[2]?.toString().trim() !== ''))
       } catch (err) {
         console.error('[DashboardPage] falha no fetch:', err)
       } finally {
@@ -73,14 +81,14 @@ export default function DashboardPage() {
     )
   }
 
-  // cálculos básicos
-  const total       = rows.length
-  const soldRows    = rows.filter(r => Boolean(r[34]?.toString().trim()))
-  const pendingRows = rows.filter(r => !r[34]?.toString().trim())
+  // Cálculos principais
+  const total = rows.length
+  const soldRows = rows.filter((r) => Boolean(r[34]?.toString().trim()))
+  const pendingRows = rows.filter((r) => !r[34]?.toString().trim())
 
-  // 1) Média aging em estoque (pendentes)
+  // 1) Média de dias em estoque (pendentes)
   const daysInStock = pendingRows
-    .map(r => {
+    .map((r) => {
       const str = r[1]?.toString().trim()
       if (!str) return NaN
       const dt = parseUS(str)
@@ -88,37 +96,39 @@ export default function DashboardPage() {
         ? NaN
         : (Date.now() - dt.getTime()) / (1000 * 60 * 60 * 24)
     })
-    .filter(v => !isNaN(v))
+    .filter((v) => !isNaN(v))
   const avgStockTime = daysInStock.length
     ? Math.round(daysInStock.reduce((a, b) => a + b, 0) / daysInStock.length)
     : 0
 
-  // 2) Tempo médio de venda
+  // 2) Tempo médio de venda (compra US x venda BR)
   const soldDurations = soldRows
-    .map(r => {
-      const buyStr  = r[1]?.toString().trim()
+    .map((r) => {
+      const buyStr = r[1]?.toString().trim()
       const sellStr = r[34]?.toString().trim()
       if (!buyStr || !sellStr) return NaN
-      const buy  = parseUS(buyStr)
+      const buy = parseUS(buyStr)
       const sell = parseBR(sellStr)
       if (isNaN(buy.getTime()) || isNaN(sell.getTime())) return NaN
       return (sell.getTime() - buy.getTime()) / (1000 * 60 * 60 * 24)
     })
-    .filter(v => !isNaN(v))
+    .filter((v) => !isNaN(v))
   const avgSoldTime = soldDurations.length
     ? Math.round(soldDurations.reduce((a, b) => a + b, 0) / soldDurations.length)
     : 0
 
   // 3) Média de aging de mercado (coluna AP índice 41)
   const marketAgingVals = rows
-    .map(r => parseFloat(r[41]?.toString().replace(',', '.')) || 0)
-    .filter(v => v > 0)
+    .map((r) => parseFloat(r[41]?.toString().replace(',', '.')) || 0)
+    .filter((v) => v > 0)
   const avgMarketAging = marketAgingVals.length
-    ? Math.round(marketAgingVals.reduce((a, b) => a + b, 0) / marketAgingVals.length)
+    ? Math.round(
+        marketAgingVals.reduce((a, b) => a + b, 0) / marketAgingVals.length
+      )
     : 0
 
   // 4) Valores monetários
-  const totalInStock   = pendingRows.reduce((sum, r) => {
+  const totalInStock = pendingRows.reduce((sum, r) => {
     const v = parseFloat(r[48]?.toString().replace(/[^0-9.-]+/g, '')) || 0
     return sum + v
   }, 0)
@@ -133,26 +143,30 @@ export default function DashboardPage() {
     return sum + v
   }, 0)
 
-  // monta cards
+  // Definição dos cards e categorias
   const cards = [
-    { key: 'totalProps',     value: total },
-    { key: 'soldProps',      value: soldRows.length },
-    { key: 'pendingProps',   value: pendingRows.length },
+    { key: 'totalProps', value: total },
+    { key: 'soldProps', value: soldRows.length },
+    { key: 'pendingProps', value: pendingRows.length },
     { key: 'avgMarketAging', value: `${avgMarketAging} ${t('days')}` },
-    { key: 'avgSoldTime',    value: `${avgSoldTime} ${t('days')}` },
-    { key: 'avgStockTime',   value: `${avgStockTime} ${t('days')}` },
-    { key: 'totalInStock',   value: `U$ ${totalInStock.toLocaleString()}` },
+    { key: 'avgSoldTime', value: `${avgSoldTime} ${t('days')}` },
+    { key: 'avgStockTime', value: `${avgStockTime} ${t('days')}` },
+    { key: 'totalInStock', value: `U$ ${totalInStock.toLocaleString()}` },
     { key: 'totalToReceive', value: `U$ ${totalToReceive.toLocaleString()}` },
-    { key: 'totalProfit',    value: `U$ ${totalProfit.toLocaleString()}` },
+    { key: 'totalProfit', value: `U$ ${totalProfit.toLocaleString()}` },
   ]
-
-  // categorias de cards
   const overviewKeys = ['totalProps', 'soldProps', 'pendingProps']
-  const timeKeys     = ['avgMarketAging', 'avgSoldTime', 'avgStockTime']
-  const financeKeys  = ['totalInStock', 'totalToReceive', 'totalProfit']
+  const timeKeys = ['avgMarketAging', 'avgSoldTime', 'avgStockTime']
+  const financeKeys = ['totalInStock', 'totalToReceive', 'totalProfit']
 
-  // renderiza um card
-  const renderCard = ({ key, value }: { key: string; value: string | number }) => {
+  // Função para renderizar cada card
+  const renderCard = ({
+    key,
+    value,
+  }: {
+    key: string
+    value: string | number
+  }) => {
     const compact = overviewKeys.includes(key)
     return (
       <div
@@ -179,24 +193,26 @@ export default function DashboardPage() {
       </h1>
 
       <Section title={t('overviewHeading')}>
-        {cards.filter(c => overviewKeys.includes(c.key)).map(renderCard)}
+        {cards
+          .filter((c) => overviewKeys.includes(c.key))
+          .map(renderCard)}
       </Section>
 
       <Section title={t('timeHeading')}>
-        {cards.filter(c => timeKeys.includes(c.key)).map(renderCard)}
+        {cards.filter((c) => timeKeys.includes(c.key)).map(renderCard)}
       </Section>
 
       <Section title={t('financeHeading')}>
-        {cards.filter(c => financeKeys.includes(c.key)).map(renderCard)}
+        {cards.filter((c) => financeKeys.includes(c.key)).map(renderCard)}
       </Section>
 
       {/* Pendências (vazio por enquanto) */}
       <div className="mb-12">
-        <h2 className="text-xl sm:text-2xl font-semibold mb-4 border-b-2 border-gold inline-block pb-1">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-6 text-gold">
           {t('pendingHeading')}
         </h2>
         <div className="bg-[#2C2C2C] rounded-2xl p-4 sm:p-6 shadow-lg">
-          {/* conteúdo a definir */}
+          {/* Conteúdo a definir */}
         </div>
       </div>
     </div>
