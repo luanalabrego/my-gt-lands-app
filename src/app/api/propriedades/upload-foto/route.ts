@@ -4,8 +4,6 @@ import { NextResponse } from 'next/server'
 import fs from 'fs'
 import path from 'path'
 import { google } from 'googleapis'
-import os from 'os'
-
 
 export const runtime = 'nodejs'
 export const config = { api: { bodyParser: false } }
@@ -26,9 +24,9 @@ export async function POST(request: Request) {
       throw new Error('Campo "foto" inválido')
     }
 
-    // 2) salvar arquivo em /public/uploads
+    // 2) salvar arquivo em public/uploads
     const buffer = Buffer.from(await file.arrayBuffer())
-    const uploadsDir = path.join(os.tmpdir(), 'uploads')
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true })
     }
@@ -61,11 +59,11 @@ export async function POST(request: Request) {
     const spreadsheetId = SPREADSHEET_ID
 
     // 4) ler planilha para encontrar a linha
-    const { data: all } = await sheets.spreadsheets.values.get({
+    const { data } = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: 'Cadastro de Propriedades!A1:ZZ',
     })
-    const rows: string[][] = all.values || []
+    const rows: string[][] = data.values || []
     const rowIndex = rows.findIndex(r => r[2] === numero)
     console.log('upload-foto: rowIndex encontrado =', rowIndex)
 
