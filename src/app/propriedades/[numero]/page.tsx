@@ -232,33 +232,20 @@ const sections = [
   <h2 className="text-lg font-bold text-[#D4AF37] border-b border-gray-600 border-l-4 border-[#D4AF37] pl-4 mb-4">
     {t('sectionPaymentTerms')}
   </h2>
-  <table className="w-full text-white border-collapse">
-    <thead>
-      <tr>
-        {[56, 57, 58].map(idx => (
-          <th
-            key={idx}
-            className="border px-2 py-1 text-gray-300 whitespace-nowrap text-left"
-          >
-            {headers[idx]}
-          </th>
-        ))}
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        {[56, 57, 58].map(idx => (
-          <td
-            key={idx}
-            className="border px-2 py-1 break-words"
-          >
-            {row[idx] || '—'}
-          </td>
-        ))}
-      </tr>
-    </tbody>
-  </table>
+  <div className="flex flex-wrap gap-x-6 gap-y-2 text-white">
+    {[56, 57, 58].map(idx => (
+      <div key={idx} className="flex items-start space-x-1">
+        <span className="font-medium text-gray-300 flex-shrink-0 whitespace-nowrap">
+          {headers[idx]}:
+        </span>
+        <span className="break-words">
+          {row[idx] || '—'}
+        </span>
+      </div>
+    ))}
+  </div>
 </section>
+
         {/* Imagem e ações */}
         <div className="mt-8 flex flex-col items-end">
           {previewUrl && (
