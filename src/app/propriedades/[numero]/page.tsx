@@ -347,7 +347,7 @@ const sections = [
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="bg-[#D4AF37] text-black px-3 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 text-sm"
+              className="bg-blue-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-blue-600 transition text-sm"
             >
               {t('edit')}
             </button>
