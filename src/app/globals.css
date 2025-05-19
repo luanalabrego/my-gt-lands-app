@@ -1,18 +1,28 @@
-/* 1) Primeiro: variáveis de tema e background padrão */
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-/* dark mode */
-@media (prefers-color-scheme: dark) {
+/* 1) Tailwind Base Layer */
+@tailwind base;
+
+@layer base {
+  /* variáveis de tema e background padrão */
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ffffff;
+    --foreground: #171717;
+  }
+  /* dark mode */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #0a0a0a;
+      --foreground: #ededed;
+    }
+  }
+  /* estilos globais do body */
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: Arial, Helvetica, sans-serif;
   }
 }
 
-/* 2) Tailwind: base, componentes, utilities */
-@tailwind base;
+/* 2) Tailwind Components Layer */
 @tailwind components;
 
 @layer components {
@@ -21,16 +31,12 @@
   .btn-sm   { @apply px-3 py-1 text-sm; }
 }
 
+/* 3) Tailwind Utilities Layer */
 @tailwind utilities;
 
-/* 3) Se precisar manter impressão */
-@media print {
-  /* suas regras de print aqui... */
-}
-
-/* 4) Por fim, garantimos que o body use nossas variáveis */
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* 4) Impressão */
+@layer base {
+  @media print {
+    /* suas regras de print aqui… */
+  }
 }
