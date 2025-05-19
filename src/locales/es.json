@@ -145,7 +145,10 @@
   "sectionLocation": "Ubicación Legal",
   "sectionHOA": "Información HOA",
   "sectionSaleValue": "Valor de Ventas",
-  "sectionPaymentTerms": "Condiciones de Pago"
+  "sectionPaymentTerms": "Condiciones de Pago",
+  "sectionPurchaseInfo": "Información de Compra",
+  "sectionSaleInfo": "Información de Venta",
+  "sectionFinancial": "Datos Financieros"
 
 
 }

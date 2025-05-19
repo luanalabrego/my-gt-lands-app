@@ -147,8 +147,10 @@
   "sectionSaleValue": "Sale Value",
   "sectionPaymentTerms": "Payment Terms",
   "filter": "Filter",
-   "available": "Avaiable"
-
+   "available": "Avaiable",
+   "sectionPurchaseInfo": "Purchase Information",
+  "sectionSaleInfo": "Sale Information",
+  "sectionFinancial": "Financial Data"
 
 
 }
