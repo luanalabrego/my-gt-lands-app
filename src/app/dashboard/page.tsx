@@ -56,22 +56,25 @@ export default function DashboardPage() {
     )
   }
 
-  // cálculos
+  // --- cálculos básicos ---
   const total = rows.length
-  const soldRows = rows.filter(r => Boolean(r[34]?.toString().trim())) // coluna AI
+  const soldRows = rows.filter(r => Boolean(r[34]?.toString().trim()))   // coluna AI = data de venda
   const pendingRows = rows.filter(r => !r[34]?.toString().trim())
 
-  // tempo em estoque para pendentes
+  // 1) Tempo médio em estoque para pendentes (hoje - data compra em B=idx1)
   const today = new Date()
-  const daysInStock = pendingRows.map(r => {
-    const purchase = new Date(r[1] || '')
-    return (today.getTime() - purchase.getTime()) / (1000 * 60 * 60 * 24)
-  })
+  const daysInStock = pendingRows
+    .map(r => {
+      const buy = new Date(r[1] || '')
+      if (isNaN(buy.getTime())) return null
+      return (today.getTime() - buy.getTime()) / (1000 * 60 * 60 * 24)
+    })
+    .filter((d): d is number => d !== null)
   const avgDays = daysInStock.length
     ? Math.round(daysInStock.reduce((a, b) => a + b, 0) / daysInStock.length)
     : 0
 
-  // valores totais
+  // 2) Valores totais
   const totalValue = pendingRows.reduce((sum, r) => {
     const v = parseFloat(r[48]?.toString().replace(/[^0-9.-]+/g, '')) || 0
     return sum + v
@@ -81,23 +84,28 @@ export default function DashboardPage() {
     return sum + v
   }, 0)
 
-  // tempo médio de venda (coluna AG = índice 32)
-  const soldAgingValues = soldRows
-    .map(r => parseFloat(r[32]?.toString().replace(/[^0-9.-]+/g, '')))
-    .filter(v => !isNaN(v))
-  const avgSoldAging = soldAgingValues.length
-    ? Math.round(soldAgingValues.reduce((a, b) => a + b, 0) / soldAgingValues.length)
+  // 3) Tempo médio de venda: diferença entre data de venda (AI=idx34) e data compra (B=idx1)
+  const soldDays = soldRows
+    .map(r => {
+      const buy = new Date(r[1] || '')
+      const soldDate = new Date(r[34] || '')
+      if (isNaN(buy.getTime()) || isNaN(soldDate.getTime())) return null
+      return (soldDate.getTime() - buy.getTime()) / (1000 * 60 * 60 * 24)
+    })
+    .filter((d): d is number => d !== null)
+  const avgSoldAging = soldDays.length
+    ? Math.round(soldDays.reduce((a, b) => a + b, 0) / soldDays.length)
     : 0
 
-  // média do aging de mercado (coluna AP = índice 41)
+  // 4) Média do aging de mercado (coluna AP = idx41), caso queira manter esse indicador
   const marketAgingValues = rows
-    .map(r => parseFloat(r[41]?.toString().replace(/[^0-9.-]+/g, '')))
+    .map(r => parseFloat(r[41]?.toString().replace(/[^0-9.-]+/g, '')) || NaN)
     .filter(v => !isNaN(v))
   const avgMarketAging = marketAgingValues.length
     ? Math.round(marketAgingValues.reduce((a, b) => a + b, 0) / marketAgingValues.length)
     : 0
 
-  // cards
+  // --- montagem dos cards ---
   const cards = [
     { key: 'totalProps',       value: total },
     { key: 'soldProps',        value: soldRows.length },
