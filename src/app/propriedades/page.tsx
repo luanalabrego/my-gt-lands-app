@@ -6,7 +6,7 @@ import { useLanguage } from '../../context/LanguageContext'
 import { useTranslation } from '../../hooks/useTranslation'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp, ClipboardCopy } from 'lucide-react'
 
 type PropertyRow = string[]
 
@@ -252,58 +252,63 @@ export default function PropriedadesPage() {
             const copyParcel   = () => navigator.clipboard.writeText(parcelNumber)
             const copyAddress  = () => navigator.clipboard.writeText(endereco)
 
-            return (
-              <div
-                key={i}
-                className="bg-[#2C2C2C] rounded-2xl p-6 shadow-lg flex flex-col justify-between"
-              >
-                <div className="space-y-2">
-                  {/* Número do pedido acima */}
-                  <h2 className="text-xl font-bold text-white">
-                  <span className="text-[#D4AF37]">#{numero}</span>
-                  </h2>
 
-                  {/* Endereço em linha separada + botão copiar */}
-                  <h3 className="text-white flex items-center">
-                    {endereco}
-                    <button
-                      onClick={copyAddress}
-                      className="ml-2 text-gray-400 hover:text-white"
-                      title="Copiar endereço"
-                    >
-                      📋
-                    </button>
-                  </h3>
-                   {/* Condado, estado */}
-                   <p className="text-gray-300 text-sm">
-                    {condado}, {estado}
-                  </p>
+return (
+  <div
+    key={i}
+    className="bg-[#2C2C2C] rounded-2xl p-6 shadow-lg flex flex-col justify-between"
+  >
+    <div className="space-y-2">
+      {/* Número do pedido acima */}
+      <h2 className="text-xl font-bold text-white">
+        <span className="text-[#D4AF37]">#{numero}</span>
+      </h2>
 
-                  {/* Parcel Number + botão copiar */}
-                  <div className="flex items-center space-x-2 text-gray-300 text-sm">
-                    <span>Parcel: {parcelNumber}</span>
-                    <button
-                      onClick={copyParcel}
-                      className="text-gray-400 hover:text-white"
-                      title="Copiar parcel"
-                    >
-                      📋
-                    </button>
-                  </div>
+      {/* Endereço em linha separada + botão copiar */}
+      <h3 className="text-white flex items-center">
+        {endereco}
+        <button
+          onClick={copyAddress}
+          className="ml-2"
+          title="Copiar endereço"
+        >
+          <ClipboardCopy
+            size={18}
+            className="text-gray-400 hover:text-white transition-colors"
+          />
+        </button>
+      </h3>
 
-                  {/* Acres */}
-                  <p className="text-gray-300 text-sm">
-                    Acres: {acres}
-                  </p>
+      {/* Condado, estado */}
+      <p className="text-gray-300 text-sm">
+        {condado}, {estado}
+      </p>
 
-                
+      {/* Parcel Number + botão copiar */}
+      <div className="flex items-center space-x-2 text-gray-300 text-sm">
+        <span>Parcel: {parcelNumber}</span>
+        <button
+          onClick={copyParcel}
+          title="Copiar parcel"
+        >
+          <ClipboardCopy
+            size={18}
+            className="text-gray-400 hover:text-white transition-colors"
+          />
+        </button>
+      </div>
 
-                  {descImovel && (
-                    <p className="text-gray-400 text-sm italic line-clamp-3">
-                      {descImovel}
-                    </p>
-                  )}
-                </div>
+      {/* Acres */}
+      <p className="text-gray-300 text-sm">
+        Acres: {acres}
+      </p>
+
+      {descImovel && (
+        <p className="text-gray-400 text-sm italic line-clamp-3">
+          {descImovel}
+        </p>
+      )}
+    </div>
 
                 {/* Rodapé do card */}
                 <div className="mt-4 flex items-center justify-between">
