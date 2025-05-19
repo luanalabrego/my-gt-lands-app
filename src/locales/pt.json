@@ -12,7 +12,7 @@
 
   "totalProps": "Total de Propriedades",
   "soldProps": "Propriedades Vendidas",
-  "pendingProps": "Propriedades Pendentes",
+  "pendingProps": "Propriedades Disponíveis",
   "avgStockTime": "Tempo Médio de Estoque",
   "totalInStock": "Valor total em estoque",
   "totalToReceive": "Total à Receber (já vendido)",

@@ -61,7 +61,7 @@ export default function DashboardPage() {
   const soldRows    = rows.filter(r => Boolean(r[34]?.toString().trim()))
   const pendingRows = rows.filter(r => !r[34]?.toString().trim())
 
-  // Média de dias em estoque
+  // Média de dias em estoque (pendentes)
   const daysInStock = pendingRows
     .map(r => {
       const s = r[1]?.toString().trim()
@@ -120,7 +120,7 @@ export default function DashboardPage() {
     maximumFractionDigits: 2,
   })
 
-  // Monta os cards, removendo "totalToReceive"
+  // Monta os cards
   const cards = [
     { key: 'totalProps',     value: total },
     { key: 'soldProps',      value: soldRows.length },
@@ -134,17 +134,15 @@ export default function DashboardPage() {
   ]
 
   const overviewKeys = ['totalProps','soldProps','pendingProps']
-  const timeKeys     = ['avgMarketAging','avgSoldTime','avgStockTime']
+  const timeKeys     = ['avgSoldTime','avgStockTime']  // removemos avgMarketAging daqui
   const financeKeys  = ['totalInStock','totalProfit','avgROI']
 
-  // Renderização condicional de cor nos tempos
+  // Renderiza um card, aplicando cor só para soldTime e stockTime
   const renderCard = ({ key, value }: { key: string; value: string|number }) => {
-    const isTime = timeKeys.includes(key)
-    const num    = parseFloat(value.toString())
-    const color  = isTime
-      ? num < avgMarketAging
-        ? 'text-green-400'
-        : 'text-red-400'
+    const isConditional = timeKeys.includes(key)
+    const num           = parseFloat(value.toString())
+    const color         = isConditional
+      ? (num < avgMarketAging ? 'text-green-400' : 'text-red-400')
       : 'text-gold'
 
     return (
@@ -165,7 +163,7 @@ export default function DashboardPage() {
         {t('greeting')}, Gustavo
       </h1>
 
-      {/* Seções em colunas no desktop */}
+      {/* Seções lado a lado em desktop */}
       <div className="flex flex-col space-y-12 md:flex-row md:space-y-0 md:space-x-8 mb-12">
         {/* Visão Geral */}
         <div className="flex-1">
@@ -183,7 +181,7 @@ export default function DashboardPage() {
             {t('timeHeading')}
           </h2>
           <div className="flex flex-col space-y-4">
-            {cards.filter(c => timeKeys.includes(c.key)).map(renderCard)}
+            {cards.filter(c => ['avgMarketAging', ...timeKeys].includes(c.key)).map(renderCard)}
           </div>
         </div>
 

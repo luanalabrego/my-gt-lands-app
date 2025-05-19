@@ -12,7 +12,7 @@
 
   "totalProps": "Total Properties",
   "soldProps": "Sold Properties",
-  "pendingProps": "Pending Properties",
+  "pendingProps": "Available Properties",
   "avgStockTime": "Average Stock Time",
   "totalInStock": "Total in Stock",
   "totalToReceive": "Total to Receive",
