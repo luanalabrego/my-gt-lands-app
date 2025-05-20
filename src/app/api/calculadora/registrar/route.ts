@@ -13,69 +13,78 @@ async function getSheetsClient() {
 }
 
 export async function POST(request: Request) {
-  const {
-    propriedade,
-    downPayment,
-    valorVenda,
-    totalJuros,
-    taxaAnual,
-    parcelas,
-    pmt,
-  } = await request.json()
+  try {
+    const {
+      propriedade,
+      downPayment,
+      valorVenda,
+      totalJuros,
+      taxaAnual,
+      parcelas,
+      pmt,
+    } = await request.json()
 
-  const sheets = await getSheetsClient()
-  const ssId = process.env.SPREADSHEET_ID!
-  const tab = 'Simulacoes'
+    const ssId = process.env.SPREADSHEET_ID!
+    const tab  = 'Simulacoes'
+    const sheets = await getSheetsClient()
 
-  // 1) garante existência da aba
-  const meta = await sheets.spreadsheets.get({ spreadsheetId: ssId })
-  const has = meta.data.sheets!.some(s => s.properties!.title === tab)
-  if (!has) {
-    await sheets.spreadsheets.batchUpdate({
+    // 1) garante existência da aba “Simulacoes”
+    const meta = await sheets.spreadsheets.get({ spreadsheetId: ssId })
+    const has = meta.data.sheets?.some(s => s.properties?.title === tab)
+    if (!has) {
+      // cria a aba
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId: ssId,
+        requestBody: {
+          requests: [{
+            addSheet: { properties: { title: tab } }
+          }]
+        }
+      })
+      // adiciona cabeçalho na primeira linha
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: ssId,
+        range: `${tab}!A1:G1`,
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: [[
+            'Propriedade',
+            'Entrada (USD)',
+            'Valor de Venda (USD)',
+            'Total de Juros (USD)',
+            'Taxa de Juros (%)',
+            'Número de Parcelas',
+            'Parcela (USD)'
+          ]]
+        }
+      })
+    }
+
+    // 2) insere nova linha de dados
+    await sheets.spreadsheets.values.append({
       spreadsheetId: ssId,
-      requestBody: {
-        requests: [{
-          addSheet: { properties: { title: tab } }
-        }]
-      }
-    })
-    // cria cabeçalho
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: ssId,
-      range: `${tab}!A1:G1`,
-      valueInputOption: 'RAW',
+      range: `${tab}!A:G`,
+      valueInputOption: 'USER_ENTERED',
+      insertDataOption: 'INSERT_ROWS',
       requestBody: {
         values: [[
-          'Propriedade',
-          'Entrada (USD)',
-          'Valor de Venda (USD)',
-          'Total de Juros (USD)',
-          'Taxa de Juros (%)',
-          'Número de Parcelas',
-          'Parcela (USD)'
+          propriedade,
+          downPayment,
+          valorVenda,
+          totalJuros,
+          `${taxaAnual}%`,
+          parcelas,
+          pmt
         ]]
       }
     })
+
+    return NextResponse.json({ ok: true })
+  } catch (err: any) {
+    console.error('Erro ao registrar simulação:', err)
+    return NextResponse.json(
+      { ok: false, message: err.message || 'Erro interno ao registrar' },
+      { status: 500 }
+    )
   }
-
-  // 2) insere nova linha
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: ssId,
-    range: `${tab}!A:G`,
-    valueInputOption: 'USER_ENTERED',
-    insertDataOption: 'INSERT_ROWS',
-    requestBody: {
-      values: [[
-        propriedade,
-        downPayment,
-        valorVenda,
-        totalJuros,
-        `${taxaAnual}%`,
-        parcelas,
-        pmt
-      ]]
-    }
-  })
-
-  return NextResponse.json({ ok: true })
 }
