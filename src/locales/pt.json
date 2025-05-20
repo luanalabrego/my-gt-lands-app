@@ -154,6 +154,16 @@
   "sectionFinancial": "Dados Financeiros",
   "showMore": "Ver mais",
   "showLess": "Ver menos",
-  "calculator": "Calculadora"
+  "calculator": "Calculadora",
+  "calculatorTitle": "Calculadora de Parcelamento",
+  "simulate": "Simular",
+  "register": "Registrar",
+  "pleaseWait": "Aguarde...",
+  "saleValue": "Valor de Venda (USD)",
+  "downPayment": "Entrada (USD)",
+  "financedValue": "Valor Financiado (USD)",
+  "installment": "Parcela (x{{n}})",
+  "totalInterest": "Total de Juros (USD)",
+  "annualRatePercent": "Taxa anual (%)"
 
 }

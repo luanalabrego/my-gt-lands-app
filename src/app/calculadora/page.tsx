@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import toast from 'react-hot-toast' // ou qualquer lib de notificação
+import toast from 'react-hot-toast'
 
 type Simulacao = {
   valorVenda: number
@@ -29,8 +29,8 @@ export default function CalculadoraPage() {
       .then((body: { ok: boolean; rows?: string[][] }) => {
         if (body.ok && body.rows) {
           const lista = body.rows
-          .slice(1)
-          .map((row: string[]) => row[2])
+            .slice(1)
+            .map((row: string[]) => row[2])
           setPropsList(lista)
           setPropriedade(lista[0] || '')
         }
@@ -78,7 +78,7 @@ export default function CalculadoraPage() {
         })
       })
       const body = await resp.json()
-      if (body.ok) {
+      if (resp.ok && body.ok) {
         toast.success('Registrado com sucesso!')
       } else {
         toast.error('Falha ao registrar')
@@ -91,80 +91,102 @@ export default function CalculadoraPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Calculadora de Parcelamento</h1>
+    <div className="min-h-screen bg-[#1F1F1F] flex items-center justify-center p-6">
+      <div className="w-full max-w-md bg-[#2C2C2C] rounded-2xl p-6 shadow-lg space-y-6">
+        <h1 className="text-2xl font-bold text-[#D4AF37] text-center">
+          Calculadora de Parcelamento
+        </h1>
 
-      <div className="space-y-4">
-        <label className="block">
-          Propriedade:
-          <select
-            value={propriedade}
-            onChange={e => setPropriedade(e.target.value)}
-            className="mt-1 block w-full border px-2 py-1"
-          >
-            {propsList.map(p => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
-        </label>
+        <div className="space-y-4">
+          <label className="block text-gray-200">
+            Propriedade:
+            <select
+              value={propriedade}
+              onChange={e => setPropriedade(e.target.value)}
+              className="mt-1 w-full bg-black border border-gray-600 rounded px-3 py-2 text-white"
+            >
+              {propsList.map(p => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+          </label>
 
-        <label className="block">
-          Entrada (%):
-          <input
-            type="number"
-            value={entrada}
-            onChange={e => setEntrada(e.target.value)}
-            className="mt-1 block w-full border px-2 py-1"
-          />
-        </label>
+          <label className="block text-gray-200">
+            Entrada (%):
+            <input
+              type="number"
+              value={entrada}
+              onChange={e => setEntrada(e.target.value)}
+              className="mt-1 w-full bg-black border border-gray-600 rounded px-3 py-2 text-white"
+            />
+          </label>
 
-        <label className="block">
-          Parcelas:
-          <input
-            type="number"
-            value={parcelas}
-            onChange={e => setParcelas(e.target.value)}
-            className="mt-1 block w-full border px-2 py-1"
-          />
-        </label>
+          <label className="block text-gray-200">
+            Parcelas:
+            <input
+              type="number"
+              value={parcelas}
+              onChange={e => setParcelas(e.target.value)}
+              className="mt-1 w-full bg-black border border-gray-600 rounded px-3 py-2 text-white"
+            />
+          </label>
 
-        <label className="block">
-          Taxa anual (%):
-          <input
-            type="number"
-            value={taxa}
-            onChange={e => setTaxa(e.target.value)}
-            className="mt-1 block w-full border px-2 py-1"
-          />
-        </label>
-
-        <button
-          onClick={handleSimular}
-          disabled={loading}
-          className="w-full bg-blue-500 text-white py-2 rounded"
-        >
-          {loading ? 'Aguarde...' : 'Simular'}
-        </button>
-      </div>
-
-      {sim && (
-        <div className="bg-gray-100 p-4 rounded space-y-2">
-          <p>Valor de Venda: ${sim.valorVenda.toFixed(2)}</p>
-          <p>Entrada: ${sim.downPayment.toFixed(2)}</p>
-          <p>Valor Financiado: ${sim.valorFinanciado.toFixed(2)}</p>
-          <p>Parcela ({sim.parcelas}×): ${sim.pmt.toFixed(2)}</p>
-          <p>Total de Juros: ${sim.totalJuros.toFixed(2)}</p>
-          <p>Taxa anual: {sim.taxaAnual.toFixed(2)}%</p>
+          <label className="block text-gray-200">
+            Taxa anual (%):
+            <input
+              type="number"
+              value={taxa}
+              onChange={e => setTaxa(e.target.value)}
+              className="mt-1 w-full bg-black border border-gray-600 rounded px-3 py-2 text-white"
+            />
+          </label>
 
           <button
-            onClick={handleRegistrar}
+            onClick={handleSimular}
             disabled={loading}
-            className="mt-4 w-full bg-green-500 text-white py-2 rounded"
+            className="w-full bg-[#D4AF37] text-black font-medium py-2 rounded hover:bg-[#D4AF37]/90 transition"
           >
-            {loading ? 'Registrando...' : 'Registrar'}
+            {loading ? 'Aguarde...' : 'Simular'}
           </button>
         </div>
-      )}
+
+        {sim && (
+          <div className="bg-[#1F1F1F] rounded-xl p-4 space-y-3">
+            <div className="flex justify-between text-white">
+              <span>Valor de Venda (USD):</span>
+              <span>${sim.valorVenda.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-white">
+              <span>Entrada (USD):</span>
+              <span>${sim.downPayment.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-white">
+              <span>Valor Financiado (USD):</span>
+              <span>${sim.valorFinanciado.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-white">
+              <span>Parcela ({sim.parcelas}×):</span>
+              <span>${sim.pmt.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-white">
+              <span>Total de Juros (USD):</span>
+              <span>${sim.totalJuros.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-white">
+              <span>Taxa anual (%):</span>
+              <span>{sim.taxaAnual.toFixed(2)}%</span>
+            </div>
+
+            <button
+              onClick={handleRegistrar}
+              disabled={loading}
+              className="mt-4 w-full bg-green-500 text-white font-medium py-2 rounded hover:bg-green-600 transition"
+            >
+              {loading ? 'Registrando...' : 'Registrar'}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
