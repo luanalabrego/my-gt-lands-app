@@ -24,32 +24,26 @@ export async function POST(request: Request) {
     const ssId = process.env.SPREADSHEET_ID!
     if (!ssId) throw new Error('SPREADSHEET_ID não configurado')
 
-    // busca propriedades via API interna
-    const propsRes = await fetch(new URL('/api/propriedades', request.url))
-    const propsBody = (await propsRes.json()) as { ok: boolean; rows?: string[][] }
-    if (!propsBody.ok || !propsBody.rows) {
-      return NextResponse.json({ error: 'Não foi possível listar propriedades' }, { status: 500 })
-    }
+    // 1) lê todas as propriedades no mesmo range de '/api/propriedades'
+    const range = `'Cadastro de Propriedades'!A8:BG`
+    const allRes = await sheets.spreadsheets.values.get({ spreadsheetId: ssId, range })
+    const rows: string[][] = allRes.data.values || []
 
-    const dataRows = propsBody.rows.slice(1)
-    const idx = dataRows.findIndex(r => r[2] === propriedade)
+    // 2) encontra a linha onde coluna C (idx 2) === propriedade
+    const idx = rows.findIndex(r => r[2] === propriedade)
     if (idx < 0) {
       return NextResponse.json({ error: 'Propriedade não encontrada' }, { status: 404 })
     }
-    const rowNum = idx + 2
+    const sheetRow = idx + 8  // porque começamos em A8
 
-    // lê valor de venda (coluna AO = 41)
-    const vendaCell = await sheets.spreadsheets.values.get({
-      spreadsheetId: ssId,
-      range: `Cadastro de Propriedades!AO${rowNum}`,
-    })
-    const rawVenda = (vendaCell.data.values?.[0]?.[0] || '').toString()
-    const valorVenda = parseFloat(rawVenda.replace(/[^0-9.\-]/g, ''))
+    // 3) lê o valor de venda na coluna AO (coluna 41 → índice 40)
+    const vendaCell = rows[idx][40] || ''
+    const valorVenda = parseFloat(vendaCell.replace(/[^0-9.\-]/g, ''))
     if (isNaN(valorVenda)) {
       return NextResponse.json({ error: 'Valor de venda inválido' }, { status: 400 })
     }
 
-    // cálculos
+    // 4) cálculos
     const entFrac = (parseFloat(entrada) || 30) / 100
     const downPayment = valorVenda * entFrac
     const valorFin = valorVenda - downPayment

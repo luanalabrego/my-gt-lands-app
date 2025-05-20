@@ -1,3 +1,4 @@
+// src/app/api/calculadora/registrar/route.ts
 import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
 
@@ -25,6 +26,8 @@ export async function POST(request: Request) {
     } = await request.json()
 
     const ssId = process.env.SPREADSHEET_ID!
+    if (!ssId) throw new Error('SPREADSHEET_ID não configurado')
+
     const tab  = 'Simulacoes'
     const sheets = await getSheetsClient()
 
@@ -41,7 +44,7 @@ export async function POST(request: Request) {
           }]
         }
       })
-      // adiciona cabeçalho na primeira linha
+      // adiciona cabeçalho
       await sheets.spreadsheets.values.update({
         spreadsheetId: ssId,
         range: `${tab}!A1:G1`,
@@ -60,7 +63,7 @@ export async function POST(request: Request) {
       })
     }
 
-    // 2) insere nova linha de dados
+    // 2) insere nova linha
     await sheets.spreadsheets.values.append({
       spreadsheetId: ssId,
       range: `${tab}!A:G`,
