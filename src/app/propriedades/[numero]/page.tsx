@@ -17,6 +17,7 @@ export default function PropertyDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<number, string>>({});
+  const [showExtras, setShowExtras] = useState(false);
 
   // índices fixos
   const saleDateIdx = 34;
@@ -306,35 +307,110 @@ const soldSections = [
 
 {/* Demais seções na ordem desejada */}
 <div className="space-y-8 mt-8">
-{(isSold ? soldSections : availableSections).map(({ title, indices }) => (
-    <section key={title}>
-      <h2 className="text-lg font-bold text-[#D4AF37] border-b border-gray-600 pl-2 mb-4">
-        {title}
-      </h2>
-      <div className="flex flex-wrap gap-x-4 gap-y-2 text-white">
-        {indices.map(idx => (
-          <div key={idx} className="flex items-start space-x-1">
-            <span className="font-medium text-gray-300 flex-shrink-0 whitespace-nowrap">
-              {headers[idx] || `Col ${idx}`}:
-            </span>
-            {isEditing ? (
-              <input
-                type="text"
-                value={editValues[idx] || ''}
-                onChange={e => handleChangeField(idx, e.target.value)}
-                className="bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm break-words"
-              />
-            ) : (
-              <span className="text-white break-words">
-                {row[idx] || '—'}
-              </span>
-            )}
+  {isSold ? (
+    <>
+      {/* Renderiza até Dados Financeiros */}
+      {soldSections.slice(0, 5).map(({ title, indices }) => (
+        <section key={title}>
+          <h2 className="text-lg font-bold text-[#D4AF37] border-b border-gray-600 pl-2 mb-4">
+            {title}
+          </h2>
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-white">
+            {indices.map(idx => (
+              <div key={idx} className="flex items-start space-x-1">
+                <span className="font-medium text-gray-300 flex-shrink-0 whitespace-nowrap">
+                  {headers[idx] || `Col ${idx}`}:
+                </span>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editValues[idx] || ''}
+                    onChange={e => handleChangeField(idx, e.target.value)}
+                    className="bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm break-words"
+                  />
+                ) : (
+                  <span className="text-white break-words">
+                    {row[idx] || '—'}
+                  </span>
+                )}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-    </section>
-  ))}
+        </section>
+      ))}
+
+      {/* Botão para mostrar/ocultar extras */}
+      <button
+        onClick={() => setShowExtras(prev => !prev)}
+        className="mt-4 flex items-center text-sm text-[#D4AF37] hover:underline"
+      >
+        {showExtras ? '▼' : '▶'} {showExtras ? t('showLess') : t('showMore')}
+      </button>
+
+      {/* Seções extras (renderiza apenas se showExtras for true) */}
+      {showExtras &&
+        soldSections.slice(5).map(({ title, indices }) => (
+          <section key={title}>
+            <h2 className="text-lg font-bold text-[#D4AF37] border-b border-gray-600 pl-2 mb-4">
+              {title}
+            </h2>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-white">
+              {indices.map(idx => (
+                <div key={idx} className="flex items-start space-x-1">
+                  <span className="font-medium text-gray-300 flex-shrink-0 whitespace-nowrap">
+                    {headers[idx] || `Col ${idx}`}:
+                  </span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editValues[idx] || ''}
+                      onChange={e => handleChangeField(idx, e.target.value)}
+                      className="bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm break-words"
+                    />
+                  ) : (
+                    <span className="text-white break-words">
+                      {row[idx] || '—'}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+      ))}
+    </>
+  ) : (
+    /* Fluxo “disponível” continua igual */
+    availableSections.map(({ title, indices }) => (
+      <section key={title}>
+        <h2 className="text-lg font-bold text-[#D4AF37] border-b border-gray-600 pl-2 mb-4">
+          {title}
+        </h2>
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-white">
+          {indices.map(idx => (
+            <div key={idx} className="flex items-start space-x-1">
+              <span className="font-medium text-gray-300 flex-shrink-0 whitespace-nowrap">
+                {headers[idx] || `Col ${idx}`}:
+              </span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={editValues[idx] || ''}
+                  onChange={e => handleChangeField(idx, e.target.value)}
+                  className="bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm break-words"
+                />
+              ) : (
+                <span className="text-white break-words">
+                  {row[idx] || '—'}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    ))
+  )}
 </div>
+
 
         {/* Botões de ação */}
         <div className="mt-6 flex justify-end space-x-2 print:hidden">

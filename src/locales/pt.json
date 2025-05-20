@@ -144,13 +144,15 @@
   "sectionPropertyDescription": "Descrição do Imóvel",
   "sectionLocation": "Localização Legal",
   "sectionHOA": "Condomínio (HOA)",
-  "sectionSaleValue": "Valor de Venda",
+  "sectionSaleValue": "Valor da Venda",
   "sectionPaymentTerms": "Condições de Pagamento",
   "filter": "Filtro",
   "available": "Disponível",
   "printAll": "Imprimir tudo",
   "sectionPurchaseInfo": "Informações da Compra",
   "sectionSaleInfo": "Informações da Venda",
-  "sectionFinancial": "Dados Financeiros"
+  "sectionFinancial": "Dados Financeiros",
+  "showMore": "Ver mais",
+  "showLess": "Ver menos"
 
 }
