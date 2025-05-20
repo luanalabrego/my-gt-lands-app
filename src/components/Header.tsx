@@ -21,6 +21,7 @@ export default function Header() {
     { href: '/propriedades', key: 'properties',   Icon: MapPin     },
     { href: '/tarefas',      key: 'tasks',        Icon: ClipboardList },
     { href: '/financeiro',   key: 'financials',   Icon: DollarSign  },
+    { href: '/calculadora',  key: 'calculator',   Icon: Calculator  },
   ]
 
   return (
