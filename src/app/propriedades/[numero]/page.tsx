@@ -318,7 +318,9 @@ const soldSections = [
           <div className="flex flex-wrap gap-x-4 gap-y-2 text-white">
           {indices.map(idx => {
   const raw = row[idx] ?? '0';
-  const num = parseFloat(raw.replace(/,/g, '.')) || 0;
+  // remove tudo que não seja dígito, ponto ou sinal de negativo
+  const cleaned = raw.replace(/[^0-9.\-]/g, '');
+  const num = parseFloat(cleaned) || 0;
   const financialIdx = [51, 52, 53, 54]; // ajuste caso use outros índices
 
   return (
@@ -350,7 +352,6 @@ const soldSections = [
     </div>
   );
 })}
-
           </div>
         </section>
       ))}
