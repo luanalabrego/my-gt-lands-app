@@ -276,20 +276,29 @@ const soldSections = [
   </section>
 
   {/* Condições de Pagamento */}
-  <section className="mt-6">
-    <h2 className="text-lg font-semibold text-white border-b border-gray-600 pb-1 mb-4">
-      {t('sectionPaymentTerms')}
-    </h2>
-    <div className="flex flex-wrap gap-x-6 gap-y-2 text-white">
-      {[56, 57, 58].map(idx => (
-        <div key={idx} className="flex items-start space-x-1">
-          <span className="font-medium text-gray-300 whitespace-nowrap">
-            {headers[idx]}:
-          </span>
+<section className="mt-6">
+  <h2 className="text-lg font-semibold text-white border-b border-gray-600 pb-1 mb-4">
+    {t('sectionPaymentTerms')}
+  </h2>
+  <div className="flex flex-wrap gap-x-6 gap-y-2 text-white">
+    {[56, 57, 58].map(idx => (
+      <div key={idx} className="flex items-start space-x-1">
+        <span className="font-medium text-gray-300 whitespace-nowrap">
+          {t(headers[idx])}:
+        </span>
+        {isEditing ? (
+          <input
+            type="text"
+            value={editValues[idx] || ''}
+            onChange={e => handleChangeField(idx, e.target.value)}
+            className="bg-black border border-gray-600 px-2 py-1 rounded text-white text-sm break-words"
+          />
+        ) : (
           <span className="break-words">
             {row[idx] || '—'}
           </span>
-        </div>
+        )}
+      </div>
       ))}
     </div>
   </section>
