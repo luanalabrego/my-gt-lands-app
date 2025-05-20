@@ -26,9 +26,11 @@ export default function CalculadoraPage() {
   useEffect(() => {
     fetch('/api/propriedades')
       .then(r => r.json())
-      .then(body => {
+      .then((body: { ok: boolean; rows?: string[][] }) => {
         if (body.ok && body.rows) {
-          const lista = body.rows.slice(1).map(r => r[2])
+          const lista = body.rows
+          .slice(1)
+          .map((row: string[]) => row[2])
           setPropsList(lista)
           setPropriedade(lista[0] || '')
         }
