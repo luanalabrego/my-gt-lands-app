@@ -213,6 +213,11 @@ const soldSections = [
   { title: t('sectionSaleInfo'),       indices: [34,50,40] },
   // nova seção: Dados Financeiros
   { title: t('sectionFinancial'),      indices: [51, 52,53,54 ] },
+  { title: t('sectionZoning'),         indices: [10, 11, 22] },
+  { title: t('sectionUtilities'),      indices: [14, 15, 16, 17, 18, 19] },
+  { title: t('sectionFlood'),          indices: [20] },
+  { title: t('sectionHOA'),            indices: [26, 27, 28, 29] },
+  { title: t('sectionTax'),            indices: [13] },  // imposto anual por último
 ]
 
 
