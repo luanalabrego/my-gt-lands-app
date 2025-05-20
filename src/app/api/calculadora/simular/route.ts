@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     const sheetRow = idx + 8  // porque começamos em A8
 
     // 3) lê o valor de venda na coluna AO (coluna 41 → índice 40)
-    const vendaCell = rows[idx][40] || ''
+    const vendaCell = rows[idx][50] || ''
     const valorVenda = parseFloat(vendaCell.replace(/[^0-9.\-]/g, ''))
     if (isNaN(valorVenda)) {
       return NextResponse.json({ error: 'Valor de venda inválido' }, { status: 400 })
