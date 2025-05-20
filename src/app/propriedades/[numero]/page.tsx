@@ -210,7 +210,7 @@ const soldSections = [
   { title: t('sectionPurchaseInfo'), indices: [ 1, 44,48 ] },
 
   // nova seção: Informações de Venda
-  { title: t('sectionSaleInfo'),       indices: [34,50,40] },
+  { title: t('sectionSaleInfo'),       indices: [34,50,40, 59] },
   // nova seção: Dados Financeiros
   { title: t('sectionFinancial'),      indices: [51, 52,53,54 ] },
   { title: t('sectionZoning'),         indices: [10, 11, 22] },
