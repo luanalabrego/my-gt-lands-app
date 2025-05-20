@@ -148,7 +148,9 @@
   "sectionPaymentTerms": "Condiciones de Pago",
   "sectionPurchaseInfo": "Información de Compra",
   "sectionSaleInfo": "Información de Venta",
-  "sectionFinancial": "Datos Financieros"
+  "sectionFinancial": "Datos Financieros",
+  "showMore": "Mostrar más",
+  "showLess": "Mostrar menos"
 
 
 }

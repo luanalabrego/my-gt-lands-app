@@ -150,7 +150,9 @@
    "available": "Avaiable",
    "sectionPurchaseInfo": "Purchase Information",
   "sectionSaleInfo": "Sale Information",
-  "sectionFinancial": "Financial Data"
+  "sectionFinancial": "Financial Data",
+  "showMore": "Show more",
+  "showLess": "Show less"
 
 
 }
