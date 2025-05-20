@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
 
-export const runtime = 'nodejs'   // <<< adicione isso
+export const runtime = 'nodejs'
 
 async function getSheetsClient() {
   const auth = new google.auth.GoogleAuth({
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     const ssId = process.env.SPREADSHEET_ID!
     if (!ssId) throw new Error('SPREADSHEET_ID não configurado')
 
-    // 1) busca lista de propriedades
+    // busca propriedades via API interna
     const propsRes = await fetch(new URL('/api/propriedades', request.url))
     const propsBody = (await propsRes.json()) as { ok: boolean; rows?: string[][] }
     if (!propsBody.ok || !propsBody.rows) {
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     }
     const rowNum = idx + 2
 
-    // 2) lê valor de venda (coluna AO = 41)
+    // lê valor de venda (coluna AO = 41)
     const vendaCell = await sheets.spreadsheets.values.get({
       spreadsheetId: ssId,
       range: `Cadastro de Propriedades!AO${rowNum}`,
@@ -49,14 +49,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Valor de venda inválido' }, { status: 400 })
     }
 
-    // 3) cálculos
+    // cálculos
     const entFrac = (parseFloat(entrada) || 30) / 100
     const downPayment = valorVenda * entFrac
     const valorFin = valorVenda - downPayment
     const n = parseInt(parcelas) || 36
     const j = (parseFloat(taxa) || 0) / 100 / 12
-    const pmt =
-      valorFin * (j * Math.pow(1 + j, n)) / (Math.pow(1 + j, n) - 1)
+    const pmt = valorFin * (j * Math.pow(1 + j, n)) / (Math.pow(1 + j, n) - 1)
     const totalJuros = pmt * n - valorFin
 
     return NextResponse.json({
