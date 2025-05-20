@@ -1,5 +1,8 @@
+// src/app/api/calculadora/simular/route.ts
 import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
+
+export const runtime = 'nodejs'   // <<< adicione isso
 
 async function getSheetsClient() {
   const auth = new google.auth.GoogleAuth({
@@ -17,30 +20,30 @@ export async function POST(request: Request) {
     const { propriedade, entrada = '30', parcelas = '36', taxa = '0' } =
       await request.json()
 
-    const ssId = process.env.SPREADSHEET_ID!
     const sheets = await getSheetsClient()
+    const ssId = process.env.SPREADSHEET_ID!
+    if (!ssId) throw new Error('SPREADSHEET_ID não configurado')
 
-    // 1) pegar lista de propriedades via endpoint existente
+    // 1) busca lista de propriedades
     const propsRes = await fetch(new URL('/api/propriedades', request.url))
     const propsBody = (await propsRes.json()) as { ok: boolean; rows?: string[][] }
     if (!propsBody.ok || !propsBody.rows) {
       return NextResponse.json({ error: 'Não foi possível listar propriedades' }, { status: 500 })
     }
 
-    // dataRows[0] = linha 2 da planilha, mas sua tabela real começa na linha 9
-    const dataRows = propsBody.rows.slice(8)  // pule as 8 primeiras linhas
+    const dataRows = propsBody.rows.slice(1)
     const idx = dataRows.findIndex(r => r[2] === propriedade)
     if (idx < 0) {
       return NextResponse.json({ error: 'Propriedade não encontrada' }, { status: 404 })
     }
-    const sheetRow = idx + 9  // se dataRows[0] é planilha linha 9
+    const rowNum = idx + 2
 
-    // 2) lê valor de venda na coluna AO (= coluna 41)
+    // 2) lê valor de venda (coluna AO = 41)
     const vendaCell = await sheets.spreadsheets.values.get({
       spreadsheetId: ssId,
-      range: `Cadastro de Propriedades!AO${sheetRow}`,
+      range: `Cadastro de Propriedades!AO${rowNum}`,
     })
-    const rawVenda = vendaCell.data.values?.[0]?.[0] as string
+    const rawVenda = (vendaCell.data.values?.[0]?.[0] || '').toString()
     const valorVenda = parseFloat(rawVenda.replace(/[^0-9.\-]/g, ''))
     if (isNaN(valorVenda)) {
       return NextResponse.json({ error: 'Valor de venda inválido' }, { status: 400 })
@@ -52,7 +55,8 @@ export async function POST(request: Request) {
     const valorFin = valorVenda - downPayment
     const n = parseInt(parcelas) || 36
     const j = (parseFloat(taxa) || 0) / 100 / 12
-    const pmt = valorFin * (j * Math.pow(1 + j, n)) / (Math.pow(1 + j, n) - 1)
+    const pmt =
+      valorFin * (j * Math.pow(1 + j, n)) / (Math.pow(1 + j, n) - 1)
     const totalJuros = pmt * n - valorFin
 
     return NextResponse.json({
@@ -65,7 +69,10 @@ export async function POST(request: Request) {
       taxaAnual: j * 12 * 100,
     })
   } catch (err: any) {
-    console.error('Erro no simulador:', err)
-    return NextResponse.json({ error: err.message || 'Erro interno' }, { status: 500 })
+    console.error('Erro em /api/calculadora/simular:', err)
+    return NextResponse.json(
+      { error: err.message || 'Erro interno' },
+      { status: 500 }
+    )
   }
 }
