@@ -1,4 +1,3 @@
-// src/app/api/calculadora/registrar/route.ts
 import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
 
@@ -28,14 +27,13 @@ export async function POST(request: Request) {
     const ssId = process.env.SPREADSHEET_ID!
     if (!ssId) throw new Error('SPREADSHEET_ID não configurado')
 
-    const tab  = 'Simulacoes'
+    const tab = 'Simulacoes'
     const sheets = await getSheetsClient()
 
-    // 1) garante existência da aba “Simulacoes”
+    // 1) garante existência da aba “Simulacoes” e cabeçalho
     const meta = await sheets.spreadsheets.get({ spreadsheetId: ssId })
     const has = meta.data.sheets?.some(s => s.properties?.title === tab)
     if (!has) {
-      // cria a aba
       await sheets.spreadsheets.batchUpdate({
         spreadsheetId: ssId,
         requestBody: {
@@ -44,7 +42,6 @@ export async function POST(request: Request) {
           }]
         }
       })
-      // adiciona cabeçalho
       await sheets.spreadsheets.values.update({
         spreadsheetId: ssId,
         range: `${tab}!A1:G1`,
@@ -63,24 +60,53 @@ export async function POST(request: Request) {
       })
     }
 
-    // 2) insere nova linha
-    await sheets.spreadsheets.values.append({
+    // 2) lê propriedades já registradas (coluna A, a partir da linha 2)
+    const readRes = await sheets.spreadsheets.values.get({
       spreadsheetId: ssId,
-      range: `${tab}!A:G`,
-      valueInputOption: 'USER_ENTERED',
-      insertDataOption: 'INSERT_ROWS',
-      requestBody: {
-        values: [[
-          propriedade,
-          downPayment,
-          valorVenda,
-          totalJuros,
-          `${taxaAnual}%`,
-          parcelas,
-          pmt
-        ]]
-      }
+      range: `${tab}!A2:A`,
     })
+    const existingRows: string[][] = readRes.data.values || []
+    const existingIdx = existingRows.findIndex(r => r[0] === propriedade)
+
+    if (existingIdx >= 0) {
+      // 3a) se existir, atualiza a linha correspondente
+      const rowNumber = existingIdx + 2
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: ssId,
+        range: `${tab}!A${rowNumber}:G${rowNumber}`,
+        valueInputOption: 'USER_ENTERED',
+        requestBody: {
+          values: [[
+            propriedade,
+            downPayment,
+            valorVenda,
+            totalJuros,
+            `${taxaAnual}%`,
+            parcelas,
+            pmt
+          ]]
+        }
+      })
+    } else {
+      // 3b) senão, insere nova linha
+      await sheets.spreadsheets.values.append({
+        spreadsheetId: ssId,
+        range: `${tab}!A:G`,
+        valueInputOption: 'USER_ENTERED',
+        insertDataOption: 'INSERT_ROWS',
+        requestBody: {
+          values: [[
+            propriedade,
+            downPayment,
+            valorVenda,
+            totalJuros,
+            `${taxaAnual}%`,
+            parcelas,
+            pmt
+          ]]
+        }
+      })
+    }
 
     return NextResponse.json({ ok: true })
   } catch (err: any) {
