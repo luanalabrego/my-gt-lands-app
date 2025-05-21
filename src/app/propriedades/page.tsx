@@ -97,7 +97,7 @@ export default function PropriedadesPage() {
     if (statusFilter === 'sold' && !sold) return false
     if (statusFilter === 'pending' && sold) return false
     if (statusFilter === 'available' && sold) return false
-    if (statusFilter === 'blocked' && r[60] !== 'Sim') return false
+    if (statusFilter === 'blocked' && !blockedFlag)    return false
 
 
     if (dateFrom) {
