@@ -389,7 +389,7 @@ const statusColor = blockedFlag
           })
         }
       }}
-      className="ml-2 text-sm underline"
+      className="ml-2 text-sm text-white hover:text-gray-300 transition"
     >
       { blockedFlag ? t('unblock') : t('block') }
     </button>
