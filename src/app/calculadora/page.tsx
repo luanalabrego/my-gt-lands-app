@@ -11,10 +11,12 @@ type Simulacao = {
   pmt: number
   totalJuros: number
   taxaAnual: number
+  endereco: string
 }
 
 export default function CalculadoraPage() {
   const [propsList, setPropsList] = useState<string[]>([])
+  const [addresses, setAddresses] = useState<Record<string, string>>({})
   const [propriedade, setPropriedade] = useState('')
   const [entrada, setEntrada] = useState('30')
   const [parcelas, setParcelas] = useState('36')
@@ -22,17 +24,20 @@ export default function CalculadoraPage() {
   const [sim, setSim] = useState<Simulacao | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // 1) busca lista de propriedades
+  // 1) busca lista de propriedades + endereços
   useEffect(() => {
     fetch('/api/propriedades')
       .then(r => r.json())
       .then((body: { ok: boolean; rows?: string[][] }) => {
         if (body.ok && body.rows) {
-          const lista = body.rows
-            .slice(1)
-            .map((row: string[]) => row[2])
-          setPropsList(lista)
-          setPropriedade(lista[0] || '')
+          // pula cabeçalho e monta lista de { prop, endereco }
+          const data = body.rows.slice(1).map(row => ({
+            prop: row[2],
+            endereco: row[5]  // coluna F → idx 5
+          }))
+          setPropsList(data.map(d => d.prop))
+          setAddresses(data.reduce((acc, d) => ({ ...acc, [d.prop]: d.endereco }), {}))
+          setPropriedade(data[0]?.prop || '')
         }
       })
   }, [])
@@ -48,7 +53,8 @@ export default function CalculadoraPage() {
       })
       const data = await resp.json()
       if (resp.ok) {
-        setSim(data)
+        // inclui o endereço que já temos em `addresses`
+        setSim({ ...data, endereco: addresses[propriedade] || '' })
       } else {
         toast.error(data.error || 'Erro na simulação')
       }
@@ -80,6 +86,8 @@ export default function CalculadoraPage() {
       const body = await resp.json()
       if (resp.ok && body.ok) {
         toast.success('Registrado com sucesso!')
+        // limpa resultados para nova simulação
+        setSim(null)
       } else {
         toast.error('Falha ao registrar')
       }
@@ -110,6 +118,13 @@ export default function CalculadoraPage() {
               ))}
             </select>
           </label>
+
+          {/* Endereço aparece imediatamente abaixo */}
+          {propriedade && addresses[propriedade] && (
+            <p className="text-gray-300">
+              Endereço: <strong>{addresses[propriedade]}</strong>
+            </p>
+          )}
 
           <label className="block text-gray-200">
             Entrada (%):
