@@ -157,7 +157,23 @@
   "blocked": "Blocked",
   "unblock": "Unblock",
   "status": "Status",
-  "block": "Block"
+  "block": "Block",
+  "sellProperty": "Sell Property",
+  "blocked": "Blocked",
+  "unblock": "Unblock",
+  "confirmSale": "Confirm Sale",
+  "buyerName": "Buyer Name",
+  "paymentMethod": "Payment Method",
+  "downPayment": "Down Payment",
+  "installmentCount": "Installment Count",
+  "installmentValue": "Installment Value",
+  "saleDate": "Sale Date",
+  "salePrice": "Sale Price",
+  "stateCommission": "State Commission",
+  "docStamps": "Document Stamps",
+  "fixed": "Fixed",
+  "chooseProperty": "Choose Property",
+  "errorSaving": "Error saving"
 
 
 

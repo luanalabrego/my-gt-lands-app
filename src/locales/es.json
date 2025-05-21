@@ -155,7 +155,23 @@
   "blocked": "Bloqueado",
   "unblock": "Desbloquear",
   "status": "Estado",
-  "block": "Bloquear"
+  "block": "Bloquear",
+  "sellProperty": "Vender",
+  "blocked": "Bloqueado",
+  "unblock": "Desbloquear",
+  "confirmSale": "Confirmar Venta",
+  "buyerName": "Nombre del Comprador",
+  "paymentMethod": "Método de Pago",
+  "downPayment": "Pago Inicial",
+  "installmentCount": "Cantidad de Cuotas",
+  "installmentValue": "Valor de la Cuota",
+  "saleDate": "Fecha de Venta",
+  "salePrice": "Valor de Venta",
+  "stateCommission": "Comisión Estatal",
+  "docStamps": "Sellos Documentales",
+  "fixed": "Valor Fijo",
+  "chooseProperty": "Seleccione Propiedad",
+  "errorSaving": "Error al guardar"
 
 
 

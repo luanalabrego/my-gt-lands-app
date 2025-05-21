@@ -174,7 +174,23 @@
   "salePrice": "Valor da Venda",
   "paymentTerms": "Condições de Pagamento",
   "confirmSale": "Confirmar Venda",
-  "errorSaving": "Erro ao salvar. Tente novamente."
+  "errorSaving": "Erro ao salvar. Tente novamente.",
+  "sellProperty": "Vender",
+  "blocked": "Bloqueado",
+  "unblock": "Desbloquear",
+  "confirmSale": "Confirmar Venda",
+  "buyerName": "Nome do Comprador",
+  "paymentMethod": "Método de Pagamento",
+  "downPayment": "Entrada",
+  "installmentCount": "Qtde Parcelas",
+  "installmentValue": "Valor da Parcela",
+  "saleDate": "Data da Venda",
+  "salePrice": "Valor da Venda",
+  "stateCommission": "Comissão Estadual",
+  "docStamps": "Selos Documentais",
+  "fixed": "Valor Fixo",
+  "chooseProperty": "Selecione Propriedade",
+  "errorSaving": "Erro ao salvar"
 
 
 }
