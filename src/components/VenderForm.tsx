@@ -47,8 +47,29 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
   }, [])
 
   // (custos e créditos omitidos para brevidade...)
-  const costTypes: string[] = [/* ... */]
-  const creditTypes: string[] = [/* ... */]
+  const costTypes: string[] = [
+    'Title Wave (Search Fee)',
+    'Closing Fee',
+    'Doc Prep Fee',
+    'All Doc (RON)',
+    'Lien Search',
+    'Owner Title Insurance',
+    'Complemento Insurance',
+    'Fee Real Estate',
+    'Recording Fee County Clerks',
+    'Property Taxes',
+    'Fee City Assessments',
+    'Notary Fee',
+    'Liens',
+    'Special district Assessments',
+    'e-Recording Service Fee',
+    'Outras Saídas'
+  ]
+  const creditTypes: string[] = [
+    'County Taxes',
+    'Assessments'
+  ]
+  
   const [costs, setCosts] = useState<Cost[]>(costTypes.map(type => ({ type, value: '' })))
   const [credits, setCredits] = useState<Credit[]>(creditTypes.map(type => ({ type, value: '' })))
 
