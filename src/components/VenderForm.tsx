@@ -39,12 +39,23 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
       .then(res => res.json())
       .then(body => {
         const rows = (body.rows?.slice(1) as string[][]) || []
+  
+        // filtra só as com status “Disponível” (coluna 61, índice 60 se for 0-based)
+        const available = rows.filter(row =>
+          (row[60] || '').trim() === t('statusDisponível')
+        )
+  
+        // monta o dropdown apenas com as disponíveis
         setPropsOptions(
-          rows.map(row => ({ numero: row[2], endereco: row[5] }))
+          available.map(row => ({
+            numero: row[2],
+            endereco: row[5],
+          }))
         )
       })
       .catch(err => console.error('Erro ao carregar propriedades:', err))
-  }, [])
+  }, [t])
+  
 
   // (custos e créditos omitidos para brevidade...)
   const costTypes: string[] = [
