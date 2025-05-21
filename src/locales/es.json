@@ -151,7 +151,10 @@
   "sectionFinancial": "Datos Financieros",
   "showMore": "Mostrar más",
   "showLess": "Mostrar menos",
-  "calculator": "Calculadora"
+  "calculator": "Calculadora",
+  "blocked": "Bloqueado",
+  "unblock": "Desbloquear",
+  "status": "Estado"
 
 
 }

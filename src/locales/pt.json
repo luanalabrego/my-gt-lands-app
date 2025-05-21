@@ -164,6 +164,9 @@
   "financedValue": "Valor Financiado (USD)",
   "installment": "Parcela (x{{n}})",
   "totalInterest": "Total de Juros (USD)",
-  "annualRatePercent": "Taxa anual (%)"
+  "annualRatePercent": "Taxa anual (%)",
+  "blocked": "Bloqueado",
+  "unblock": "Desbloquear",
+  "status": "Status"
 
 }
