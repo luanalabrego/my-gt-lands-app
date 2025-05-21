@@ -489,17 +489,17 @@ const soldSections = [
 
 {/* ——————— AQUI: modal de venda ——————— */}
 {showSellModal && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            onClick={() => setShowSellModal(false)}
-          >
-            <div
-              className="bg-[#2C2C2C] p-6 rounded-2xl shadow-lg max-w-lg w-full"
-              onClick={e => e.stopPropagation()}
-            >
-              <VenderForm
-                numero={numero}
-                onClose={() => setShowSellModal(false)}
+  <div
+    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    onClick={() => setShowSellModal(false)}
+  >
+    <div
+      className="bg-[#2C2C2C] p-6 rounded-2xl shadow-lg max-w-lg w-full"
+      onClick={e => e.stopPropagation()}
+    >
+      <VenderForm
+        numero={numero}
+        onClose={() => setShowSellModal(false)}
               />
             </div>
           </div>
