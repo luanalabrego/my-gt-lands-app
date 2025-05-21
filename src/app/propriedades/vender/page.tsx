@@ -1,3 +1,4 @@
+// src/app/propriedades/[numero]/vender/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -12,14 +13,14 @@ export default function VenderPage() {
   const { numero: paramNumero } = useParams()
 
   const [propsOptions, setPropsOptions] = useState<PropertyOption[]>([])
-  const [numero, setNumero]           = useState(paramNumero||'')
-  const [saleDate, setSaleDate]       = useState('')
-  const [saleValue, setSaleValue]     = useState<number>(0)
+  const [numero, setNumero]             = useState<string>(paramNumero || '')
+  const [saleDate, setSaleDate]         = useState<string>('')
+  const [saleValue, setSaleValue]       = useState<number>(0)
 
   // Novos campos
-  const [buyerName, setBuyerName]             = useState('')
-  const [paymentMethod, setPaymentMethod]     = useState('')
-  const [downPayment, setDownPayment]         = useState<number>(0)
+  const [buyerName, setBuyerName]               = useState<string>('')
+  const [paymentMethod, setPaymentMethod]       = useState<string>('')
+  const [downPayment, setDownPayment]           = useState<number>(0)
   const [installmentCount, setInstallmentCount] = useState<number>(1)
   const [installmentValue, setInstallmentValue] = useState<number>(0)
 
@@ -28,27 +29,58 @@ export default function VenderPage() {
   const [stampType, setStampType] = useState<'percent'|'fixed'>('percent')
   const [stampValue, setStampValue] = useState<number>(0)
 
-  const costTypes: string[]   = [/* …lista de custos… */]
-  const creditTypes: string[] = [/* …lista de créditos… */]
-  const [costs, setCosts]     = useState(costTypes.map(type=>({type,value:0})))
-  const [credits, setCredits] = useState(creditTypes.map(type=>({type,value:0})))
+  const costTypes: string[] = [
+    'Title Wave (Search Fee)',
+    'Closing Fee',
+    'Doc Prep Fee',
+    'All Doc (RON)',
+    'Lien Search',
+    'Owner Title Insurance',
+    'Complemento Insurance',
+    'Fee Real Estate',
+    'Recording Fee County Clerks',
+    'Property Taxes',
+    'Fee City Assessments',
+    'Notary Fee',
+    'Liens',
+    'Special district Assessments',
+    'e-Recording Service Fee'
+  ]
+  const creditTypes: string[] = [
+    'County Taxes',
+    'Assessments'
+  ]
 
-  useEffect(()=>{
-    fetch('/api/propriedades',{cache:'no-store'})
-      .then(r=>r.json())
-      .then(body=>{
-        const rows = body.rows?.slice(1)||[]
-        setPropsOptions(rows.map(r=>({numero:r[2],endereco:r[5]})))
+  const [costs, setCosts]     = useState<{ type: string; value: number }[]>(
+    costTypes.map(type => ({ type, value: 0 }))
+  )
+  const [credits, setCredits] = useState<{ type: string; value: number }[]>(
+    creditTypes.map(type => ({ type, value: 0 }))
+  )
+
+  useEffect(() => {
+    fetch('/api/propriedades', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(body => {
+        // garante que rows é string[][]
+        const rows = (body.rows?.slice(1) as string[][]) || []
+        setPropsOptions(
+          rows.map((r: string[]) => ({
+            numero: r[2],
+            endereco: r[5]
+          }))
+        )
       })
-  },[])
+  }, [])
 
-  const onSubmit = async(e:React.FormEvent)=>{
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const stateCommission = commType==='percent'
-      ? saleValue*(commValue/100)
+
+    const stateCommission = commType === 'percent'
+      ? saleValue * (commValue / 100)
       : commValue
-    const docStamps = stampType==='percent'
-      ? saleValue*(stampValue/100)
+    const docStamps = stampType === 'percent'
+      ? saleValue * (stampValue / 100)
       : stampValue
 
     const payload = {
@@ -59,20 +91,23 @@ export default function VenderPage() {
       downPayment,
       installmentCount,
       installmentValue,
-      custos: Object.fromEntries(costs.map(c=>[c.type,c.value])),
-      creditos: Object.fromEntries(credits.map(c=>[c.type,c.value])),
+      custos: Object.fromEntries(costs.map(c => [c.type, c.value])),
+      creditos: Object.fromEntries(credits.map(c => [c.type, c.value])),
       saleValue,
       stateCommission,
       docStamps
     }
 
-    const res = await fetch('/api/propriedades/vender',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(payload)
+    const res = await fetch('/api/propriedades/vender', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     })
-    if(res.ok) router.push('/propriedades')
-    else alert(t('errorSaving'))
+    if (res.ok) {
+      router.push('/propriedades')
+    } else {
+      alert(t('errorSaving'))
+    }
   }
 
   return (
@@ -86,7 +121,7 @@ export default function VenderPage() {
           <input
             type="date"
             value={saleDate}
-            onChange={e=>setSaleDate(e.target.value)}
+            onChange={e => setSaleDate(e.target.value)}
             className="w-full px-3 py-2 rounded bg-black"
             required
           />
@@ -97,12 +132,12 @@ export default function VenderPage() {
           <label className="block mb-1">{t('property')}</label>
           <select
             value={numero}
-            onChange={e=>setNumero(e.target.value)}
+            onChange={e => setNumero(e.target.value)}
             className="w-full px-3 py-2 rounded bg-black"
             required
           >
             <option value="">{t('chooseProperty')}</option>
-            {propsOptions.map(o=>(
+            {propsOptions.map(o => (
               <option key={o.numero} value={o.numero}>
                 #{o.numero} – {o.endereco}
               </option>
@@ -116,7 +151,7 @@ export default function VenderPage() {
           <input
             type="text"
             value={buyerName}
-            onChange={e=>setBuyerName(e.target.value)}
+            onChange={e => setBuyerName(e.target.value)}
             className="w-full px-3 py-2 rounded bg-black"
             required
           />
@@ -128,7 +163,7 @@ export default function VenderPage() {
           <input
             type="text"
             value={paymentMethod}
-            onChange={e=>setPaymentMethod(e.target.value)}
+            onChange={e => setPaymentMethod(e.target.value)}
             className="w-full px-3 py-2 rounded bg-black"
             required
           />
@@ -140,7 +175,7 @@ export default function VenderPage() {
           <input
             type="number"
             value={downPayment}
-            onChange={e=>setDownPayment(+e.target.value)}
+            onChange={e => setDownPayment(+e.target.value)}
             className="w-full px-3 py-2 rounded bg-black"
           />
         </div>
@@ -151,7 +186,7 @@ export default function VenderPage() {
           <input
             type="number"
             value={installmentCount}
-            onChange={e=>setInstallmentCount(+e.target.value)}
+            onChange={e => setInstallmentCount(+e.target.value)}
             className="w-full px-3 py-2 rounded bg-black"
           />
         </div>
@@ -162,7 +197,7 @@ export default function VenderPage() {
           <input
             type="number"
             value={installmentValue}
-            onChange={e=>setInstallmentValue(+e.target.value)}
+            onChange={e => setInstallmentValue(+e.target.value)}
             className="w-full px-3 py-2 rounded bg-black"
           />
         </div>
@@ -173,7 +208,7 @@ export default function VenderPage() {
           <input
             type="number"
             value={saleValue}
-            onChange={e=>setSaleValue(+e.target.value)}
+            onChange={e => setSaleValue(+e.target.value)}
             className="w-full px-3 py-2 rounded bg-black"
             required
           />
@@ -185,7 +220,7 @@ export default function VenderPage() {
           <div className="flex space-x-2">
             <select
               value={commType}
-              onChange={e=>setCommType(e.target.value as any)}
+              onChange={e => setCommType(e.target.value as any)}
               className="px-2 py-1 rounded bg-black"
             >
               <option value="percent">%</option>
@@ -194,7 +229,7 @@ export default function VenderPage() {
             <input
               type="number"
               value={commValue}
-              onChange={e=>setCommValue(+e.target.value)}
+              onChange={e => setCommValue(+e.target.value)}
               className="flex-1 px-3 py-2 rounded bg-black"
             />
           </div>
@@ -206,7 +241,7 @@ export default function VenderPage() {
           <div className="flex space-x-2">
             <select
               value={stampType}
-              onChange={e=>setStampType(e.target.value as any)}
+              onChange={e => setStampType(e.target.value as any)}
               className="px-2 py-1 rounded bg-black"
             >
               <option value="percent">%</option>
@@ -215,13 +250,13 @@ export default function VenderPage() {
             <input
               type="number"
               value={stampValue}
-              onChange={e=>setStampValue(+e.target.value)}
+              onChange={e => setStampValue(+e.target.value)}
               className="flex-1 px-3 py-2 rounded bg-black"
             />
           </div>
         </div>
 
-        {/* Tabela de Custos e Créditos (omitida para brevidade)… */}
+        {/* Custos e Créditos (tabelas omitidas para brevidade) */}
 
         <button
           type="submit"
