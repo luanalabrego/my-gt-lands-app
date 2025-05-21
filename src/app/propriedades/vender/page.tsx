@@ -28,8 +28,8 @@ export default function VenderPage() {
   const [stampType, setStampType] = useState<'percent'|'fixed'>('percent')
   const [stampValue, setStampValue] = useState<number>(0)
 
-  const costTypes   = [/* …lista de custos… */]
-  const creditTypes = [/* …lista de créditos… */]
+  const costTypes: string[]   = [/* …lista de custos… */]
+  const creditTypes: string[] = [/* …lista de créditos… */]
   const [costs, setCosts]     = useState(costTypes.map(type=>({type,value:0})))
   const [credits, setCredits] = useState(creditTypes.map(type=>({type,value:0})))
 
