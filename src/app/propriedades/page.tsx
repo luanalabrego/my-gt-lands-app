@@ -82,7 +82,8 @@ export default function PropriedadesPage() {
     const purchaseDate = new Date(r[1] || '')
     const saleDateRaw  = (r[saleDateIndex] || '').toString().trim()
     const sold         = saleDateRaw !== ''
-    
+    const blockedFlag  = r[60] === 'Sim'             // coluna BI
+    if (blockedFlag && statusFilter !== 'blocked') return false
 
     if (searchTerm) {
       if (/^\d+$/.test(searchTerm)) {
