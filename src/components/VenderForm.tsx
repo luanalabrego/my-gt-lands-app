@@ -1,8 +1,11 @@
-// src/components/VenderForm.tsx
 'use client'
+
 import { useState } from 'react'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useRouter } from 'next/navigation'
+
+type Cost = { type: string; value: number }
+type Credit = { type: string; value: number }
 
 type VenderFormProps = {
   numero: string
@@ -12,24 +15,295 @@ type VenderFormProps = {
 export default function VenderForm({ numero, onClose }: VenderFormProps) {
   const { t } = useTranslation()
   const router = useRouter()
-  // ... copiar aqui todos os useStates (saleDate, buyerName etc)
-  // ... e o onSubmit
+
+  // ----- Estados do formulário -----
+  const [saleDate, setSaleDate] = useState<string>('')
+  const [buyerName, setBuyerName] = useState<string>('')
+  const [paymentMethod, setPaymentMethod] = useState<string>('')
+  const [downPayment, setDownPayment] = useState<number>(0)
+  const [installmentCount, setInstallmentCount] = useState<number>(1)
+  const [installmentValue, setInstallmentValue] = useState<number>(0)
+  const [saleValue, setSaleValue] = useState<number>(0)
+
+  const [commType, setCommType] = useState<'percent'|'fixed'>('percent')
+  const [commValue, setCommValue] = useState<number>(0)
+  const [stampType, setStampType] = useState<'percent'|'fixed'>('percent')
+  const [stampValue, setStampValue] = useState<number>(0)
+
+  const costTypes: string[] = [
+    'Title Wave (Search Fee)',
+    'Closing Fee',
+    'Doc Prep Fee',
+    'All Doc (RON)',
+    'Lien Search',
+    'Owner Title Insurance',
+    'Complemento Insurance',
+    'Fee Real Estate',
+    'Recording Fee County Clerks',
+    'Property Taxes',
+    'Fee City Assessments',
+    'Notary Fee',
+    'Liens',
+    'Special district Assessments',
+    'e-Recording Service Fee',
+    'Outras Saídas'
+  ]
+  const creditTypes: string[] = ['County Taxes', 'Assessments']
+
+  const [costs, setCosts] = useState<Cost[]>(
+    costTypes.map(type => ({ type, value: 0 }))
+  )
+  const [credits, setCredits] = useState<Credit[]>(
+    creditTypes.map(type => ({ type, value: 0 }))
+  )
+
+  // ----- Handler de envio -----
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    // calcula comissões e stamps
+    const stateCommission =
+      commType === 'percent'
+        ? saleValue * (commValue / 100)
+        : commValue
+    const docStamps =
+      stampType === 'percent'
+        ? saleValue * (stampValue / 100)
+        : stampValue
+
+    // monta payload
+    const payload = {
+      saleDate,
+      propriedade: numero,
+      buyerName,
+      paymentMethod,
+      downPayment,
+      installmentCount,
+      installmentValue,
+      custos: Object.fromEntries(costs.map(c => [c.type, c.value])),
+      creditos: Object.fromEntries(credits.map(c => [c.type, c.value])),
+      saleValue,
+      stateCommission,
+      docStamps,
+    }
+
+    // envia pra API
+    const res = await fetch('/api/propriedades/vender', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    if (res.ok) {
+      onClose()
+      router.refresh()
+    } else {
+      alert(t('errorSaving'))
+    }
+  }
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      {/* aqui todo o markup do formulário de venda */}
-      <button
-        type="button"
-        onClick={onClose}
-        className="text-sm px-4 py-2 bg-gray-700 rounded hover:bg-gray-600"
-      >
-        {t('cancel')}
-      </button>
-      <button
-        type="submit"
-        className="text-sm px-4 py-2 bg-[#D4AF37] rounded hover:bg-[#D4AF37]/90"
-      >
-        {t('confirmSale')}
-      </button>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Data da Venda */}
+      <div>
+        <label className="block mb-1 text-sm font-medium text-gray-300">
+          {t('saleDate')}
+        </label>
+        <input
+          type="date"
+          value={saleDate}
+          onChange={e => setSaleDate(e.target.value)}
+          className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+          required
+        />
+      </div>
+
+      {/* Nome do Comprador */}
+      <div>
+        <label className="block mb-1 text-sm font-medium text-gray-300">
+          {t('buyerName')}
+        </label>
+        <input
+          type="text"
+          value={buyerName}
+          onChange={e => setBuyerName(e.target.value)}
+          className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+          required
+        />
+      </div>
+
+      {/* Método de Pagamento */}
+      <div>
+        <label className="block mb-1 text-sm font-medium text-gray-300">
+          {t('paymentMethod')}
+        </label>
+        <input
+          type="text"
+          value={paymentMethod}
+          onChange={e => setPaymentMethod(e.target.value)}
+          className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+        />
+      </div>
+
+      {/* Entrada */}
+      <div>
+        <label className="block mb-1 text-sm font-medium text-gray-300">
+          {t('downPayment')}
+        </label>
+        <input
+          type="number"
+          value={downPayment}
+          onChange={e => setDownPayment(+e.target.value)}
+          className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+        />
+      </div>
+
+      {/* Qtde Parcelas */}
+      <div>
+        <label className="block mb-1 text-sm font-medium text-gray-300">
+          {t('installmentCount')}
+        </label>
+        <input
+          type="number"
+          value={installmentCount}
+          onChange={e => setInstallmentCount(+e.target.value)}
+          className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+        />
+      </div>
+
+      {/* Valor da Parcela */}
+      <div>
+        <label className="block mb-1 text-sm font-medium text-gray-300">
+          {t('installmentValue')}
+        </label>
+        <input
+          type="number"
+          value={installmentValue}
+          onChange={e => setInstallmentValue(+e.target.value)}
+          className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+        />
+      </div>
+
+      {/* Sale Price */}
+      <div>
+        <label className="block mb-1 text-sm font-medium text-gray-300">
+          {t('salePrice')}
+        </label>
+        <input
+          type="number"
+          value={saleValue}
+          onChange={e => setSaleValue(+e.target.value)}
+          className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+          required
+        />
+      </div>
+
+      {/* State Commission */}
+      <div>
+        <label className="block mb-1 text-sm font-medium text-gray-300">
+          {t('stateCommission')}
+        </label>
+        <div className="flex space-x-2">
+          <select
+            value={commType}
+            onChange={e => setCommType(e.target.value as any)}
+            className="px-2 py-1 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+          >
+            <option value="percent">%</option>
+            <option value="fixed">{t('fixed')}</option>
+          </select>
+          <input
+            type="number"
+            value={commValue}
+            onChange={e => setCommValue(+e.target.value)}
+            className="flex-1 px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+          />
+        </div>
+      </div>
+
+      {/* Documents Stamps */}
+      <div>
+        <label className="block mb-1 text-sm font-medium text-gray-300">
+          {t('docStamps')}
+        </label>
+        <div className="flex space-x-2">
+          <select
+            value={stampType}
+            onChange={e => setStampType(e.target.value as any)}
+            className="px-2 py-1 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+          >
+            <option value="percent">%</option>
+            <option value="fixed">{t('fixed')}</option>
+          </select>
+          <input
+            type="number"
+            value={stampValue}
+            onChange={e => setStampValue(+e.target.value)}
+            className="flex-1 px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+          />
+        </div>
+      </div>
+
+      {/* Custos */}
+      <fieldset className="border border-gray-600 rounded p-4 space-y-2">
+        <legend className="px-2 text-sm font-medium text-gray-300">{t('costs')}</legend>
+        {costs.map((c, idx) => (
+          <div key={c.type} className="flex items-center space-x-2">
+            <span className="whitespace-nowrap text-gray-300">{c.type}:</span>
+            <input
+              type="number"
+              value={c.value}
+              onChange={e => {
+                const v = +e.target.value
+                setCosts(cs => {
+                  const nxt = [...cs]
+                  nxt[idx] = { ...nxt[idx], value: v }
+                  return nxt
+                })
+              }}
+              className="flex-1 px-2 py-1 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+            />
+          </div>
+        ))}
+      </fieldset>
+
+      {/* Créditos */}
+      <fieldset className="border border-gray-600 rounded p-4 space-y-2">
+        <legend className="px-2 text-sm font-medium text-gray-300">{t('credits')}</legend>
+        {credits.map((c, idx) => (
+          <div key={c.type} className="flex items-center space-x-2">
+            <span className="whitespace-nowrap text-gray-300">{c.type}:</span>
+            <input
+              type="number"
+              value={c.value}
+              onChange={e => {
+                const v = +e.target.value
+                setCredits(cs => {
+                  const nxt = [...cs]
+                  nxt[idx] = { ...nxt[idx], value: v }
+                  return nxt
+                })
+              }}
+              className="flex-1 px-2 py-1 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+            />
+          </div>
+        ))}
+      </fieldset>
+
+      {/* Ações */}
+      <div className="flex justify-end space-x-2">
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-sm px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 text-white">
+          {t('cancel')}
+        </button>
+        <button
+          type="submit"
+          className="text-sm px-4 py-2 bg-[#D4AF37] rounded hover:bg-[#D4AF37]/90 text-black">
+          {t('confirmSale')}
+        </button>
+      </div>
     </form>
   )
 }
