@@ -18,11 +18,8 @@ export default function CalculadoraPage() {
   const [propsList, setPropsList] = useState<string[]>([])
   const [addresses, setAddresses] = useState<Record<string, string>>({})
   const [propriedade, setPropriedade] = useState('')
-  
-  // agora guardamos o tipo de entrada:
   const [entrada, setEntrada] = useState('30')
   const [entradaType, setEntradaType] = useState<'percent'|'value'>('percent')
-  
   const [parcelas, setParcelas] = useState('36')
   const [taxa, setTaxa] = useState('0')
   const [sim, setSim] = useState<Simulacao | null>(null)
@@ -46,17 +43,23 @@ export default function CalculadoraPage() {
   }, [])
 
   const handleSimular = async () => {
+    // validação de campos obrigatórios
+    if (!propriedade || !entrada || !parcelas || !taxa) {
+      toast.error('Por favor, preencha todos os campos antes de simular.')
+      return
+    }
+
     setLoading(true)
     try {
       const resp = await fetch('/api/calculadora/simular', {
         method: 'POST',
-        headers: {'Content-Type':'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           propriedade,
           entrada,
           entradaType,
           parcelas,
-          taxa
+          taxa,
         })
       })
       const data = await resp.json()
@@ -78,7 +81,7 @@ export default function CalculadoraPage() {
     try {
       const resp = await fetch('/api/calculadora/registrar', {
         method: 'POST',
-        headers: {'Content-Type':'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           propriedade,
           downPayment: sim.downPayment,
@@ -92,13 +95,13 @@ export default function CalculadoraPage() {
       const body = await resp.json()
       if (resp.ok && body.ok) {
         toast.success('Registrado com sucesso!')
-        // reset completo
+        // reset completo para estado inicial
         setSim(null)
-        setPropriedade(propsList[0] || '')
+        setPropriedade('')
         setEntrada('30')
         setEntradaType('percent')
         setParcelas('36')
-        setTaxa('0')
+        setTaxa('')
       } else {
         toast.error('Falha ao registrar')
       }
@@ -108,6 +111,9 @@ export default function CalculadoraPage() {
       setLoading(false)
     }
   }
+
+  // botão de simular desabilitado se faltar qualquer campo
+  const canSimulate = Boolean(propriedade && entrada && parcelas && taxa)
 
   return (
     <div className="min-h-screen bg-[#1F1F1F] flex items-center justify-center p-6">
@@ -124,6 +130,7 @@ export default function CalculadoraPage() {
               onChange={e => setPropriedade(e.target.value)}
               className="mt-1 w-full bg-black border border-gray-600 rounded px-3 py-2 text-white"
             >
+              <option value="">Selecione...</option>
               {propsList.map(p => (
                 <option key={p} value={p}>{p}</option>
               ))}
@@ -136,7 +143,6 @@ export default function CalculadoraPage() {
             </p>
           )}
 
-          {/* toggle % vs USD */}
           <div className="flex items-center space-x-4 text-gray-200">
             <label className="flex items-center space-x-1">
               <input
@@ -188,8 +194,8 @@ export default function CalculadoraPage() {
 
           <button
             onClick={handleSimular}
-            disabled={loading}
-            className="w-full bg-[#D4AF37] text-black font-medium py-2 rounded hover:bg-[#D4AF37]/90 transition"
+            disabled={loading || !canSimulate}
+            className="w-full bg-[#D4AF37] text-black font-medium py-2 rounded hover:bg-[#D4AF37]/90 transition disabled:opacity-50"
           >
             {loading ? 'Aguarde...' : 'Simular'}
           </button>
@@ -225,7 +231,7 @@ export default function CalculadoraPage() {
             <button
               onClick={handleRegistrar}
               disabled={loading}
-              className="mt-4 w-full bg-green-500 text-white font-medium py-2 rounded hover:bg-green-600 transition"
+              className="mt-4 w-full bg-green-500 text-white font-medium py-2 rounded hover:bg-green-600 transition disabled:opacity-50"
             >
               {loading ? 'Registrando...' : 'Registrar'}
             </button>
