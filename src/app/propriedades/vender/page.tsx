@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { useTranslation } from '../../hooks/useTranslation'
+import { useTranslation } from '../../../hooks/useTranslation'
 
 type PropertyOption = { numero: string; endereco: string }
 
