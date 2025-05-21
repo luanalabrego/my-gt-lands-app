@@ -494,16 +494,26 @@ const soldSections = [
     onClick={() => setShowSellModal(false)}
   >
     <div
-      className="bg-[#2C2C2C] p-6 rounded-2xl shadow-lg max-w-lg w-full"
+      className="
+        bg-[#2C2C2C]
+        p-6
+        rounded-2xl
+        shadow-lg
+        max-w-lg
+        w-full
+        max-h-[80vh]
+        overflow-y-auto
+      "
       onClick={e => e.stopPropagation()}
     >
       <VenderForm
         numero={numero}
         onClose={() => setShowSellModal(false)}
-              />
-            </div>
-          </div>
-        )}
+      />
+    </div>
+  </div>
+)}
+
 
       </div>  {/* fecha o container interno do card */}
     </div> 
