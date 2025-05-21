@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import {useState, useEffect } from 'react'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useRouter } from 'next/navigation'
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
 
 type Cost = { type: string; value: string }
 type Credit = { type: string; value: string }
@@ -17,7 +19,7 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
   const router = useRouter()
 
   // ----- Estados do formulário -----
-  const [saleDate, setSaleDate] = useState<string>('')
+  const [saleDateObj, setSaleDateObj] = useState<Date | null>(null)
   const [buyerName, setBuyerName] = useState<string>('')
   const [paymentMethod, setPaymentMethod] = useState<string>('')
   const [downPayment, setDownPayment] = useState<string>('')
@@ -29,6 +31,18 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
   const [commValue, setCommValue] = useState<string>('')
   const [stampType, setStampType] = useState<'percent'|'fixed'>('percent')
   const [stampValue, setStampValue] = useState<string>('')
+
+  const [propsOptions, setPropsOptions] = useState<{ numero: string; endereco: string }[]>([])
+   useEffect(() => {
+    fetch('/api/propriedades', { cache: 'no-store' })
+    .then(r => r.json())
+    .then(body => {
+      const rows = body.rows?.slice(1) || []
+      setPropsOptions(rows.map((r: string[]) => ({
+        numero: r[2],
+        endereco: r[5], })))
+      })
+    }, [])
 
   const costTypes: string[] = [
     'Title Wave (Search Fee)',
@@ -78,8 +92,9 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     // monta payload
     const payload = {
-      saleDate,
-      propriedade: numero,
+      saleDate: saleDateObj
+      ? saleDateObj.toISOString().slice(0, 10)
+      : '',
       buyerName,
       paymentMethod,
       downPayment,
@@ -109,19 +124,22 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+
       {/* Data da Venda */}
-      <div>
-        <label className="block mb-1 text-sm font-medium text-gray-300">
-          {t('saleDate')}
-        </label>
-        <input
-          type="date"
-          value={saleDate}
-          onChange={e => setSaleDate(e.target.value)}
-          className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
-          required
-        />
-      </div>
+<div>
+  <label className="block mb-1 text-sm font-medium text-gray-300">
+    {t('saleDate')}
+  </label>
+  <DatePicker
+    selected={saleDateObj}                    // useState<Date | null>
+    onChange={(date: Date | null) => setSaleDateObj(date)}
+    dateFormat="yyyy-MM-dd"
+    placeholderText="YYYY-MM-DD"
+    className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+    required
+  />
+</div>
+
 
       {/* Nome do Comprador */}
       <div>
