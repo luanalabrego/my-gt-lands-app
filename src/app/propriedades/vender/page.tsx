@@ -10,10 +10,13 @@ type PropertyOption = { numero: string; endereco: string }
 export default function VenderPage() {
   const { t } = useTranslation()
   const router = useRouter()
-  const { numero: paramNumero } = useParams()
+  const params = useParams()
+  // useParams pode ser string ou string[]
+  const rawNumero = params.numero
+  const initialNumero = Array.isArray(rawNumero) ? rawNumero[0] : (rawNumero || '')
 
   const [propsOptions, setPropsOptions] = useState<PropertyOption[]>([])
-  const [numero, setNumero]             = useState<string>(paramNumero || '')
+  const [numero, setNumero]             = useState<string>(initialNumero)
   const [saleDate, setSaleDate]         = useState<string>('')
   const [saleValue, setSaleValue]       = useState<number>(0)
 
@@ -62,7 +65,7 @@ export default function VenderPage() {
     fetch('/api/propriedades', { cache: 'no-store' })
       .then(res => res.json())
       .then(body => {
-        // garante que rows é string[][]
+        // rows será string[][]
         const rows = (body.rows?.slice(1) as string[][]) || []
         setPropsOptions(
           rows.map((r: string[]) => ({
@@ -256,7 +259,7 @@ export default function VenderPage() {
           </div>
         </div>
 
-        {/* Custos e Créditos (tabelas omitidas para brevidade) */}
+        {/* Custos e Créditos (omitidos para brevidade) */}
 
         <button
           type="submit"
