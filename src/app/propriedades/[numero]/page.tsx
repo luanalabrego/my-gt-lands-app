@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslation } from '../../../hooks/useTranslation';
 import Link from 'next/link'
+import VenderForm from '@/components/VenderForm'
+
 
 
 type PropertyRow = string[];
@@ -13,6 +15,8 @@ export default function PropertyDetailPage() {
   const { numero } = useParams<{ numero: string }>();
   const router = useRouter();
   const cardRef = useRef<HTMLDivElement>(null);
+  const [showSellModal, setShowSellModal] = useState(false)
+
 
   const [headers, setHeaders] = useState<string[]>([]);
   const [row, setRow] = useState<PropertyRow | null>(null);
@@ -450,12 +454,12 @@ const soldSections = [
 
   {/* botão Vender (apenas fora do modo edição) */}
   {!isEditing && (
-    <Link
-      href={`/propriedades/${numero}/vender`}
-      className="bg-green-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-green-600 transition text-sm"
-    >
-      {t('sellProperty')}
-    </Link>
+    <button
+    onClick={() => setShowSellModal(true)}
+    className="bg-green-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-green-600 transition text-sm"
+        >
+ {t('sellProperty')}
+     </button>
   )}
 
   {isEditing ? (
