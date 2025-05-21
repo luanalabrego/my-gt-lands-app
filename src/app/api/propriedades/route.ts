@@ -1,5 +1,4 @@
 // src/app/api/propriedades/route.ts
-
 import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
 
@@ -8,18 +7,22 @@ export const runtime = 'nodejs'
 export async function GET() {
   console.log('[API GET] iniciando leitura da planilha')
 
-  // valida env-vars
+  // validação das ENV vars
   const {
     GOOGLE_CLIENT_EMAIL: clientEmail,
     GOOGLE_PRIVATE_KEY: privateKey,
     SPREADSHEET_ID
   } = process.env
+
   if (!clientEmail || !privateKey || !SPREADSHEET_ID) {
     console.error('[API GET] ENV vars faltando')
-    return NextResponse.json({ ok: false, error: 'misconfiguration' }, { status: 500 })
+    return NextResponse.json(
+      { ok: false, error: 'misconfiguration' },
+      { status: 500 }
+    )
   }
 
-  // monta o auth
+  // autenticação Google Sheets
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: clientEmail,
@@ -29,7 +32,9 @@ export async function GET() {
   })
   const sheets = google.sheets({ version: 'v4', auth })
   const spreadsheetId = SPREADSHEET_ID
-  const range = `'Cadastro de Propriedades'!A8:BG`
+
+  // expandido para A8:BJ, trazendo também BI (coluna BI = índice 60) e BJ (coluna BJ = índice 61)
+  const range = `'Cadastro de Propriedades'!A8:BJ`
 
   try {
     console.log('[API GET] lendo', range)
@@ -38,24 +43,18 @@ export async function GET() {
     console.log('[API GET] linhas:', rows.length)
     return NextResponse.json({ ok: true, rows })
   } catch (err: unknown) {
-    // extrai código de erro se existir
     const e = err as any
     const message = e.message || String(err)
     let status = 500
     let errorType = 'server_error'
 
-    // Google API retorna code 403 para falta de permissão
-    if (e.code === 403 || message.match(/permission/i)) {
+    if (e.code === 403 || /permission/i.test(message)) {
       status = 403
       errorType = 'permission_denied'
-    }
-    // 401 = credenciais inválidas
-    else if (e.code === 401 || message.match(/unauthorized/i)) {
+    } else if (e.code === 401 || /unauthorized/i.test(message)) {
       status = 401
       errorType = 'unauthorized'
-    }
-    // por fim, pode ser erro de rede
-    else if (message.match(/ENOTFOUND|ECONNREFUSED|ETIMEOUT/)) {
+    } else if (/ENOTFOUND|ECONNREFUSED|ETIMEOUT/.test(message)) {
       status = 503
       errorType = 'network_error'
     }
@@ -64,6 +63,64 @@ export async function GET() {
     return NextResponse.json(
       { ok: false, error: errorType, message },
       { status }
+    )
+  }
+}
+
+export async function POST(request: Request) {
+  // Recebe { rowIndex, blocked } no body
+  const { rowIndex, blocked } = await request.json() as {
+    rowIndex: number
+    blocked: boolean
+  }
+
+  const {
+    GOOGLE_CLIENT_EMAIL: clientEmail,
+    GOOGLE_PRIVATE_KEY: privateKey,
+    SPREADSHEET_ID
+  } = process.env
+
+  if (!clientEmail || !privateKey || !SPREADSHEET_ID) {
+    console.error('[API POST] ENV vars faltando')
+    return NextResponse.json(
+      { ok: false, error: 'misconfiguration' },
+      { status: 500 }
+    )
+  }
+
+  // autenticação Google Sheets (mesma do GET)
+  const auth = new google.auth.GoogleAuth({
+    credentials: {
+      client_email: clientEmail,
+      private_key: privateKey.replace(/\\n/g, '\n'),
+    },
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  })
+  const sheets = google.sheets({ version: 'v4', auth })
+  const spreadsheetId = SPREADSHEET_ID
+
+  // Calcula número da linha na planilha:
+  // GET lê da A8, então data[0] é a linha 9.
+  const sheetRow = rowIndex + 9
+
+  try {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `'Cadastro de Propriedades'!BI${sheetRow}`, // coluna BI
+      valueInputOption: 'RAW',
+      requestBody: {
+        values: [
+          [ blocked ? 'Sim' : '' ]
+        ]
+      }
+    })
+    console.log(`[API POST] linha ${sheetRow} atualizada com bloqueado=${blocked}`)
+    return NextResponse.json({ ok: true })
+  } catch (err: any) {
+    console.error('[API POST] erro ao atualizar bloqueio:', err)
+    return NextResponse.json(
+      { ok: false, error: err.message },
+      { status: 500 }
     )
   }
 }

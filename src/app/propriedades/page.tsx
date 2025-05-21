@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -25,7 +25,7 @@ export default function PropriedadesPage() {
   const [searchTerm, setSearchTerm]         = useState('')
   const [selectedState, setSelectedState]   = useState('')
   const [selectedCounty, setSelectedCounty] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'sold' | 'pending' | 'available'>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'sold' | 'pending' | 'available' | 'blocked'>('all')
   const [dateFrom, setDateFrom]             = useState('')
   const [dateTo, setDateTo]                 = useState('')
   const [headers, setHeaders] = useState<string[]>([])
@@ -82,6 +82,7 @@ export default function PropriedadesPage() {
     const purchaseDate = new Date(r[1] || '')
     const saleDateRaw  = (r[saleDateIndex] || '').toString().trim()
     const sold         = saleDateRaw !== ''
+    
 
     if (searchTerm) {
       if (/^\d+$/.test(searchTerm)) {
@@ -95,6 +96,8 @@ export default function PropriedadesPage() {
     if (statusFilter === 'sold' && !sold) return false
     if (statusFilter === 'pending' && sold) return false
     if (statusFilter === 'available' && sold) return false
+    if (statusFilter === 'blocked' && r[60] !== 'Sim') return false
+
 
     if (dateFrom) {
       const from = new Date(dateFrom)
@@ -222,6 +225,7 @@ export default function PropriedadesPage() {
           <option value="sold">{t('sold')}</option>
           <option value="pending">{t('pending')}</option>
           <option value="available">{t('available')}</option>
+          <option value="blocked">{t('blocked')}</option>
         </select>
 
         {/* DatePickers */}
@@ -295,7 +299,25 @@ export default function PropriedadesPage() {
       const estado       = r[7]
       const acres        = r[9]
       const saleDateRaw  = (r[saleDateIndex] || '').trim()
-      const status       = saleDateRaw ? t('statusVendido') : t('statusDisponível')
+// ⬇ bloco de status dinâmico / bloqueio ⬇
+const blockedFlag = r[60] === 'Sim'           // coluna BI
+const rawStatus   = (r[61] || '').trim()      // coluna BJ
+
+const statusLabel = blockedFlag
+  ? t('blocked')
+  : rawStatus
+    ? rawStatus
+    : saleDateRaw
+      ? t('statusVendido')
+      : t('statusDisponível')
+
+const statusColor = blockedFlag
+  ? 'bg-gray-500 text-white'
+  : saleDateRaw
+    ? 'bg-red-500 text-white'
+    : 'bg-green-400 text-black'
+// ⬆ fim do bloco ⬆
+
 
       const copyParcel  = () => navigator.clipboard.writeText(parcelNumber)
       const copyAddress = () => navigator.clipboard.writeText(endereco)
@@ -334,25 +356,44 @@ export default function PropriedadesPage() {
             <p className="text-gray-300 text-sm">Acres: {acres}</p>
           </div>
 
-          {/* Rodapé */}
-          <div className="mt-4 flex items-center justify-between">
-            <span className="text-gray-500 text-xs">
-              {t('boughtOn')} {dataCompra}
-            </span>
-            <div className="flex items-center space-x-2">
-              <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                saleDateRaw ? 'bg-red-500 text-white' : 'bg-green-400 text-black'
-              }`}>
-                {status}
-              </span>
-              <Link
-                href={`/propriedades/${numero}`}
-                className="bg-[#D4AF37] text-black border border-[#D4AF37] px-3 py-1 rounded-lg text-sm font-medium hover:bg-[#D4AF37]/90 transition"
-              >
-                {t('actions')}
-              </Link>
-            </div>
-          </div>
+         {/* Rodapé atualizado */}
+<div className="mt-4 flex items-center justify-between">
+  <span className="text-gray-500 text-xs">
+    {t('boughtOn')} {dataCompra}
+  </span>
+  <div className="flex items-center space-x-2">
+    {/* badge dinâmica */}
+    <span className={`px-2 py-1 rounded-full text-xs font-bold ${statusColor}`}>
+      {statusLabel}
+    </span>
+    {/* link de ações */}
+    <Link
+      href={`/propriedades/${numero}`}
+      className="bg-[#D4AF37] text-black border border-[#D4AF37] px-3 py-1 rounded-lg text-sm font-medium hover:bg-[#D4AF37]/90 transition"
+    >
+      {t('actions')}
+    </Link>
+    {/* botão bloquear/desbloquear */}
+    <button
+      onClick={async () => {
+        const res = await fetch('/api/propriedades', {
+          method: 'POST',
+          body: JSON.stringify({ rowIndex: i, blocked: !blockedFlag }),
+        })
+        if (res.ok) {
+          setData(prev => {
+            const next = [...prev]
+            next[i][60] = blockedFlag ? '' : 'Sim'
+            return next
+          })
+        }
+      }}
+      className="ml-2 text-sm underline"
+    >
+      { blockedFlag ? t('unblock') : t('block') }
+    </button>
+  </div>
+</div>
         </div>
     )})}
   </div>
@@ -471,7 +512,22 @@ export default function PropriedadesPage() {
             <tbody className="divide-y divide-gray-700">
               {filtered.map((r, i) => {
                 const saleDateRaw = (r[saleDateIndex] || '').trim()
-                const status       = saleDateRaw ? t('statusVendido') : t('statusDisponível')
+                const blockedFlag = r[60] === 'Sim'
+const rawStatus   = (r[61] || '').trim()
+
+const statusLabel = blockedFlag
+  ? t('blocked')
+  : rawStatus
+    ? rawStatus
+    : saleDateRaw
+      ? t('statusVendido')
+      : t('statusDisponível')
+
+const statusColor = blockedFlag
+  ? 'text-gray-500'
+  : saleDateRaw
+    ? 'text-red-500'
+    : 'text-green-400'
 
                 return (
                   <tr key={i}>
@@ -484,10 +540,11 @@ export default function PropriedadesPage() {
                     <td className="px-4 py-2 text-sm text-white">{r[9]}</td>
                     <td className="px-4 py-2 text-sm text-white">{r[12]}</td>
                     <td className="px-4 py-2 text-sm">
-                      <span className={saleDateRaw ? 'text-red-500' : 'text-green-400'}>
-                        {status}
-                      </span>
-                    </td>
+  <span className={statusColor}>
+    {statusLabel}
+  </span>
+</td>
+
                     <td className="px-4 py-2">
                       <Link
                         href={`/propriedades/${r[2]}`}
