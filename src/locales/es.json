@@ -154,7 +154,9 @@
   "calculator": "Calculadora",
   "blocked": "Bloqueado",
   "unblock": "Desbloquear",
-  "status": "Estado"
+  "status": "Estado",
+  "block": "Bloquear"
+
 
 
 }

@@ -167,6 +167,8 @@
   "annualRatePercent": "Taxa anual (%)",
   "blocked": "Bloqueado",
   "unblock": "Desbloquear",
-  "status": "Status"
+  "status": "Status",
+  "block": "Bloquear"
+
 
 }
