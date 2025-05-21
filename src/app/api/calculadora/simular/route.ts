@@ -1,3 +1,4 @@
+// src/app/api/calculadora/simular/route.ts
 import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
 
@@ -16,37 +17,45 @@ async function getSheetsClient() {
 
 export async function POST(request: Request) {
   try {
-    const { propriedade, entrada = '30', parcelas = '36', taxa = '0' } =
-      await request.json()
+    // agora recebemos também entradaType: 'percent' | 'value'
+    const {
+      propriedade,
+      entrada = '30',
+      entradaType = 'percent',
+      parcelas = '36',
+      taxa = '0',
+    } = await request.json()
 
     const sheets = await getSheetsClient()
     const ssId = process.env.SPREADSHEET_ID!
     if (!ssId) throw new Error('SPREADSHEET_ID não configurado')
 
-    // 1) lê todas as propriedades a partir da linha 9 (cabeçalho em 8)
+    // lê propriedades da linha 9 em diante
     const range = `'Cadastro de Propriedades'!A9:BG`
     const allRes = await sheets.spreadsheets.values.get({ spreadsheetId: ssId, range })
     const rows: string[][] = allRes.data.values || []
 
-    // 2) encontra a linha onde coluna C (idx 2) === propriedade
     const idx = rows.findIndex(r => r[2] === propriedade)
     if (idx < 0) {
       return NextResponse.json({ error: 'Propriedade não encontrada' }, { status: 404 })
     }
 
-    // 3) extrai o endereço (coluna F → idx 5)
     const endereco = rows[idx][5] || ''
-
-    // 4) lê valor de venda (coluna AO → idx original)
     const vendaCell = rows[idx][50] || ''
     const valorVenda = parseFloat(vendaCell.replace(/[^0-9.\-]/g, ''))
     if (isNaN(valorVenda)) {
       return NextResponse.json({ error: 'Valor de venda inválido' }, { status: 400 })
     }
 
-    // 5) cálculos
-    const entFrac = (parseFloat(entrada) || 30) / 100
-    const downPayment = valorVenda * entFrac
+    // Cálculo de downPayment conforme tipo de entrada
+    let downPayment: number
+    if (entradaType === 'percent') {
+      const pct = (parseFloat(entrada) || 30) / 100
+      downPayment = valorVenda * pct
+    } else {
+      downPayment = parseFloat(entrada) || 0
+    }
+
     const valorFin = valorVenda - downPayment
     const n = parseInt(parcelas) || 36
     const j = (parseFloat(taxa) || 0) / 100 / 12

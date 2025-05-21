@@ -18,42 +18,49 @@ export default function CalculadoraPage() {
   const [propsList, setPropsList] = useState<string[]>([])
   const [addresses, setAddresses] = useState<Record<string, string>>({})
   const [propriedade, setPropriedade] = useState('')
+  
+  // agora guardamos o tipo de entrada:
   const [entrada, setEntrada] = useState('30')
+  const [entradaType, setEntradaType] = useState<'percent'|'value'>('percent')
+  
   const [parcelas, setParcelas] = useState('36')
   const [taxa, setTaxa] = useState('0')
   const [sim, setSim] = useState<Simulacao | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // 1) busca lista de propriedades + endereços
   useEffect(() => {
     fetch('/api/propriedades')
       .then(r => r.json())
       .then((body: { ok: boolean; rows?: string[][] }) => {
         if (body.ok && body.rows) {
-          // pula cabeçalho e monta lista de { prop, endereco }
           const data = body.rows.slice(1).map(row => ({
             prop: row[2],
-            endereco: row[5]  // coluna F → idx 5
+            endereco: row[5],
           }))
-          setPropsList(data.map(d => d.prop))
+          const lista = data.map(d => d.prop)
+          setPropsList(lista)
           setAddresses(data.reduce((acc, d) => ({ ...acc, [d.prop]: d.endereco }), {}))
-          setPropriedade(data[0]?.prop || '')
+          setPropriedade(lista[0] || '')
         }
       })
   }, [])
 
-  // 2) handler Simular
   const handleSimular = async () => {
     setLoading(true)
     try {
       const resp = await fetch('/api/calculadora/simular', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ propriedade, entrada, parcelas, taxa })
+        body: JSON.stringify({
+          propriedade,
+          entrada,
+          entradaType,
+          parcelas,
+          taxa
+        })
       })
       const data = await resp.json()
       if (resp.ok) {
-        // inclui o endereço que já temos em `addresses`
         setSim({ ...data, endereco: addresses[propriedade] || '' })
       } else {
         toast.error(data.error || 'Erro na simulação')
@@ -65,7 +72,6 @@ export default function CalculadoraPage() {
     }
   }
 
-  // 3) handler Registrar
   const handleRegistrar = async () => {
     if (!sim) return
     setLoading(true)
@@ -86,8 +92,13 @@ export default function CalculadoraPage() {
       const body = await resp.json()
       if (resp.ok && body.ok) {
         toast.success('Registrado com sucesso!')
-        // limpa resultados para nova simulação
+        // reset completo
         setSim(null)
+        setPropriedade(propsList[0] || '')
+        setEntrada('30')
+        setEntradaType('percent')
+        setParcelas('36')
+        setTaxa('0')
       } else {
         toast.error('Falha ao registrar')
       }
@@ -119,15 +130,34 @@ export default function CalculadoraPage() {
             </select>
           </label>
 
-          {/* Endereço aparece imediatamente abaixo */}
           {propriedade && addresses[propriedade] && (
             <p className="text-gray-300">
               Endereço: <strong>{addresses[propriedade]}</strong>
             </p>
           )}
 
+          {/* toggle % vs USD */}
+          <div className="flex items-center space-x-4 text-gray-200">
+            <label className="flex items-center space-x-1">
+              <input
+                type="radio"
+                checked={entradaType === 'percent'}
+                onChange={() => setEntradaType('percent')}
+              />
+              <span>%</span>
+            </label>
+            <label className="flex items-center space-x-1">
+              <input
+                type="radio"
+                checked={entradaType === 'value'}
+                onChange={() => setEntradaType('value')}
+              />
+              <span>USD</span>
+            </label>
+          </div>
+
           <label className="block text-gray-200">
-            Entrada (%):
+            {entradaType === 'percent' ? 'Entrada (%):' : 'Entrada (USD):'}
             <input
               type="number"
               value={entrada}
