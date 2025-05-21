@@ -25,6 +25,7 @@ export default function CalculadoraPage() {
   const [sim, setSim] = useState<Simulacao | null>(null)
   const [loading, setLoading] = useState(false)
 
+  // Carrega lista de propriedades + endereços
   useEffect(() => {
     fetch('/api/propriedades')
       .then(r => r.json())
@@ -42,10 +43,20 @@ export default function CalculadoraPage() {
       })
   }, [])
 
+  // controla se todos os campos estão válidos e taxa > 0
+  const canSimulate =
+    Boolean(propriedade && entrada && parcelas && taxa) &&
+    parseFloat(taxa) > 0
+
   const handleSimular = async () => {
-    // validação de campos obrigatórios
+    // validação de preenchimento
     if (!propriedade || !entrada || !parcelas || !taxa) {
       toast.error('Por favor, preencha todos os campos antes de simular.')
+      return
+    }
+    // validação taxa
+    if (parseFloat(taxa) <= 0) {
+      toast.error('A taxa anual deve ser maior que zero.')
       return
     }
 
@@ -54,13 +65,7 @@ export default function CalculadoraPage() {
       const resp = await fetch('/api/calculadora/simular', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          propriedade,
-          entrada,
-          entradaType,
-          parcelas,
-          taxa,
-        })
+        body: JSON.stringify({ propriedade, entrada, entradaType, parcelas, taxa }),
       })
       const data = await resp.json()
       if (resp.ok) {
@@ -89,8 +94,8 @@ export default function CalculadoraPage() {
           totalJuros: sim.totalJuros,
           taxaAnual: sim.taxaAnual,
           parcelas: sim.parcelas,
-          pmt: sim.pmt
-        })
+          pmt: sim.pmt,
+        }),
       })
       const body = await resp.json()
       if (resp.ok && body.ok) {
@@ -112,9 +117,6 @@ export default function CalculadoraPage() {
     }
   }
 
-  // botão de simular desabilitado se faltar qualquer campo
-  const canSimulate = Boolean(propriedade && entrada && parcelas && taxa)
-
   return (
     <div className="min-h-screen bg-[#1F1F1F] flex items-center justify-center p-6">
       <div className="w-full max-w-md bg-[#2C2C2C] rounded-2xl p-6 shadow-lg space-y-6">
@@ -122,6 +124,7 @@ export default function CalculadoraPage() {
           Calculadora de Parcelamento
         </h1>
 
+        {/* Formulário */}
         <div className="space-y-4">
           <label className="block text-gray-200">
             Propriedade:
@@ -137,12 +140,14 @@ export default function CalculadoraPage() {
             </select>
           </label>
 
+          {/* Endereço */}
           {propriedade && addresses[propriedade] && (
             <p className="text-gray-300">
               Endereço: <strong>{addresses[propriedade]}</strong>
             </p>
           )}
 
+          {/* Tipo de entrada */}
           <div className="flex items-center space-x-4 text-gray-200">
             <label className="flex items-center space-x-1">
               <input
@@ -201,6 +206,7 @@ export default function CalculadoraPage() {
           </button>
         </div>
 
+        {/* Resultado da simulação */}
         {sim && (
           <div className="bg-[#1F1F1F] rounded-xl p-4 space-y-3">
             <div className="flex justify-between text-white">
