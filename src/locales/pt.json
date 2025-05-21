@@ -190,7 +190,9 @@
   "docStamps": "Selos Documentais",
   "fixed": "Valor Fixo",
   "chooseProperty": "Selecione Propriedade",
-  "errorSaving": "Erro ao salvar"
+  "errorSaving": "Erro ao salvar",
+  "costs": "Custos",
+  "credits": "Créditos"
 
 
 }

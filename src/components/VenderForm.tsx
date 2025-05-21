@@ -20,15 +20,15 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
   const [saleDate, setSaleDate] = useState<string>('')
   const [buyerName, setBuyerName] = useState<string>('')
   const [paymentMethod, setPaymentMethod] = useState<string>('')
-  const [downPayment, setDownPayment] = useState<number>(0)
-  const [installmentCount, setInstallmentCount] = useState<number>(1)
-  const [installmentValue, setInstallmentValue] = useState<number>(0)
-  const [saleValue, setSaleValue] = useState<number>(0)
+  const [downPayment, setDownPayment] = useState<number>('')
+  const [installmentCount, setInstallmentCount] = useState<number>('')
+  const [installmentValue, setInstallmentValue] = useState<number>('')
+  const [saleValue, setSaleValue] = useState<number>('')
 
   const [commType, setCommType] = useState<'percent'|'fixed'>('percent')
-  const [commValue, setCommValue] = useState<number>(0)
+  const [commValue, setCommValue] = useState<number>('')
   const [stampType, setStampType] = useState<'percent'|'fixed'>('percent')
-  const [stampValue, setStampValue] = useState<number>(0)
+  const [stampValue, setStampValue] = useState<number>('')
 
   const costTypes: string[] = [
     'Title Wave (Search Fee)',
