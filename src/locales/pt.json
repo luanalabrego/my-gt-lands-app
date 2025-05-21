@@ -168,7 +168,13 @@
   "blocked": "Bloqueado",
   "unblock": "Desbloquear",
   "status": "Status",
-  "block": "Bloquear"
+  "block": "Bloquear",
+  "sellProperty": "Vender",
+  "saleDate": "Data de Venda",
+  "salePrice": "Valor da Venda",
+  "paymentTerms": "Condições de Pagamento",
+  "confirmSale": "Confirmar Venda",
+  "errorSaving": "Erro ao salvar. Tente novamente."
 
 
 }

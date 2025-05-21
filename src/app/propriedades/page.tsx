@@ -387,12 +387,20 @@ const statusColor = blockedFlag
             next[i][60] = blockedFlag ? '' : 'Sim'
             return next
           })
+          
         }
       }}
       className="ml-2 text-sm text-white hover:text-gray-300 transition"
     >
       { blockedFlag ? t('unblock') : t('block') }
     </button>
+    {/* botão Vender */}
+    <Link
+      href={`/propriedades/${numero}/vender`}
+      className="ml-2 text-sm font-medium bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg transition"
+    >
+      {t('sellProperty')}
+    </Link>
   </div>
 </div>
         </div>
