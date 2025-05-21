@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useRouter } from 'next/navigation'
 
-type Cost = { type: string; value: number }
-type Credit = { type: string; value: number }
+type Cost = { type: string; value: string }
+type Credit = { type: string; value: string }
 
 type VenderFormProps = {
   numero: string
@@ -20,15 +20,15 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
   const [saleDate, setSaleDate] = useState<string>('')
   const [buyerName, setBuyerName] = useState<string>('')
   const [paymentMethod, setPaymentMethod] = useState<string>('')
-  const [downPayment, setDownPayment] = useState<number>('')
-  const [installmentCount, setInstallmentCount] = useState<number>('')
-  const [installmentValue, setInstallmentValue] = useState<number>('')
-  const [saleValue, setSaleValue] = useState<number>('')
+  const [downPayment, setDownPayment] = useState<string>('')
+  const [installmentCount, setInstallmentCount] = useState<string>('')
+  const [installmentValue, setInstallmentValue] = useState<string>('')
+  const [saleValue, setSaleValue] = useState<string>('')
 
   const [commType, setCommType] = useState<'percent'|'fixed'>('percent')
-  const [commValue, setCommValue] = useState<number>('')
+  const [commValue, setCommValue] = useState<string>('')
   const [stampType, setStampType] = useState<'percent'|'fixed'>('percent')
-  const [stampValue, setStampValue] = useState<number>('')
+  const [stampValue, setStampValue] = useState<string>('')
 
   const costTypes: string[] = [
     'Title Wave (Search Fee)',
@@ -51,25 +51,30 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
   const creditTypes: string[] = ['County Taxes', 'Assessments']
 
   const [costs, setCosts] = useState<Cost[]>(
-    costTypes.map(type => ({ type, value: 0 }))
+    costTypes.map(type => ({ type, value: '' }))
   )
   const [credits, setCredits] = useState<Credit[]>(
-    creditTypes.map(type => ({ type, value: 0 }))
+    creditTypes.map(type => ({ type, value: '' }))
   )
+// ----- Handler de envio -----
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
 
-  // ----- Handler de envio -----
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  // converte strings para número
+  const saleValNum    = parseFloat(saleValue)     || 0
+  const commValNum    = parseFloat(commValue)     || 0
+  const stampValNum   = parseFloat(stampValue)    || 0
 
-    // calcula comissões e stamps
-    const stateCommission =
-      commType === 'percent'
-        ? saleValue * (commValue / 100)
-        : commValue
-    const docStamps =
-      stampType === 'percent'
-        ? saleValue * (stampValue / 100)
-        : stampValue
+  // calcula comissões e stamps
+  const stateCommission =
+    commType === 'percent'
+      ? saleValNum * (commValNum / 100)
+      : commValNum
+
+  const docStamps =
+    stampType === 'percent'
+      ? saleValNum * (stampValNum / 100)
+      : stampValNum
 
     // monta payload
     const payload = {
@@ -153,7 +158,7 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
         <input
           type="number"
           value={downPayment}
-          onChange={e => setDownPayment(+e.target.value)}
+          onChange={e => setDownPayment(e.target.value)}
           className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
         />
       </div>
@@ -166,7 +171,7 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
         <input
           type="number"
           value={installmentCount}
-          onChange={e => setInstallmentCount(+e.target.value)}
+          onChange={e => setInstallmentCount(e.target.value)}
           className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
         />
       </div>
@@ -179,7 +184,7 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
         <input
           type="number"
           value={installmentValue}
-          onChange={e => setInstallmentValue(+e.target.value)}
+          onChange={e => setInstallmentValue(e.target.value)}
           className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
         />
       </div>
@@ -192,7 +197,7 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
         <input
           type="number"
           value={saleValue}
-          onChange={e => setSaleValue(+e.target.value)}
+          onChange={e => setSaleValue(e.target.value)}
           className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
           required
         />
@@ -215,7 +220,7 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
           <input
             type="number"
             value={commValue}
-            onChange={e => setCommValue(+e.target.value)}
+            onChange={e => setCommValue(e.target.value)}
             className="flex-1 px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
           />
         </div>
@@ -238,57 +243,62 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
           <input
             type="number"
             value={stampValue}
-            onChange={e => setStampValue(+e.target.value)}
+            onChange={e => setStampValue(e.target.value)}
             className="flex-1 px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
           />
         </div>
       </div>
 
       {/* Custos */}
-      <fieldset className="border border-gray-600 rounded p-4 space-y-2">
-        <legend className="px-2 text-sm font-medium text-gray-300">{t('costs')}</legend>
-        {costs.map((c, idx) => (
-          <div key={c.type} className="flex items-center space-x-2">
-            <span className="whitespace-nowrap text-gray-300">{c.type}:</span>
-            <input
-              type="number"
-              value={c.value}
-              onChange={e => {
-                const v = +e.target.value
-                setCosts(cs => {
-                  const nxt = [...cs]
-                  nxt[idx] = { ...nxt[idx], value: v }
-                  return nxt
-                })
-              }}
-              className="flex-1 px-2 py-1 bg-[#1F1F1F] border border-gray-600 rounded text-white"
-            />
-          </div>
-        ))}
-      </fieldset>
+<fieldset className="border border-gray-600 rounded p-4 space-y-2">
+  <legend className="px-2 text-sm font-medium text-gray-300">
+    {t('costs')}
+  </legend>
+  {costs.map((c, idx) => (
+    <div key={c.type} className="flex items-center space-x-2">
+      <span className="whitespace-nowrap text-gray-300">{c.type}:</span>
+      <input
+        type="number"
+        value={c.value}
+        onChange={e => {
+          const v = e.target.value
+          setCosts(cs => {
+            const nxt = [...cs]
+            nxt[idx] = { ...nxt[idx], value: v }
+            return nxt
+          })
+        }}
+        className="flex-1 px-2 py-1 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+      />
+    </div>
+  ))}
+</fieldset>
 
-      {/* Créditos */}
-      <fieldset className="border border-gray-600 rounded p-4 space-y-2">
-        <legend className="px-2 text-sm font-medium text-gray-300">{t('credits')}</legend>
-        {credits.map((c, idx) => (
-          <div key={c.type} className="flex items-center space-x-2">
-            <span className="whitespace-nowrap text-gray-300">{c.type}:</span>
-            <input
-              type="number"
-              value={c.value}
-              onChange={e => {
-                const v = +e.target.value
-                setCredits(cs => {
-                  const nxt = [...cs]
-                  nxt[idx] = { ...nxt[idx], value: v }
-                  return nxt
-                })
-              }}
-              className="flex-1 px-2 py-1 bg-[#1F1F1F] border border-gray-600 rounded text-white"
-            />
-          </div>
-        ))}
-      </fieldset>
+{/* Créditos */}
+<fieldset className="border border-gray-600 rounded p-4 space-y-2">
+  <legend className="px-2 text-sm font-medium text-gray-300">
+    {t('credits')}
+  </legend>
+  {credits.map((c, idx) => (
+    <div key={c.type} className="flex items-center space-x-2">
+      <span className="whitespace-nowrap text-gray-300">{c.type}:</span>
+      <input
+        type="text"
+        value={c.value}
+        onChange={e => {
+          const v = e.target.value
+          setCredits(cs => {
+            const nxt = [...cs]
+            nxt[idx] = { ...nxt[idx], value: v }
+            return nxt
+          })
+        }}
+        className="flex-1 px-2 py-1 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+      />
+    </div>
+  ))}
+</fieldset>
+
 
       {/* Ações */}
       <div className="flex justify-end space-x-2">
