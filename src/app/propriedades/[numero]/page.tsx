@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslation } from '../../../hooks/useTranslation';
+import Link from 'next/link'
+
 
 type PropertyRow = string[];
 
@@ -430,45 +432,57 @@ const soldSections = [
 
 
         {/* Botões de ação */}
-        <div className="mt-6 flex justify-end space-x-2 print:hidden">
-        {!isEditing && (
-            <button
-              onClick={printCard}
-              className="self-end bg-[#D4AF37] text-black px-4 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 transition text-sm"
-            >
-              {t('print')}
-            </button>
-          )}
-          <button
-            onClick={() => router.back()}
-            className="bg-[#D4AF37] text-black px-3 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 text-sm"
-          >
-            ← {t('back')}
-          </button>
-          {isEditing ? (
-            <>
-              <button
-                onClick={handleSave}
-                className="bg-green-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-green-600 text-sm"
-              >
-                {t('save')}
-              </button>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="bg-gray-600 text-white px-3 py-2 rounded-lg font-medium hover:bg-gray-700 text-sm"
-              >
-                {t('cancel')}
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="bg-blue-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-blue-600 transition text-sm"
-            >
-              {t('edit')}
-            </button>
-          )}
-        </div>
+<div className="mt-6 flex justify-end space-x-2 print:hidden">
+  {!isEditing && (
+    <button
+      onClick={printCard}
+      className="self-end bg-[#D4AF37] text-black px-4 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 transition text-sm"
+    >
+      {t('print')}
+    </button>
+  )}
+  <button
+    onClick={() => router.back()}
+    className="bg-[#D4AF37] text-black px-3 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 text-sm"
+  >
+    ← {t('back')}
+  </button>
+
+  {/* botão Vender (apenas fora do modo edição) */}
+  {!isEditing && (
+    <Link
+      href={`/propriedades/${numero}/vender`}
+      className="bg-green-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-green-600 transition text-sm"
+    >
+      {t('sellProperty')}
+    </Link>
+  )}
+
+  {isEditing ? (
+    <>
+      <button
+        onClick={handleSave}
+        className="bg-green-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-green-600 text-sm"
+      >
+        {t('save')}
+      </button>
+      <button
+        onClick={() => setIsEditing(false)}
+        className="bg-gray-600 text-white px-3 py-2 rounded-lg font-medium hover:bg-gray-700 text-sm"
+      >
+        {t('cancel')}
+      </button>
+    </>
+  ) : (
+    <button
+      onClick={() => setIsEditing(true)}
+      className="bg-blue-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-blue-600 transition text-sm"
+    >
+      {t('edit')}
+    </button>
+  )}
+</div>
+
       </div>
     </div>
   )
