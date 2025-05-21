@@ -533,12 +533,12 @@ const statusColor = blockedFlag
                   <tr key={i}>
                     <td className="px-4 py-2 text-sm text-white">{r[1]}</td>
                     <td className="px-4 py-2 text-sm text-white">{r[2]}</td>
+                    <td className="px-4 py-2 text-sm text-white">{r[4]}</td>
                     <td className="px-4 py-2 text-sm text-white">{r[5]}</td>
                     <td className="px-4 py-2 text-sm text-white">{r[6]}</td>
                     <td className="px-4 py-2 text-sm text-white">{r[7]}</td>
                     <td className="px-4 py-2 text-sm text-white">{r[21]}</td>
                     <td className="px-4 py-2 text-sm text-white">{r[9]}</td>
-                    <td className="px-4 py-2 text-sm text-white">{r[12]}</td>
                     <td className="px-4 py-2 text-sm">
   <span className={statusColor}>
     {statusLabel}
