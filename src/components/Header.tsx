@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -30,6 +30,22 @@ export default function Header() {
   const { lang, setLang } = useLanguage();
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [financeOpen, setFinanceOpen] = useState(false);
+  const financeRef = useRef<HTMLDivElement>(null);
+
+  // Fecha o submenu Financeiro ao clicar fora
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        financeRef.current &&
+        !financeRef.current.contains(e.target as Node)
+      ) {
+        setFinanceOpen(false);
+      }
+    }
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   if (pathname === '/login') return null;
 
@@ -42,8 +58,8 @@ export default function Header() {
       key: 'financials',
       Icon: DollarSign,
       children: [
-        { href: '/financeiro',                  key: 'financials',  Icon: DollarSign  },
-        { href: '/financeiro/calculadora',      key: 'calculator',  Icon: Calculator  },
+        { href: '/financeiro',              key: 'financials',  Icon: DollarSign  },
+        { href: '/financeiro/calculadora',  key: 'calculator',  Icon: Calculator  },
       ],
     },
     { href: '/tarefas',      key: 'tasks',      Icon: ClipboardList },
@@ -59,16 +75,18 @@ export default function Header() {
       {/* desktop menu */}
       <nav className="hidden md:flex items-center space-x-6">
         {navLinks.map(({ href, key, Icon, children }) => {
-          const active    = pathname === href || (children?.some(c => pathname === c.href) ?? false);
-          const isParent  = Array.isArray(children) && children.length > 0;
+          const isActive =
+            pathname === href ||
+            (children?.some(c => pathname === c.href) ?? false);
 
-          if (!isParent) {
+          // Sem submenu
+          if (!children) {
             return (
               <Link
                 key={href}
                 href={href}
                 className={
-                  active
+                  isActive
                     ? 'flex items-center text-white relative after:absolute after:-bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#D4AF37]'
                     : 'flex items-center text-gray-300 hover:text-white'
                 }
@@ -79,12 +97,13 @@ export default function Header() {
             );
           }
 
-          // item com submenu
+          // Submenu Financeiro (clique)
           return (
-            <div key={href} className="relative group">
+            <div key={href} ref={financeRef} className="relative">
               <button
+                onClick={() => setFinanceOpen(open => !open)}
                 className={
-                  active
+                  isActive
                     ? 'flex items-center text-white'
                     : 'flex items-center text-gray-300 hover:text-white'
                 }
@@ -93,22 +112,27 @@ export default function Header() {
                 {t(key)}
                 <span className="ml-1 text-xs">▾</span>
               </button>
-              <div className="absolute top-full left-0 mt-2 hidden group-hover:flex hover:flex flex-col bg-[#2C2C2C] rounded shadow-lg z-10">
-                {children.map(({ href: chHref, key: chKey, Icon: ChIcon }) => (
-                  <Link
-                    key={chHref}
-                    href={chHref}
-                    className={
-                      pathname === chHref
-                        ? 'flex items-center px-4 py-2 text-white bg-black'
-                        : 'flex items-center px-4 py-2 text-gray-300 hover:text-white'
-                    }
-                  >
-                    <ChIcon size={16} className="mr-1 text-[#D4AF37]" />
-                    {t(chKey)}
-                  </Link>
-                ))}
-              </div>
+              {financeOpen && (
+                <div className="absolute top-full left-0 mt-1 flex flex-col bg-[#2C2C2C] rounded shadow-lg z-10">
+                  {children.map(({ href: subHref, key: subKey, Icon: SubIcon }) => {
+                    const subActive = pathname === subHref;
+                    return (
+                      <Link
+                        key={subHref}
+                        href={subHref}
+                        className={
+                          subActive
+                            ? 'flex items-center px-4 py-2 text-white bg-black'
+                            : 'flex items-center px-4 py-2 text-gray-300 hover:text-white'
+                        }
+                      >
+                        <SubIcon size={16} className="mr-1 text-[#D4AF37]" />
+                        {t(subKey)}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}
@@ -132,7 +156,7 @@ export default function Header() {
         </Link>
       </nav>
 
-      {/* mobile menu (hamburger) */}
+      {/* mobile menu */}
       <div className="flex items-center md:hidden">
         <select
           value={lang}
@@ -149,20 +173,24 @@ export default function Header() {
           className="text-white"
           aria-label="Toggle menu"
         >
-          {menuOpen ? <X size={24} className="text-[#D4AF37]" /> : <Menu size={24} className="text-[#D4AF37]" />}
+          {menuOpen ? (
+            <X size={24} className="text-[#D4AF37]" />
+          ) : (
+            <Menu size={24} className="text-[#D4AF37]" />
+          )}
         </button>
 
         {menuOpen && (
           <div className="absolute top-full right-6 mt-2 w-48 bg-[#2C2C2C] rounded-lg shadow-lg p-4 flex flex-col space-y-2 z-50">
             {navLinks.map(({ href, key, Icon, children }) => {
-              // link principal
+              // explodir submenu também no mobile
               const items = children ?? [{ href, key, Icon }];
               return items.map(({ href: iHref, key: iKey, Icon: IIcon }) => (
                 <Link
                   key={iHref}
                   href={iHref}
                   onClick={() => setMenuOpen(false)}
-                  className="flex items-center text-white hover:text-gold py-1"
+                  className="flex items-center text-white hover:text-[#D4AF37] py-1"
                 >
                   <IIcon size={18} className="mr-1 text-[#D4AF37]" />
                   {t(iKey)}
