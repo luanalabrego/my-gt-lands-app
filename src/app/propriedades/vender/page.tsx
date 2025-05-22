@@ -6,30 +6,31 @@ import { useRouter, useParams } from 'next/navigation'
 import { useTranslation } from '../../../hooks/useTranslation'
 
 type PropertyOption = { numero: string; endereco: string }
+type Cost = { type: string; value: number }
+type Credit = { type: string; value: number }
 
 export default function VenderPage() {
   const { t } = useTranslation()
   const router = useRouter()
   const params = useParams()
-  // useParams pode ser string ou string[]
   const rawNumero = params.numero
   const initialNumero = Array.isArray(rawNumero) ? rawNumero[0] : (rawNumero || '')
 
   const [propsOptions, setPropsOptions] = useState<PropertyOption[]>([])
-  const [numero, setNumero]             = useState<string>(initialNumero)
-  const [saleDate, setSaleDate]         = useState<string>('')
-  const [saleValue, setSaleValue]       = useState<number>(0)
+  const [numero, setNumero] = useState<string>(initialNumero)
+  const [saleDate, setSaleDate] = useState<string>('')
+  const [saleValue, setSaleValue] = useState<number>(0)
 
   // Novos campos
-  const [buyerName, setBuyerName]               = useState<string>('')
-  const [paymentMethod, setPaymentMethod]       = useState<string>('')
-  const [downPayment, setDownPayment]           = useState<number>(0)
+  const [buyerName, setBuyerName] = useState<string>('')
+  const [paymentMethod, setPaymentMethod] = useState<string>('')
+  const [downPayment, setDownPayment] = useState<number>(0)
   const [installmentCount, setInstallmentCount] = useState<number>(1)
   const [installmentValue, setInstallmentValue] = useState<number>(0)
 
-  const [commType, setCommType]   = useState<'percent'|'fixed'>('percent')
+  const [commType, setCommType] = useState<'percent' | 'fixed'>('percent')
   const [commValue, setCommValue] = useState<number>(0)
-  const [stampType, setStampType] = useState<'percent'|'fixed'>('percent')
+  const [stampType, setStampType] = useState<'percent' | 'fixed'>('percent')
   const [stampValue, setStampValue] = useState<number>(0)
 
   const costTypes: string[] = [
@@ -54,41 +55,47 @@ export default function VenderPage() {
     'Assessments'
   ]
 
-  const [costs, setCosts]     = useState<{ type: string; value: number }[]>(
+  const [costs, setCosts] = useState<Cost[]>(
     costTypes.map(type => ({ type, value: 0 }))
   )
-  const [credits, setCredits] = useState<{ type: string; value: number }[]>(
+  const [credits, setCredits] = useState<Credit[]>(
     creditTypes.map(type => ({ type, value: 0 }))
   )
 
+  // Carrega só as propriedades disponíveis
   useEffect(() => {
-    fetch('/api/propriedades', { cache: 'no-store' })
+    fetch('/api/propriedades?onlyAvailable=true', { cache: 'no-store' })
       .then(res => res.json())
       .then(body => {
-        // rows será string[][]
-        const rows = (body.rows?.slice(1) as string[][]) || []
-        setPropsOptions(
-          rows.map((r: string[]) => ({
-            numero: r[2],
-            endereco: r[5]
-          }))
-        )
+        if (body.ok && Array.isArray(body.properties)) {
+          setPropsOptions(body.properties)
+        } else {
+          console.error('Formato inesperado:', body)
+        }
       })
+      .catch(err => console.error('Erro ao carregar propriedades:', err))
   }, [])
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const stateCommission = commType === 'percent'
-      ? saleValue * (commValue / 100)
-      : commValue
-    const docStamps = stampType === 'percent'
-      ? saleValue * (stampValue / 100)
-      : stampValue
+    const stateCommission =
+      commType === 'percent'
+        ? saleValue * (commValue / 100)
+        : commValue
+
+    const docStamps =
+      stampType === 'percent'
+        ? saleValue * (stampValue / 100)
+        : stampValue
+
+    // Encontra o endereço a partir do número selecionado
+    const propObj = propsOptions.find(o => o.numero === numero)
 
     const payload = {
       saleDate,
       propriedade: numero,
+      endereco: propObj?.endereco || '',
       buyerName,
       paymentMethod,
       downPayment,
@@ -106,6 +113,7 @@ export default function VenderPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
+
     if (res.ok) {
       router.push('/propriedades')
     } else {
@@ -163,13 +171,16 @@ export default function VenderPage() {
         {/* Método de Pagamento */}
         <div>
           <label className="block mb-1">{t('paymentMethod')}</label>
-          <input
-            type="text"
+          <select
             value={paymentMethod}
             onChange={e => setPaymentMethod(e.target.value)}
             className="w-full px-3 py-2 rounded bg-black"
             required
-          />
+          >
+            <option value="">{t('choosePaymentMethod')}</option>
+            <option value="À vista">À vista</option>
+            <option value="A prazo">A prazo</option>
+          </select>
         </div>
 
         {/* Entrada */}
@@ -259,7 +270,51 @@ export default function VenderPage() {
           </div>
         </div>
 
-        {/* Custos e Créditos (omitidos para brevidade) */}
+        {/* Custos */}
+        <fieldset className="border border-gray-700 rounded p-4 space-y-2">
+          <legend className="px-2 text-sm font-medium">{t('costs')}</legend>
+          {costs.map((c, idx) => (
+            <div key={c.type} className="flex items-center space-x-2">
+              <span className="whitespace-nowrap">{c.type}:</span>
+              <input
+                type="number"
+                value={c.value}
+                onChange={e => {
+                  const v = +e.target.value
+                  setCosts(cs => {
+                    const nxt = [...cs]
+                    nxt[idx] = { ...nxt[idx], value: v }
+                    return nxt
+                  })
+                }}
+                className="flex-1 px-2 py-1 rounded bg-black"
+              />
+            </div>
+          ))}
+        </fieldset>
+
+        {/* Créditos */}
+        <fieldset className="border border-gray-700 rounded p-4 space-y-2">
+          <legend className="px-2 text-sm font-medium">{t('credits')}</legend>
+          {credits.map((c, idx) => (
+            <div key={c.type} className="flex items-center space-x-2">
+              <span className="whitespace-nowrap">{c.type}:</span>
+              <input
+                type="number"
+                value={c.value}
+                onChange={e => {
+                  const v = +e.target.value
+                  setCredits(cs => {
+                    const nxt = [...cs]
+                    nxt[idx] = { ...nxt[idx], value: v }
+                    return nxt
+                  })
+                }}
+                className="flex-1 px-2 py-1 rounded bg-black"
+              />
+            </div>
+          ))}
+        </fieldset>
 
         <button
           type="submit"
