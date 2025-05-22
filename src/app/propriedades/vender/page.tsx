@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslation } from '../../../hooks/useTranslation'
 
 type PropertyOption = { numero: string; parcel: string; endereco: string }
@@ -11,9 +11,9 @@ type Credit = { type: string; value: number }
 export default function VenderPage() {
   const { t } = useTranslation()
   const router = useRouter()
-  const params = useParams()
-  const rawNumero = params.numero
-  const numero = Array.isArray(rawNumero) ? rawNumero[0] : (rawNumero || '')
+  const searchParams = useSearchParams()
+  const numero = searchParams.get('numero') || ''
+  
 
   // estado só da propriedade atual
   const [propObj, setPropObj] = useState<PropertyOption | null>(null)
