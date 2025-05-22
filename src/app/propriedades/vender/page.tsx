@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+export const dynamic = 'force-dynamic'
 import { useTranslation } from '../../../hooks/useTranslation'
 
 type PropertyOption = { numero: string; parcel: string; endereco: string }
