@@ -452,15 +452,15 @@ const soldSections = [
     ← {t('back')}
   </button>
 
-  {/* botão Vender (apenas fora do modo edição) */}
-  {!isEditing && (
-    <button
+  {/* botão Vender (apenas fora do modo edição e se não estiver vendida) */}
+{!isEditing && !isSold && (
+  <button
     onClick={() => setShowSellModal(true)}
     className="bg-green-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-green-600 transition text-sm"
-        >
- {t('sellProperty')}
-     </button>
-  )}
+  >
+    {t('sellProperty')}
+  </button>
+)}
 
   {isEditing ? (
     <>
