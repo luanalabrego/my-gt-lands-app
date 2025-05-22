@@ -18,32 +18,61 @@ export default function ListaClientesPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Clientes</h1>
-      <Link
-        href="/clientes/cadastrar"
-        className="inline-block mb-4 bg-blue-600 text-white px-4 py-2 rounded"
-      >
-        + Novo Cliente
-      </Link>
+      {/* Cabeçalho com título e botão */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-white">Clientes</h1>
+        <Link
+          href="/clientes/cadastrar"
+          className="bg-[#D4AF37] text-black px-4 py-2 rounded-lg font-medium hover:bg-[#D4AF37]/90 transition"
+        >
+          + Novo Cliente
+        </Link>
+      </div>
 
-      <table className="w-full table-auto border-collapse">
-        <thead>
-          <tr className="bg-gray-200">
-            {['Nome','Telefone','E-mail','CPF','Obs'].map(h => (
-              <th key={h} className="border px-2 py-1 text-left">{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {clientes.map((row, i) => (
-            <tr key={i} className="even:bg-gray-100">
-              {row.map((cell, j) => (
-                <td key={j} className="border px-2 py-1">{cell || '—'}</td>
+      {/* Tabela dentro de um card */}
+      <div className="overflow-x-auto bg-[#2C2C2C] rounded-2xl shadow-lg">
+        <table className="w-full table-auto">
+          <thead>
+            <tr className="bg-[#383838]">
+              {['Nome', 'Telefone', 'E-mail', 'CPF', 'Obs'].map((h) => (
+                <th
+                  key={h}
+                  className="text-left px-4 py-2 text-sm font-semibold text-white"
+                >
+                  {h}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {clientes.map((row, i) => (
+              <tr
+                key={i}
+                className={i % 2 === 0 ? 'bg-[#2C2C2C]' : 'bg-[#252525]'}
+              >
+                {row.map((cell, j) => (
+                  <td
+                    key={j}
+                    className="px-4 py-2 text-sm text-white break-words"
+                  >
+                    {cell || '—'}
+                  </td>
+                ))}
+              </tr>
+            ))}
+            {clientes.length === 0 && (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="text-center py-6 text-gray-400"
+                >
+                  Nenhum cliente cadastrado.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
