@@ -53,6 +53,7 @@ export async function GET(request: Request) {
       // mapeia para objetos { numero, endereco } (coluna C índice 2, coluna F índice 5)
       const properties = available.map(r => ({
         numero: r[2],
+        parcel:   r[4], // coluna E
         endereco: r[5],
       }))
       console.log('[API GET] disponíveis:', properties.length)
