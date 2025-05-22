@@ -16,22 +16,23 @@ export default function VenderPage() {
   const rawNumero = params.numero
   const numero = Array.isArray(rawNumero) ? rawNumero[0] : (rawNumero || '')
 
-  // Guarda a propriedade selecionada pela rota
+  // único estado para a propriedade vinda da rota
   const [propObj, setPropObj] = useState<PropertyOption | null>(null)
 
-  // Campos do formulário
-  const [saleDate, setSaleDate] = useState<string>('')
-  const [saleValue, setSaleValue] = useState<number>(0)
-  const [buyerName, setBuyerName] = useState<string>('')
-  const [paymentMethod, setPaymentMethod] = useState<string>('')
-  const [downPayment, setDownPayment] = useState<number>(0)
-  const [installmentCount, setInstallmentCount] = useState<number>(1)
-  const [installmentValue, setInstallmentValue] = useState<number>(0)
+  // campos do formulário
+  const [saleDate, setSaleDate] = useState('')
+  const [saleValue, setSaleValue] = useState(0)
+  const [buyerName, setBuyerName] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState('')
+  const [downPayment, setDownPayment] = useState(0)
+  const [installmentCount, setInstallmentCount] = useState(1)
+  const [installmentValue, setInstallmentValue] = useState(0)
   const [commType, setCommType] = useState<'percent' | 'fixed'>('percent')
-  const [commValue, setCommValue] = useState<number>(0)
+  const [commValue, setCommValue] = useState(0)
   const [stampType, setStampType] = useState<'percent' | 'fixed'>('percent')
-  const [stampValue, setStampValue] = useState<number>(0)
+  const [stampValue, setStampValue] = useState(0)
 
+  // custos e créditos
   const costTypes = [
     'Title Wave (Search Fee)',
     'Closing Fee',
@@ -54,25 +55,24 @@ export default function VenderPage() {
   const [costs, setCosts] = useState<Cost[]>(costTypes.map(type => ({ type, value: 0 })))
   const [credits, setCredits] = useState<Credit[]>(creditTypes.map(type => ({ type, value: 0 })))
 
-  // Estado de submit
+  // estado de envio
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [statusMessage, setStatusMessage] = useState('')
 
-  // Carrega só a propriedade cujo número vem da URL
+  // carrega apenas a propriedade correspondente ao número da URL
   useEffect(() => {
     fetch('/api/propriedades?onlyAvailable=true', { cache: 'no-store' })
       .then(res => res.json())
       .then(body => {
         if (body.ok && Array.isArray(body.properties)) {
-          const found = (body.properties as PropertyOption[])
-            .find(p => p.numero === numero)
+          const found = (body.properties as PropertyOption[]).find(p => p.numero === numero)
           if (found) setPropObj(found)
           else console.error(`Propriedade #${numero} não encontrada`)
         } else {
           console.error('Formato inesperado ao buscar propriedades:', body)
         }
       })
-      .catch(err => console.error('Erro ao carregar propriedades:', err))
+      .catch(err => console.error('Erro ao carregar propriedade:', err))
   }, [numero])
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -85,10 +85,12 @@ export default function VenderPage() {
     setIsSubmitting(true)
     setStatusMessage('Registrando...')
 
-    const stateCommission =
-      commType === 'percent' ? saleValue * (commValue / 100) : commValue
-    const docStamps =
-      stampType === 'percent' ? saleValue * (stampValue / 100) : stampValue
+    const stateCommission = commType === 'percent'
+      ? saleValue * (commValue / 100)
+      : commValue
+    const docStamps = stampType === 'percent'
+      ? saleValue * (stampValue / 100)
+      : stampValue
 
     const payload = {
       saleDate,
@@ -139,7 +141,7 @@ export default function VenderPage() {
           />
         </div>
 
-        {/* Propriedade fixa */}
+        {/* Propriedade fixa, sem dropdown */}
         <div>
           <label className="block mb-1">{t('property')}</label>
           <div className="w-full px-3 py-2 rounded bg-black text-white">
@@ -307,7 +309,7 @@ export default function VenderPage() {
           ))}
         </fieldset>
 
-        {/* status message */}
+        {/* Status message */}
         {statusMessage && (
           <div className="text-sm text-gray-300">
             {statusMessage}
