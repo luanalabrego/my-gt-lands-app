@@ -175,17 +175,22 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
       </div>
 
       {/* Método de Pagamento */}
-      <div>
-        <label className="block mb-1 text-sm font-medium text-gray-300">
-          {t('paymentMethod')}
-        </label>
-        <input
-          type="text"
-          value={paymentMethod}
-          onChange={e => setPaymentMethod(e.target.value)}
-          className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
-        />
-      </div>
+<div>
+  <label className="block mb-1 text-sm font-medium text-gray-300">
+    {t('paymentMethod')}
+  </label>
+  <select
+    value={paymentMethod}
+    onChange={e => setPaymentMethod(e.target.value)}
+    className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+    required
+  >
+    <option value="">{t('choosePaymentMethod')}</option>
+    <option value="À vista">À vista</option>
+    <option value="A prazo">A prazo</option>
+  </select>
+</div>
+
 
       {/* Entrada */}
       <div>
