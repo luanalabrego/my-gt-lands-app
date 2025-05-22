@@ -8,6 +8,7 @@ export const runtime = 'nodejs'
 interface VendaPayload {
   saleDate: string
   propriedade: string
+  parcel:       string
   endereco: string
   buyerName: string
   paymentMethod: string
@@ -25,6 +26,7 @@ export async function POST(req: Request) {
   const {
     saleDate,
     propriedade,
+    parcel,
     endereco,
     buyerName,
     paymentMethod,
@@ -111,21 +113,20 @@ export async function POST(req: Request) {
   // insere o "Valor da Venda" e obtém a linha
   const saleRow = await updateOrInsertRegistro('Valor da Venda', saleValue)
 
-  // agora grava:
-  //   G (7) = parcel novamente,
-  //   H (8) = endereco,
-  //   I (9) = buyerName
-  await sheets.spreadsheets.values.batchUpdate({
-    spreadsheetId: ssId,
-    requestBody: {
-      valueInputOption: 'RAW',
-      data: [
-        { range: `'Registros'!G${saleRow}`, values: [[propriedade]] },
-        { range: `'Registros'!H${saleRow}`, values: [[endereco]] },
-        { range: `'Registros'!I${saleRow}`, values: [[buyerName]] }
-      ]
-    }
-  })
+// agora grava:
+//   G (7) = parcel vindo do payload
+//   H (8) = endereco
+await sheets.spreadsheets.values.batchUpdate({
+  spreadsheetId: ssId,
+  requestBody: {
+    valueInputOption: 'RAW',
+    data: [
+      { range: `Registros!G${saleRow}`, values: [[parcel]] },   // col 7
+      { range: `Registros!H${saleRow}`, values: [[endereco]] }  // col 8
+    ]
+  }
+})
+
 
   // grava Q (17)=buyerName Caso queira redundância, mas conforme pedido:
   await sheets.spreadsheets.values.batchUpdate({
