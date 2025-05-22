@@ -12,14 +12,24 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, user => {
-      if (user) router.replace('/')
-      else router.replace('/login')
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // Se estiver logado, vai para a rota /dashboard
+        router.replace('/dashboard')
+      } else {
+        // Se não, vai para /login
+        router.replace('/login')
+      }
       setLoading(false)
     })
-    return unsub
+    return () => unsub()
   }, [router])
 
-  if (loading) return null
+  if (loading) {
+    // Você pode colocar um spinner aqui, se quiser
+    return null
+  }
+
+  // Renderiza o dashboard assim que souber que user está logado
   return <Dashboard />
 }
