@@ -11,10 +11,12 @@ interface PropertyOption {
 }
 
 export async function GET(
-  req: Request,
-  { params }: { params: { numero: string } }
+  request: Request,
+  { params }: { params: Promise<{ numero: string }> }
 ) {
-  const { numero } = params
+  // agora await params
+  const { numero } = await params
+
   const {
     GOOGLE_CLIENT_EMAIL,
     GOOGLE_PRIVATE_KEY,
@@ -28,7 +30,6 @@ export async function GET(
     )
   }
 
-  // autenticação Google Sheets
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: GOOGLE_CLIENT_EMAIL,
@@ -46,7 +47,6 @@ export async function GET(
   })
   const rows = resp.data.values || []
 
-  // procura pelo numero
   const found = rows.find(r => r[0]?.toString() === numero)
   if (!found) {
     return NextResponse.json(
