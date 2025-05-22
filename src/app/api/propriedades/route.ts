@@ -42,23 +42,26 @@ export async function GET(request: Request) {
     const res = await sheets.spreadsheets.values.get({ spreadsheetId, range })
     const rows: string[][] = res.data.values || []
     console.log('[API GET] linhas totais:', rows.length)
+// captura query-params ?onlyAvailable=true ou ?onlyBlocked=true
+const url           = new URL(request.url)
+const onlyAvailable = url.searchParams.get('onlyAvailable') === 'true'
+const onlyBlocked   = url.searchParams.get('onlyBlocked')   === 'true'
 
-    // captura query-param ?onlyAvailable=true
-    const url = new URL(request.url)
-    const onlyAvailable = url.searchParams.get('onlyAvailable') === 'true'
+if (onlyAvailable) {
+  // filtra quem está "Disponível" (coluna BJ = índice 61)
+  const rowsFiltradas = rows.filter(r => (r[61] || '').trim() === 'Disponível')
+  return NextResponse.json({ ok: true, rows: rowsFiltradas })
+}
 
-    if (onlyAvailable) {
-      // filtra quem está "Disponível" (coluna BJ = índice 61)
-      const available = rows.filter(r => (r[61] || '').trim() === 'Disponível')
-      // mapeia para objetos { numero, endereco } (coluna C índice 2, coluna F índice 5)
-      const properties = available.map(r => ({
-        numero: r[2],
-        parcel:   r[4], // coluna E
-        endereco: r[5],
-      }))
-      console.log('[API GET] disponíveis:', properties.length)
-      return NextResponse.json({ ok: true, properties })
-    }
+if (onlyBlocked) {
+  // filtra quem está bloqueado (coluna BI = índice 60)
+  const rowsBloqueadas = rows.filter(r => (r[60] || '').trim() === 'Sim')
+  return NextResponse.json({ ok: true, rows: rowsBloqueadas })
+}
+
+// sem filtro: retorna todas as linhas
+return NextResponse.json({ ok: true, rows })
+
 
     // retorno padrão com todas as rows (inalterado)
     return NextResponse.json({ ok: true, rows })
