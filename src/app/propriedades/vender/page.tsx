@@ -14,19 +14,19 @@ export default function VenderPage() {
   const router = useRouter()
   const params = useParams()
   const rawNumero = params.numero
-  const initialNumero = Array.isArray(rawNumero) ? rawNumero[0] : (rawNumero || '')
-  const numero = initialNumero
+  const numero = Array.isArray(rawNumero) ? rawNumero[0] : (rawNumero || '')
 
+  // Guarda a propriedade selecionada pela rota
   const [propObj, setPropObj] = useState<PropertyOption | null>(null)
+
+  // Campos do formulário
   const [saleDate, setSaleDate] = useState<string>('')
   const [saleValue, setSaleValue] = useState<number>(0)
-
   const [buyerName, setBuyerName] = useState<string>('')
   const [paymentMethod, setPaymentMethod] = useState<string>('')
   const [downPayment, setDownPayment] = useState<number>(0)
   const [installmentCount, setInstallmentCount] = useState<number>(1)
   const [installmentValue, setInstallmentValue] = useState<number>(0)
-
   const [commType, setCommType] = useState<'percent' | 'fixed'>('percent')
   const [commValue, setCommValue] = useState<number>(0)
   const [stampType, setStampType] = useState<'percent' | 'fixed'>('percent')
@@ -54,10 +54,11 @@ export default function VenderPage() {
   const [costs, setCosts] = useState<Cost[]>(costTypes.map(type => ({ type, value: 0 })))
   const [credits, setCredits] = useState<Credit[]>(creditTypes.map(type => ({ type, value: 0 })))
 
+  // Estado de submit
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [statusMessage, setStatusMessage] = useState('')
 
-  // carregar apenas a propriedade correspondente à rota
+  // Carrega só a propriedade cujo número vem da URL
   useEffect(() => {
     fetch('/api/propriedades?onlyAvailable=true', { cache: 'no-store' })
       .then(res => res.json())
@@ -76,18 +77,18 @@ export default function VenderPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!propObj) return alert('Propriedade não carregada ainda')
+    if (!propObj) {
+      alert('Propriedade ainda não carregada')
+      return
+    }
 
     setIsSubmitting(true)
     setStatusMessage('Registrando...')
 
-    const stateCommission = commType === 'percent'
-      ? saleValue * (commValue / 100)
-      : commValue
-
-    const docStamps = stampType === 'percent'
-      ? saleValue * (stampValue / 100)
-      : stampValue
+    const stateCommission =
+      commType === 'percent' ? saleValue * (commValue / 100) : commValue
+    const docStamps =
+      stampType === 'percent' ? saleValue * (stampValue / 100) : stampValue
 
     const payload = {
       saleDate,
@@ -126,7 +127,6 @@ export default function VenderPage() {
     <div className="max-w-2xl mx-auto p-6 bg-[#2C2C2C] rounded-lg mt-8 text-white">
       <h1 className="text-2xl font-bold mb-6">{t('sellProperty')} #{numero}</h1>
       <form onSubmit={onSubmit} className="space-y-4">
-
         {/* Data da Venda */}
         <div>
           <label className="block mb-1">{t('saleDate')}</label>
@@ -143,9 +143,7 @@ export default function VenderPage() {
         <div>
           <label className="block mb-1">{t('property')}</label>
           <div className="w-full px-3 py-2 rounded bg-black text-white">
-            {propObj
-              ? `#${propObj.numero} – ${propObj.endereco}`
-              : t('loading')}
+            {propObj ? `#${propObj.numero} – ${propObj.endereco}` : t('loading')}
           </div>
         </div>
 
