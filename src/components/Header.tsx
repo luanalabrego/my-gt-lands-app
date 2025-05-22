@@ -37,7 +37,7 @@ export default function Header() {
       Icon: DollarSign,
       children: [
         { href: '/financeiro',              key: 'financials',  Icon: DollarSign  },
-        { href: '/financeiro/calculadora',  key: 'calculator',  Icon: Calculator  },
+        { href: '/calculadora',  key: 'calculator',  Icon: Calculator  },
       ],
     },
     { href: '/tarefas',      key: 'tasks',      Icon: ClipboardList },
