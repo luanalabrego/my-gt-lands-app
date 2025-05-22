@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useTranslation } from '../../../hooks/useTranslation'
 
-type PropertyOption = { numero: string; endereco: string }
+type PropertyOption = { numero: string; parcel: string; endereco: string }
 type Cost = { type: string; value: number }
 type Credit = { type: string; value: number }
 
@@ -65,7 +65,7 @@ export default function VenderPage() {
       .then(res => res.json())
       .then(body => {
         if (body.ok && Array.isArray(body.properties)) {
-          setPropsOptions(body.properties)
+          setPropsOptions(body.properties as PropertyOption[])
         } else {
           console.error('Formato inesperado:', body)
         }
@@ -75,6 +75,7 @@ export default function VenderPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
     setIsSubmitting(true)
     setStatusMessage('Registrando...')
 
@@ -91,6 +92,7 @@ export default function VenderPage() {
     const payload = {
       saleDate,
       propriedade: numero,
+      parcel:       propObj?.parcel||'',  
       endereco: propObj?.endereco || '',
       buyerName,
       paymentMethod,
