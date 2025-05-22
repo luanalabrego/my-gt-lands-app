@@ -85,13 +85,13 @@ export async function POST(req: Request) {
     })
     const rows = resp.data.values || []
     const idx = rows.findIndex(r =>
-      r[0]?.toString().trim().toLowerCase() === propriedade.trim().toLowerCase() &&
+      r[0]?.toString().trim().toLowerCase() === parcel.trim().toLowerCase() &&
       r[1]?.toString().trim().toLowerCase() === description.trim().toLowerCase()
     )
     const rowNum = idx >= 0 ? 9 + idx : await getNextEmptyRow()
     const ops = [
       { range: `'Registros'!B${rowNum}`, values: [[formattedDate]] },
-      { range: `'Registros'!C${rowNum}`, values: [[propriedade]] },
+      { range: `'Registros'!C${rowNum}`, values: [[parcel]] },
       { range: `'Registros'!D${rowNum}`, values: [[description]] },
       { range: `'Registros'!E${rowNum}`, values: [['Venda']] },
       { range: `'Registros'!F${rowNum}`, values: [[value]] }
