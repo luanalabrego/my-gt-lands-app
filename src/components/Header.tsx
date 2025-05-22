@@ -93,7 +93,7 @@ export default function Header() {
                 {t(key)}
                 <span className="ml-1 text-xs">▾</span>
               </button>
-              <div className="absolute top-full left-0 mt-2 hidden group-hover:flex flex-col bg-[#2C2C2C] rounded shadow-lg z-10">
+              <div className="absolute top-full left-0 mt-2 hidden group-hover:flex hover:flex flex-col bg-[#2C2C2C] rounded shadow-lg z-10">
                 {children.map(({ href: chHref, key: chKey, Icon: ChIcon }) => (
                   <Link
                     key={chHref}
