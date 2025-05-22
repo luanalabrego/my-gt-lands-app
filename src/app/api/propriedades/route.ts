@@ -1,10 +1,11 @@
 // src/app/api/propriedades/route.ts
+
 import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
 
 export const runtime = 'nodejs'
 
-export async function GET() {
+export async function GET(request: Request) {
   console.log('[API GET] iniciando leitura da planilha')
 
   // validação das ENV vars
@@ -33,30 +34,44 @@ export async function GET() {
   const sheets = google.sheets({ version: 'v4', auth })
   const spreadsheetId = SPREADSHEET_ID
 
-  // expandido para A8:BJ, trazendo também BI (coluna BI = índice 60) e BJ (coluna BJ = índice 61)
+  // intervalo completo
   const range = `'Cadastro de Propriedades'!A8:BJ`
 
   try {
     console.log('[API GET] lendo', range)
     const res = await sheets.spreadsheets.values.get({ spreadsheetId, range })
     const rows: string[][] = res.data.values || []
-    console.log('[API GET] linhas:', rows.length)
+    console.log('[API GET] linhas totais:', rows.length)
+
+    // captura query-param ?onlyAvailable=true
+    const url = new URL(request.url)
+    const onlyAvailable = url.searchParams.get('onlyAvailable') === 'true'
+
+    if (onlyAvailable) {
+      // filtra quem está "Disponível" (coluna BJ = índice 61)
+      const available = rows.filter(r => (r[61] || '').trim() === 'Disponível')
+      // mapeia para objetos { numero, endereco } (coluna C índice 2, coluna F índice 5)
+      const properties = available.map(r => ({
+        numero: r[2],
+        endereco: r[5],
+      }))
+      console.log('[API GET] disponíveis:', properties.length)
+      return NextResponse.json({ ok: true, properties })
+    }
+
+    // retorno padrão com todas as rows (inalterado)
     return NextResponse.json({ ok: true, rows })
-  } catch (err: unknown) {
-    const e = err as any
-    const message = e.message || String(err)
+  } catch (err: any) {
+    const message = err.message || String(err)
     let status = 500
     let errorType = 'server_error'
 
-    if (e.code === 403 || /permission/i.test(message)) {
-      status = 403
-      errorType = 'permission_denied'
-    } else if (e.code === 401 || /unauthorized/i.test(message)) {
-      status = 401
-      errorType = 'unauthorized'
+    if (err.code === 403 || /permission/i.test(message)) {
+      status = 403; errorType = 'permission_denied'
+    } else if (err.code === 401 || /unauthorized/i.test(message)) {
+      status = 401; errorType = 'unauthorized'
     } else if (/ENOTFOUND|ECONNREFUSED|ETIMEOUT/.test(message)) {
-      status = 503
-      errorType = 'network_error'
+      status = 503; errorType = 'network_error'
     }
 
     console.error(`[API GET] erro (${errorType}):`, message)

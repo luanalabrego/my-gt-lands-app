@@ -35,25 +35,18 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
   const [stampValue, setStampValue] = useState<string>('')
 
   useEffect(() => {
-    fetch('/api/propriedades', { cache: 'no-store' })
+    fetch('/api/propriedades?onlyAvailable=true', { cache: 'no-store' })
       .then(res => res.json())
       .then(body => {
-        const rows = (body.rows?.slice(1) as string[][]) || []
-  
-        // filtra só as propriedades com status "Disponível" (coluna 61 → índice 60)
-        const available = rows.filter(row =>
-          (row[60] || '').trim() === 'Disponível'
-        )
-  
-        setPropsOptions(
-          available.map(row => ({
-            numero: row[2],
-            endereco: row[5],
-          }))
-        )
+        if (body.ok && Array.isArray(body.properties)) {
+          setPropsOptions(body.properties)
+        } else {
+          console.error('Formato inesperado:', body)
+        }
       })
       .catch(err => console.error('Erro ao carregar propriedades:', err))
   }, [])
+  
   
 
   // (custos e créditos omitidos para brevidade...)
