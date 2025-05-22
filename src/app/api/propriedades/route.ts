@@ -43,25 +43,31 @@ export async function GET(request: Request) {
     const rows: string[][] = res.data.values || []
     console.log('[API GET] linhas totais:', rows.length)
 
-    // captura query-param ?onlyAvailable=true
-    const url = new URL(request.url)
-    const onlyAvailable = url.searchParams.get('onlyAvailable') === 'true'
-
-    if (onlyAvailable) {
-      // filtra quem está "Disponível" (coluna BJ = índice 61)
-      const available = rows.filter(r => (r[61] || '').trim() === 'Disponível')
-      // mapeia para objetos { numero, endereco } (coluna C índice 2, coluna F índice 5)
-      const properties = available.map(r => ({
-        numero: r[2],
-        parcel:   r[4], // coluna E
-        endereco: r[5],
-      }))
-      console.log('[API GET] disponíveis:', properties.length)
-      return NextResponse.json({ ok: true, properties })
-    }
-
-    // retorno padrão com todas as rows (inalterado)
-    return NextResponse.json({ ok: true, rows })
+       // lê query-params
+       const url           = new URL(request.url)
+       const onlyAvailable = url.searchParams.get('onlyAvailable') === 'true'
+       const onlyBlocked   = url.searchParams.get('onlyBlocked')   === 'true'
+   
+       // mapeia todas as linhas em objetos uniformes
+       const allProps = rows.map(r => ({
+         numero:   r[2],                  // coluna C
+         parcel:   r[4],                  // coluna E
+         endereco: r[5],                  // coluna F
+         status:   (r[61] || '').trim(),  // coluna BJ
+         blocked:  (r[60] || '').trim() === 'Sim'  // coluna BI
+       }))
+   
+       // aplica filtro se solicitado
+       let properties = allProps
+       if (onlyAvailable) {
+         properties = allProps.filter(p => p.status === 'Disponível')
+       } else if (onlyBlocked) {
+         properties = allProps.filter(p => p.blocked)
+       }
+   
+       // devolve sempre um array de propriedades
+       return NextResponse.json({ ok: true, properties })
+   
   } catch (err: any) {
     const message = err.message || String(err)
     let status = 500
