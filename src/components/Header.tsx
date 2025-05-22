@@ -1,28 +1,39 @@
-'use client'
+'use client';
 
-import React, { useState } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Menu, X, Home, MapPin, ClipboardList, DollarSign, Calculator, LogOut } from 'lucide-react'
-import { useLanguage } from '../context/LanguageContext'
-import { useTranslation } from '../hooks/useTranslation'
+import React, { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  Menu,
+  X,
+  Home,
+  MapPin,
+  ClipboardList,
+  DollarSign,
+  Calculator,
+  LogOut,
+  User,            // import do ícone de cliente
+} from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function Header() {
-  const pathname = usePathname()
-  const { lang, setLang } = useLanguage()
-  const { t } = useTranslation()
-  const [menuOpen, setMenuOpen] = useState(false)
+  const pathname = usePathname();
+  const { lang, setLang } = useLanguage();
+  const { t } = useTranslation();
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  if (pathname === '/login') return null
+  if (pathname === '/login') return null;
 
   const navLinks = [
-    { href: '/dashboard',    key: 'dashboard',    Icon: Home        },
-    { href: '/propriedades', key: 'properties',   Icon: MapPin     },
-    { href: '/tarefas',      key: 'tasks',        Icon: ClipboardList },
-    { href: '/financeiro',   key: 'financials',   Icon: DollarSign  },
-    { href: '/calculadora',  key: 'calculator',   Icon: Calculator  },
-  ]
+    { href: '/dashboard',    key: 'dashboard',  Icon: Home         },
+    { href: '/propriedades', key: 'properties', Icon: MapPin       },
+    { href: '/clientes',     key: 'clients',    Icon: User         },  // novo item
+    { href: '/tarefas',      key: 'tasks',      Icon: ClipboardList },
+    { href: '/financeiro',   key: 'financials', Icon: DollarSign  },
+    { href: '/calculadora',  key: 'calculator', Icon: Calculator  },
+  ];
 
   return (
     <header className="relative w-full bg-black px-6 py-4 flex items-center justify-between">
@@ -34,7 +45,7 @@ export default function Header() {
       {/* desktop menu */}
       <nav className="hidden md:flex items-center space-x-6">
         {navLinks.map(({ href, key, Icon }) => {
-          const active = pathname === href
+          const active = pathname === href;
           return (
             <Link
               key={href}
@@ -48,7 +59,7 @@ export default function Header() {
               <Icon size={18} className="mr-1 text-[#D4AF37]" />
               {t(key)}
             </Link>
-          )
+          );
         })}
         <select
           value={lang}
@@ -113,5 +124,5 @@ export default function Header() {
         </div>
       )}
     </header>
-  )
+  );
 }
