@@ -83,7 +83,6 @@ export default function PropriedadesPage() {
     const saleDateRaw  = (r[saleDateIndex] || '').toString().trim()
     const sold         = saleDateRaw !== ''
     const blockedFlag  = r[60] === 'Sim'             // coluna BI
-    if (blockedFlag && statusFilter !== 'blocked') return false
 
     if (searchTerm) {
       if (/^\d+$/.test(searchTerm)) {
@@ -96,7 +95,7 @@ export default function PropriedadesPage() {
     if (selectedCounty && county !== selectedCounty) return false
     if (statusFilter === 'sold' && !sold) return false
     if (statusFilter === 'pending' && sold) return false
-    if (statusFilter === 'available' && sold) return false
+    if (statusFilter === 'available' && (sold || blockedFlag)) return false
     if (statusFilter === 'blocked' && !blockedFlag)    return false
 
 
