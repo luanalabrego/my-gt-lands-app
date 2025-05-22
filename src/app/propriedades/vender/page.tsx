@@ -1,4 +1,3 @@
-// src/app/propriedades/[numero]/vender/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -16,7 +15,7 @@ export default function VenderPage() {
   const rawNumero = params.numero
   const numero = Array.isArray(rawNumero) ? rawNumero[0] : (rawNumero || '')
 
-  // único estado para a propriedade vinda da rota
+  // estado só da propriedade atual
   const [propObj, setPropObj] = useState<PropertyOption | null>(null)
 
   // campos do formulário
@@ -51,7 +50,6 @@ export default function VenderPage() {
     'e-Recording Service Fee'
   ]
   const creditTypes = ['County Taxes', 'Assessments']
-
   const [costs, setCosts] = useState<Cost[]>(costTypes.map(type => ({ type, value: 0 })))
   const [credits, setCredits] = useState<Credit[]>(creditTypes.map(type => ({ type, value: 0 })))
 
@@ -61,15 +59,15 @@ export default function VenderPage() {
 
   // carrega apenas a propriedade correspondente ao número da URL
   useEffect(() => {
-    fetch('/api/propriedades?onlyAvailable=true', { cache: 'no-store' })
+    if (!numero) return
+
+    fetch(`/api/propriedades/${numero}`, { cache: 'no-store' })
       .then(res => res.json())
       .then(body => {
-        if (body.ok && Array.isArray(body.properties)) {
-          const found = (body.properties as PropertyOption[]).find(p => p.numero === numero)
-          if (found) setPropObj(found)
-          else console.error(`Propriedade #${numero} não encontrada`)
+        if (body.ok && body.property) {
+          setPropObj(body.property as PropertyOption)
         } else {
-          console.error('Formato inesperado ao buscar propriedades:', body)
+          console.error(`Propriedade #${numero} não encontrada`, body)
         }
       })
       .catch(err => console.error('Erro ao carregar propriedade:', err))
@@ -127,7 +125,10 @@ export default function VenderPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-[#2C2C2C] rounded-lg mt-8 text-white">
-      <h1 className="text-2xl font-bold mb-6">{t('sellProperty')} #{numero}</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        {t('sellProperty')} #{numero}
+      </h1>
+
       <form onSubmit={onSubmit} className="space-y-4">
         {/* Data da Venda */}
         <div>
@@ -144,8 +145,10 @@ export default function VenderPage() {
         {/* Propriedade fixa, sem dropdown */}
         <div>
           <label className="block mb-1">{t('property')}</label>
-          <div className="w-full px-3 py-2 rounded bg-black text-white">
-            {propObj ? `#${propObj.numero} – ${propObj.endereco}` : t('loading')}
+          <div className="w-full px-3 py-2 rounded bg-black">
+            {propObj
+              ? `#${propObj.numero} – ${propObj.endereco}`
+              : t('loading')}
           </div>
         </div>
 
@@ -311,11 +314,10 @@ export default function VenderPage() {
 
         {/* Status message */}
         {statusMessage && (
-          <div className="text-sm text-gray-300">
-            {statusMessage}
-          </div>
+          <div className="text-sm text-gray-300">{statusMessage}</div>
         )}
 
+        {/* Botão de envio */}
         <button
           type="submit"
           disabled={isSubmitting}
