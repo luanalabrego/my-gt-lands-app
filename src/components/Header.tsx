@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -18,38 +18,16 @@ import {
 import { useLanguage } from '../context/LanguageContext';
 import { useTranslation } from '../hooks/useTranslation';
 
-type NavItem = {
-  href: string;
-  key: string;
-  Icon: React.ComponentType<{ size: number; className?: string }>;
-  children?: NavItem[];
-};
-
 export default function Header() {
   const pathname = usePathname();
   const { lang, setLang } = useLanguage();
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [financeOpen, setFinanceOpen] = useState(false);
-  const financeRef = useRef<HTMLDivElement>(null);
-
-  // Fecha o submenu Financeiro ao clicar fora
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        financeRef.current &&
-        !financeRef.current.contains(e.target as Node)
-      ) {
-        setFinanceOpen(false);
-      }
-    }
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
 
   if (pathname === '/login') return null;
 
-  const navLinks: NavItem[] = [
+  const navLinks = [
     { href: '/dashboard',    key: 'dashboard',  Icon: Home         },
     { href: '/propriedades', key: 'properties', Icon: MapPin       },
     { href: '/clientes',     key: 'clients',    Icon: User         },
@@ -67,19 +45,20 @@ export default function Header() {
 
   return (
     <header className="relative w-full bg-black px-6 py-4 flex items-center justify-between">
+      {/* Logo */}
       <Link href="/dashboard" className="flex items-center space-x-2">
         <Image src="/logo.png" alt="G&T Lands" width={40} height={40} />
         <span className="text-xl font-bold text-white">G&amp;T Lands</span>
       </Link>
 
-      {/* desktop menu */}
+      {/* Menu desktop */}
       <nav className="hidden md:flex items-center space-x-6">
         {navLinks.map(({ href, key, Icon, children }) => {
           const isActive =
             pathname === href ||
             (children?.some(c => pathname === c.href) ?? false);
 
-          // Sem submenu
+          // itens sem submenu
           if (!children) {
             return (
               <Link
@@ -97,9 +76,9 @@ export default function Header() {
             );
           }
 
-          // Submenu Financeiro (clique)
+          // Financeiro com clique
           return (
-            <div key={href} ref={financeRef} className="relative">
+            <div key={href} className="relative">
               <button
                 onClick={() => setFinanceOpen(open => !open)}
                 className={
@@ -112,6 +91,7 @@ export default function Header() {
                 {t(key)}
                 <span className="ml-1 text-xs">▾</span>
               </button>
+
               {financeOpen && (
                 <div className="absolute top-full left-0 mt-1 flex flex-col bg-[#2C2C2C] rounded shadow-lg z-10">
                   {children.map(({ href: subHref, key: subKey, Icon: SubIcon }) => {
@@ -137,6 +117,7 @@ export default function Header() {
           );
         })}
 
+        {/* Seletor de idioma */}
         <select
           value={lang}
           onChange={e => setLang(e.target.value as any)}
@@ -147,6 +128,7 @@ export default function Header() {
           <option value="es">ES</option>
         </select>
 
+        {/* Logout */}
         <Link
           href="/login"
           className="inline-flex items-center py-1 text-gray-300 hover:text-white ml-4"
@@ -156,8 +138,9 @@ export default function Header() {
         </Link>
       </nav>
 
-      {/* mobile menu */}
+      {/* Menu mobile */}
       <div className="flex items-center md:hidden">
+        {/* idioma */}
         <select
           value={lang}
           onChange={e => setLang(e.target.value as any)}
@@ -168,22 +151,19 @@ export default function Header() {
           <option value="es">ES</option>
         </select>
 
+        {/* hambúrguer */}
         <button
           onClick={() => setMenuOpen(prev => !prev)}
           className="text-white"
           aria-label="Toggle menu"
         >
-          {menuOpen ? (
-            <X size={24} className="text-[#D4AF37]" />
-          ) : (
-            <Menu size={24} className="text-[#D4AF37]" />
-          )}
+          {menuOpen ? <X size={24} className="text-[#D4AF37]" /> : <Menu size={24} className="text-[#D4AF37]" />}
         </button>
 
+        {/* painel móvel */}
         {menuOpen && (
           <div className="absolute top-full right-6 mt-2 w-48 bg-[#2C2C2C] rounded-lg shadow-lg p-4 flex flex-col space-y-2 z-50">
             {navLinks.map(({ href, key, Icon, children }) => {
-              // explodir submenu também no mobile
               const items = children ?? [{ href, key, Icon }];
               return items.map(({ href: iHref, key: iKey, Icon: IIcon }) => (
                 <Link
