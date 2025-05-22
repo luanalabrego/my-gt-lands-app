@@ -15,20 +15,19 @@ export default function VenderPage() {
   const params = useParams()
   const rawNumero = params.numero
   const initialNumero = Array.isArray(rawNumero) ? rawNumero[0] : (rawNumero || '')
+  const numero = initialNumero
 
-  const [propsOptions, setPropsOptions] = useState<PropertyOption[]>([])
-  const [numero, setNumero]             = useState<string>(initialNumero)
-  const [saleDate, setSaleDate]         = useState<string>('')
-  const [saleValue, setSaleValue]       = useState<number>(0)
+  const [propObj, setPropObj] = useState<PropertyOption | null>(null)
+  const [saleDate, setSaleDate] = useState<string>('')
+  const [saleValue, setSaleValue] = useState<number>(0)
 
-  // novos campos
-  const [buyerName, setBuyerName]       = useState<string>('')
+  const [buyerName, setBuyerName] = useState<string>('')
   const [paymentMethod, setPaymentMethod] = useState<string>('')
-  const [downPayment, setDownPayment]   = useState<number>(0)
+  const [downPayment, setDownPayment] = useState<number>(0)
   const [installmentCount, setInstallmentCount] = useState<number>(1)
   const [installmentValue, setInstallmentValue] = useState<number>(0)
 
-  const [commType, setCommType]   = useState<'percent' | 'fixed'>('percent')
+  const [commType, setCommType] = useState<'percent' | 'fixed'>('percent')
   const [commValue, setCommValue] = useState<number>(0)
   const [stampType, setStampType] = useState<'percent' | 'fixed'>('percent')
   const [stampValue, setStampValue] = useState<number>(0)
@@ -52,30 +51,33 @@ export default function VenderPage() {
   ]
   const creditTypes = ['County Taxes', 'Assessments']
 
-  const [costs, setCosts]     = useState<Cost[]>(costTypes.map(type => ({ type, value: 0 })))
+  const [costs, setCosts] = useState<Cost[]>(costTypes.map(type => ({ type, value: 0 })))
   const [credits, setCredits] = useState<Credit[]>(creditTypes.map(type => ({ type, value: 0 })))
 
-  // loading & status
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [statusMessage, setStatusMessage] = useState('')
 
-  // carrega só propriedades disponíveis
+  // carregar apenas a propriedade correspondente à rota
   useEffect(() => {
     fetch('/api/propriedades?onlyAvailable=true', { cache: 'no-store' })
       .then(res => res.json())
       .then(body => {
         if (body.ok && Array.isArray(body.properties)) {
-          setPropsOptions(body.properties as PropertyOption[])
+          const found = (body.properties as PropertyOption[])
+            .find(p => p.numero === numero)
+          if (found) setPropObj(found)
+          else console.error(`Propriedade #${numero} não encontrada`)
         } else {
-          console.error('Formato inesperado:', body)
+          console.error('Formato inesperado ao buscar propriedades:', body)
         }
       })
       .catch(err => console.error('Erro ao carregar propriedades:', err))
-  }, [])
+  }, [numero])
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+    if (!propObj) return alert('Propriedade não carregada ainda')
+
     setIsSubmitting(true)
     setStatusMessage('Registrando...')
 
@@ -87,13 +89,11 @@ export default function VenderPage() {
       ? saleValue * (stampValue / 100)
       : stampValue
 
-    const propObj = propsOptions.find(o => o.numero === numero)
-
     const payload = {
       saleDate,
       propriedade: numero,
-      parcel:       propObj?.parcel||'',  
-      endereco: propObj?.endereco || '',
+      parcel: propObj.parcel,
+      endereco: propObj.endereco,
       buyerName,
       paymentMethod,
       downPayment,
@@ -139,22 +139,14 @@ export default function VenderPage() {
           />
         </div>
 
-        {/* Propriedade */}
+        {/* Propriedade fixa */}
         <div>
           <label className="block mb-1">{t('property')}</label>
-          <select
-            value={numero}
-            onChange={e => setNumero(e.target.value)}
-            className="w-full px-3 py-2 rounded bg-black"
-            required
-          >
-            <option value="">{t('chooseProperty')}</option>
-            {propsOptions.map(o => (
-              <option key={o.numero} value={o.numero}>
-                #{o.numero} – {o.endereco}
-              </option>
-            ))}
-          </select>
+          <div className="w-full px-3 py-2 rounded bg-black text-white">
+            {propObj
+              ? `#${propObj.numero} – ${propObj.endereco}`
+              : t('loading')}
+          </div>
         </div>
 
         {/* Nome do Comprador */}
