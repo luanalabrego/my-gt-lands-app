@@ -1,13 +1,15 @@
 // src/app/propriedades/vender/page.tsx
 import React, { Suspense } from 'react'
+export const dynamic = 'force-dynamic'
 import VenderClient from './VenderClient'
 
-export default function Page({
+export default async function Page({
   searchParams
 }: {
-  searchParams: { numero?: string }
+  searchParams: Promise<{ numero?: string }>
 }) {
-  const numero = searchParams.numero || ''
+  const { numero = '' } = await searchParams
+
 
   return (
     <Suspense fallback={<p>Carregando formulário...</p>}>
