@@ -55,9 +55,9 @@ export async function POST(req: Request) {
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: GOOGLE_CLIENT_EMAIL,
-      private_key: GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n')
+      private_key: GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
     },
-    scopes: ['https://www.googleapis.com/auth/spreadsheets']
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   })
   const sheets = google.sheets({ version: 'v4', auth })
   const ssId = SPREADSHEET_ID
@@ -109,21 +109,23 @@ export async function POST(req: Request) {
 
   // grava custos antes da venda
   for (const [type, val] of Object.entries(custos)) {
-    if (val && val !== 0) await updateOrInsertRegistro(type, val)
+    if (val && val !== 0) {
+      await updateOrInsertRegistro(type, val)
+    }
   }
 
   // insere o valor da venda e captura a linha
   const saleRow = await updateOrInsertRegistro('Valor da Venda', saleValue)
 
-  // adiciona ENDEREÇO, PARCEL e BUYER NAME nas colunas F, G e H
+  // agora grava PARCEL (col G), ENDEREÇO (col H) e BUYER NAME (col I)
   await sheets.spreadsheets.values.batchUpdate({
     spreadsheetId: ssId,
     requestBody: {
       valueInputOption: 'RAW',
       data: [
-        { range: `Registros!F${saleRow}`, values: [[endereco]] },
         { range: `Registros!G${saleRow}`, values: [[propriedade]] },
-        { range: `Registros!H${saleRow}`, values: [[buyerName]] }
+        { range: `Registros!H${saleRow}`, values: [[endereco]] },
+        { range: `Registros!I${saleRow}`, values: [[buyerName]] }
       ]
     }
   })
@@ -152,7 +154,9 @@ export async function POST(req: Request) {
 
   // grava créditos após a venda
   for (const [type, val] of Object.entries(creditos)) {
-    if (val && val !== 0) await updateOrInsertRegistro(type, val)
+    if (val && val !== 0) {
+      await updateOrInsertRegistro(type, val)
+    }
   }
 
   return NextResponse.json({ ok: true })
