@@ -25,14 +25,36 @@ const getSheetsClient = () => {
 export async function GET() {
   try {
     const { sheets, spreadsheetId } = getSheetsClient()
-    // lê todos os clientes: aba “Cliente” colunas A–E
-    const res = await sheets.spreadsheets.values.get({
+
+    // 1) Lê todos os clientes
+    const resCli = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: 'Cliente!A:E',
     })
-    const rows = res.data.values || []
-    // cabeçalho + dados
-    return NextResponse.json({ ok: true, rows })
+    const clientes = resCli.data.values || []  // inclui cabeçalho
+
+    // 2) Lê todas as propriedades (para buscar o comprador, coluna index 59)
+    const resProp = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `'Cadastro de Propriedades'!A8:BJ`,
+    })
+    const props = resProp.data.values || []
+
+    // 3) Monta um novo array, adicionando o número da propriedade (coluna 2) a cada cliente
+    const header    = [...clientes[0], 'Propriedade']
+    const clientsWithProp = clientes.slice(1).map(row => {
+      const nomeCliente = row[0].trim()
+      // busca propriedade cujo comprador (coluna 59, index 58 zero-based) === nomeCliente
+      const match = props.find(p => (p[58] || '').trim() === nomeCliente)
+      const propNum = match ? match[2] : ''
+      return [...row, propNum]
+    })
+
+    // 4) Retorna o cabeçalho + linhas já com a coluna “Propriedade”
+    return NextResponse.json({
+      ok:   true,
+      rows: [header, ...clientsWithProp],
+    })
   } catch (err: any) {
     console.error('[API GET /clientes]', err)
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 })
@@ -50,16 +72,11 @@ export async function POST(request: Request) {
     }
 
     const { sheets, spreadsheetId } = getSheetsClient()
-    // insere no final da aba “Cliente” nas colunas A–E
     await sheets.spreadsheets.values.append({
       spreadsheetId,
       range: 'Cliente!A:E',
       valueInputOption: 'USER_ENTERED',
-      requestBody: {
-        values: [
-          [ nome, telefone, email, cpf, obs ]
-        ],
-      },
+      requestBody: { values: [[ nome, telefone, email, cpf, obs ]] },
     })
 
     return NextResponse.json({ ok: true })

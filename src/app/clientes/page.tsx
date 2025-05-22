@@ -4,15 +4,27 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 type Cliente = [string, string, string, string, string] // [nome, telefone, email, cpf, obs]
+type PropertyRow = string[]                        // todas as colunas da planilha de propriedades
 
 export default function ListaClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
+  const [properties, setProperties] = useState<PropertyRow[]>([])
 
+  // carrega todos os clientes
   useEffect(() => {
     fetch('/api/clientes')
       .then(res => res.json())
       .then(data => {
         if (data.ok) setClientes(data.rows.slice(1)) // remove header
+      })
+  }, [])
+
+  // carrega todas as propriedades
+  useEffect(() => {
+    fetch('/api/propriedades')
+      .then(res => res.json())
+      .then(data => {
+        if (data.ok) setProperties(data.rows.slice(1))
       })
   }, [])
 
@@ -34,7 +46,7 @@ export default function ListaClientesPage() {
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-[#383838]">
-              {['Nome', 'Telefone', 'E-mail', 'CPF', 'Obs'].map((h) => (
+              {['Nome', 'Telefone', 'E-mail', 'CPF', 'Obs', 'Propriedade'].map(h => (
                 <th
                   key={h}
                   className="text-left px-4 py-2 text-sm font-semibold text-white"
@@ -45,27 +57,35 @@ export default function ListaClientesPage() {
             </tr>
           </thead>
           <tbody>
-            {clientes.map((row, i) => (
-              <tr
-                key={i}
-                className={i % 2 === 0 ? 'bg-[#2C2C2C]' : 'bg-[#252525]'}
-              >
-                {row.map((cell, j) => (
-                  <td
-                    key={j}
-                    className="px-4 py-2 text-sm text-white break-words"
-                  >
-                    {cell || '—'}
+            {clientes.map((row, i) => {
+              const nome = row[0]
+              // encontra a propriedade cujo comprador (coluna 59) bate com o nome do cliente
+              const prop = properties.find(p => (p[59] || '').trim() === nome)
+              // exibe número da propriedade (coluna 2) ou traço
+              const propDisplay = prop ? (prop[2] || '—') : '—'
+
+              return (
+                <tr
+                  key={i}
+                  className={i % 2 === 0 ? 'bg-[#2C2C2C]' : 'bg-[#252525]'}
+                >
+                  {row.map((cell, j) => (
+                    <td
+                      key={j}
+                      className="px-4 py-2 text-sm text-white break-words"
+                    >
+                      {cell || '—'}
+                    </td>
+                  ))}
+                  <td className="px-4 py-2 text-sm text-white break-words">
+                    {propDisplay}
                   </td>
-                ))}
-              </tr>
-            ))}
+                </tr>
+              )
+            })}
             {clientes.length === 0 && (
               <tr>
-                <td
-                  colSpan={5}
-                  className="text-center py-6 text-gray-400"
-                >
+                <td colSpan={6} className="text-center py-6 text-gray-400">
                   Nenhum cliente cadastrado.
                 </td>
               </tr>
