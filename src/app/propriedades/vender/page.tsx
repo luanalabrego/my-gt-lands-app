@@ -17,23 +17,23 @@ export default function VenderPage() {
   const initialNumero = Array.isArray(rawNumero) ? rawNumero[0] : (rawNumero || '')
 
   const [propsOptions, setPropsOptions] = useState<PropertyOption[]>([])
-  const [numero, setNumero] = useState<string>(initialNumero)
-  const [saleDate, setSaleDate] = useState<string>('')
-  const [saleValue, setSaleValue] = useState<number>(0)
+  const [numero, setNumero]             = useState<string>(initialNumero)
+  const [saleDate, setSaleDate]         = useState<string>('')
+  const [saleValue, setSaleValue]       = useState<number>(0)
 
-  // Novos campos
-  const [buyerName, setBuyerName] = useState<string>('')
+  // novos campos
+  const [buyerName, setBuyerName]       = useState<string>('')
   const [paymentMethod, setPaymentMethod] = useState<string>('')
-  const [downPayment, setDownPayment] = useState<number>(0)
+  const [downPayment, setDownPayment]   = useState<number>(0)
   const [installmentCount, setInstallmentCount] = useState<number>(1)
   const [installmentValue, setInstallmentValue] = useState<number>(0)
 
-  const [commType, setCommType] = useState<'percent' | 'fixed'>('percent')
+  const [commType, setCommType]   = useState<'percent' | 'fixed'>('percent')
   const [commValue, setCommValue] = useState<number>(0)
   const [stampType, setStampType] = useState<'percent' | 'fixed'>('percent')
   const [stampValue, setStampValue] = useState<number>(0)
 
-  const costTypes: string[] = [
+  const costTypes = [
     'Title Wave (Search Fee)',
     'Closing Fee',
     'Doc Prep Fee',
@@ -50,19 +50,16 @@ export default function VenderPage() {
     'Special district Assessments',
     'e-Recording Service Fee'
   ]
-  const creditTypes: string[] = [
-    'County Taxes',
-    'Assessments'
-  ]
+  const creditTypes = ['County Taxes', 'Assessments']
 
-  const [costs, setCosts] = useState<Cost[]>(
-    costTypes.map(type => ({ type, value: 0 }))
-  )
-  const [credits, setCredits] = useState<Credit[]>(
-    creditTypes.map(type => ({ type, value: 0 }))
-  )
+  const [costs, setCosts]     = useState<Cost[]>(costTypes.map(type => ({ type, value: 0 })))
+  const [credits, setCredits] = useState<Credit[]>(creditTypes.map(type => ({ type, value: 0 })))
 
-  // Carrega só as propriedades disponíveis
+  // loading & status
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [statusMessage, setStatusMessage] = useState('')
+
+  // carrega só propriedades disponíveis
   useEffect(() => {
     fetch('/api/propriedades?onlyAvailable=true', { cache: 'no-store' })
       .then(res => res.json())
@@ -78,18 +75,17 @@ export default function VenderPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
+    setStatusMessage('Registrando...')
 
-    const stateCommission =
-      commType === 'percent'
-        ? saleValue * (commValue / 100)
-        : commValue
+    const stateCommission = commType === 'percent'
+      ? saleValue * (commValue / 100)
+      : commValue
 
-    const docStamps =
-      stampType === 'percent'
-        ? saleValue * (stampValue / 100)
-        : stampValue
+    const docStamps = stampType === 'percent'
+      ? saleValue * (stampValue / 100)
+      : stampValue
 
-    // Encontra o endereço a partir do número selecionado
     const propObj = propsOptions.find(o => o.numero === numero)
 
     const payload = {
@@ -115,8 +111,11 @@ export default function VenderPage() {
     })
 
     if (res.ok) {
-      router.push('/propriedades')
+      setStatusMessage('Venda registrada')
+      setTimeout(() => router.push('/propriedades'), 1000)
     } else {
+      setIsSubmitting(false)
+      setStatusMessage('')
       alert(t('errorSaving'))
     }
   }
@@ -316,11 +315,23 @@ export default function VenderPage() {
           ))}
         </fieldset>
 
+        {/* status message */}
+        {statusMessage && (
+          <div className="text-sm text-gray-300">
+            {statusMessage}
+          </div>
+        )}
+
         <button
           type="submit"
-          className="w-full bg-green-500 py-2 rounded hover:bg-green-600 transition"
+          disabled={isSubmitting}
+          className={`w-full py-2 rounded transition ${
+            isSubmitting
+              ? 'bg-gray-600 cursor-not-allowed'
+              : 'bg-green-500 hover:bg-green-600'
+          }`}
         >
-          {t('confirmSale')}
+          {isSubmitting ? 'Registrando...' : t('confirmSale')}
         </button>
       </form>
     </div>
