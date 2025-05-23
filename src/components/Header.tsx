@@ -40,7 +40,6 @@ export default function Header() {
         { href: '/calculadora',  key: 'calculator',  Icon: Calculator  },
       ],
     },
-    { href: '/tarefas',      key: 'tasks',      Icon: ClipboardList },
   ];
 
   return (
