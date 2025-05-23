@@ -71,8 +71,7 @@ const creditTypes: string[] = [
 const [costs, setCosts]     = useState<Cost[]>(costTypes.map(type => ({ type, value: '' })))
 const [credits, setCredits] = useState<Credit[]>(creditTypes.map(type => ({ type, value: '' })))
 
-
-  // ----- Efeitos de carregamento -----
+// ----- Efeitos de carregamento -----
 useEffect(() => {
   // propriedades disponíveis
   fetch('/api/propriedades?onlyAvailable=true', { cache: 'no-store' })
@@ -83,8 +82,8 @@ useEffect(() => {
         const dataRows = (body.rows as string[][]).slice(1)
         setPropsOptions(
           dataRows.map(r => ({
-            numero:   r[2], // coluna B: número da propriedade
-            endereco: r[5], // coluna E: endereço
+            numero:   r[1], // coluna B: número da propriedade
+            endereco: r[4], // coluna E: endereço
           }))
         )
       } else {
