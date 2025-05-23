@@ -29,12 +29,17 @@ export async function GET() {
   const ss = SPREADSHEET_ID
 
   try {
+    // 1) Faz a leitura
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: ss,
       range: 'Registros!B9:J'
     })
     const values = res.data.values || []
 
+    // 2) LOG: raw values vindos do Sheets
+    console.log('⏳ [API] raw values:', JSON.stringify(values, null, 2))
+
+    // 3) Mapeia as colunas corretas
     const rows = values.map(r => ({
       data:          r[0] || '',               // coluna B
       numero:        r[1] || '',               // coluna C
@@ -46,11 +51,14 @@ export async function GET() {
       investidor:    r[7] || '',               // coluna I
       notes:         r[8] || ''                // coluna J
     }))
-    
 
+    // 4) LOG: rows mapeadas
+    console.log('✅ [API] mapped rows:', JSON.stringify(rows, null, 2))
+
+    // 5) Retorna ao cliente
     return NextResponse.json({ ok: true, rows })
   } catch (err: any) {
-    console.error('Erro ao buscar custos:', err)
+    console.error('❌ Erro ao buscar custos:', err)
     return NextResponse.json(
       { ok: false, error: err.message },
       { status: 500 }
