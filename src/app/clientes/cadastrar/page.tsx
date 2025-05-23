@@ -20,7 +20,7 @@ export default function CadastrarClientePage() {
     }
     setError('')
 
-    const res = await fetch('/api/usuario', {
+    const res = await fetch('/api/cliente', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nome, telefone, email, cpf, obs }),
