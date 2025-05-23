@@ -185,7 +185,7 @@ useEffect(() => {
           </thead>
           <tbody className="divide-y divide-gray-700 bg-[#2C2C2C]">
             {filtered.map((r, i) => (
-              <tr key={i} className="hover:bg-gray-700">
+              <tr key={i} className="hover:bg-[#363636] transition-colors">
                 {/* Data */}
                 <td className="px-4 py-2 text-sm text-white">
                   {isEditing ? (
