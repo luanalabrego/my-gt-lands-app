@@ -255,7 +255,8 @@ useEffect(() => {
                       type="text"
                       value={r.valor}
                       onChange={e => updateCell(i, 'valor', e.target.value)}
-                      className="w-full bg-gray-800 text-white rounded px-2 text-right"
+                      className="w-full bg-[#2C2C2C] border border-gray-600 text-white rounded-lg px-2 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+
                     />
                   ) : (
                     r.valor
