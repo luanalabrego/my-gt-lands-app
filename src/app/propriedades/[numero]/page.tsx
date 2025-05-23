@@ -510,8 +510,8 @@ const soldSections = [
     >
       <CostsForm
             numero={numero}
-            parcel={row[6]}     // coluna G no array (índice 6)
-            endereco={row[7]}   // coluna H no array (índice 7)
+            parcel={row[4]}     // coluna G no array (índice 6)
+            endereco={row[5]}   // coluna H no array (índice 7)
             onClose={() => setShowCostsModal(false)}
           />
         </div>
