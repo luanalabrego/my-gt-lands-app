@@ -202,23 +202,24 @@ export default function VenderClient({ numero, onClose = () => {} }: VenderClien
           </select>
         </div>
 
-        {/* Nome do Comprador */}
-        <div>
-          <label className="block mb-1">{t('buyerName')}</label>
-          <select
-            value={buyerName}
-            onChange={e => setBuyerName(e.target.value)}
-            className="appearance-auto w-full px-3 py-2 rounded bg-black text-white"
-            required
-          >
-            <option value="">{t('selectBuyer')}</option>
-            {clientNames.map((name, i) => (
-              <option key={i} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </div>
+       {/* Nome do Comprador */}
+<div>
+  <label className="block mb-1">{t('buyerName')}</label>
+  <select
+    value={buyerName}
+    onChange={e => setBuyerName(e.target.value)}
+    className="appearance-auto w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+    required
+  >
+    <option value="">{t('selectBuyer')}</option>
+    {clientNames.map((name, i) => (
+      <option key={i} value={name}>
+        {name}
+      </option>
+    ))}
+  </select>
+</div>
+
 
         {/* Método de Pagamento */}
         <div>
