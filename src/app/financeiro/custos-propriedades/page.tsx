@@ -35,10 +35,11 @@ export default function PropertyCostsPage() {
 
   const filtered = rows.filter(r => {
     if (classFilter && r.classificacao !== classFilter) return false
-    if (numFilter   && !r.numero.includes(numFilter)) return false
+    if (numFilter   && r.numero !== numFilter)         return false
     if (addrFilter  && !r.endereco.toLowerCase().includes(addrFilter.toLowerCase())) return false
     return true
   })
+  
 
   return (
     <div className="min-h-screen bg-[#1F1F1F] px-6 py-6 space-y-6">
