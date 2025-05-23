@@ -64,79 +64,98 @@ useEffect(() => {
     <div className="min-h-screen bg-[#1F1F1F] px-6 py-6 space-y-6">
       <h1 className="text-2xl font-bold text-white">Custos das Propriedades</h1>
       {error && <p className="text-red-500">{error}</p>}
+{/* botão de editar / salvar / cancelar */}
+<div className="flex justify-end space-x-2 print:hidden">
+  {!isEditing ? (
+    <button
+      onClick={() => setIsEditing(true)}
+      className="
+        px-4 py-2 
+        bg-[#D4AF37] text-black 
+        rounded-lg 
+        hover:bg-[#D4AF37]/90 
+        focus:outline-none focus:ring-2 focus:ring-[#D4AF37] 
+        text-sm
+      "
+    >
+      Editar
+    </button>
+  ) : (
+    <>
+      <button
+        onClick={async () => {
+          // envia todas as linhas editadas
+          await fetch('/api/financeiro/atualizar-todos-custos', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rows: editedRows })
+          })
+          // recarrega
+          const b = await fetch('/api/financeiro/custos-propriedades').then(r => r.json())
+          setRows(b.rows)
+          setEditedRows(b.rows)
+          setIsEditing(false)
+        }}
+        className="
+          px-4 py-2 
+          bg-[#D4AF37] text-black 
+          rounded-lg 
+          hover:bg-[#D4AF37]/90 
+          focus:outline-none focus:ring-2 focus:ring-[#D4AF37] 
+          text-sm
+        "
+      >
+        Salvar
+      </button>
+      <button
+        onClick={() => {
+          setEditedRows(rows)
+          setIsEditing(false)
+        }}
+        className="
+          px-4 py-2 
+          bg-[#2C2C2C] border border-[#D4AF37] text-[#D4AF37]
+          rounded-lg 
+          hover:bg-[#2C2C2C]/90 
+          focus:outline-none focus:ring-2 focus:ring-[#D4AF37] 
+          text-sm
+        "
+      >
+        Cancelar
+      </button>
+    </>
+  )}
+</div>
 
-      {/* botão de editar / salvar / cancelar */}
-      <div className="flex justify-end space-x-2 print:hidden">
-        {!isEditing ? (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
-          >
-            Editar
-          </button>
-        ) : (
-          <>
-            <button
-              onClick={async () => {
-                // envia todas as linhas editadas
-                await fetch('/api/financeiro/atualizar-todos-custos', {
-                  method: 'PUT',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ rows: editedRows })
-                })
-                // recarrega
-                const b = await fetch('/api/financeiro/custos-propriedades').then(r => r.json())
-                setRows(b.rows)
-                setEditedRows(b.rows)
-                setIsEditing(false)
-              }}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
-            >
-              Salvar
-            </button>
-            <button
-              onClick={() => {
-                setEditedRows(rows)
-                setIsEditing(false)
-              }}
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm"
-            >
-              Cancelar
-            </button>
-          </>
-        )}
-      </div>
+{/* filtros */}
+<div className="flex flex-wrap gap-4 mb-6 print:hidden">
+  <select
+    value={classFilter}
+    onChange={e => setClassFilter(e.target.value)}
+    className="px-4 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+  >
+    <option value="">Todas Classificações</option>
+    <option value="Leilão">Leilão</option>
+    <option value="Propriedade">Propriedade</option>
+    <option value="Venda">Venda</option>
+  </select>
 
-      {/* filtros */}
-      <div className="flex flex-wrap gap-4 mb-6 print:hidden">
-        <select
-          value={classFilter}
-          onChange={e => setClassFilter(e.target.value)}
-          className="px-4 py-2 bg-black border border-gray-600 text-white rounded-lg focus:outline-none focus:border-gold"
-        >
-          <option value="">Todas Classificações</option>
-          <option value="Leilão">Leilão</option>
-          <option value="Propriedade">Propriedade</option>
-          <option value="Venda">Venda</option>
-        </select>
+  <input
+    type="text"
+    placeholder="Número da propriedade"
+    value={numFilter}
+    onChange={e => setNumFilter(e.target.value)}
+    className="px-4 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+  />
 
-        <input
-          type="text"
-          placeholder="Número da propriedade"
-          value={numFilter}
-          onChange={e => setNumFilter(e.target.value)}
-          className="px-4 py-2 bg-black border border-gray-600 text-white rounded-lg focus:outline-none focus:border-gold"
-        />
-
-        <input
-          type="text"
-          placeholder="Endereço"
-          value={addrFilter}
-          onChange={e => setAddrFilter(e.target.value)}
-          className="flex-1 px-4 py-2 bg-black border border-gray-600 text-white rounded-lg focus:outline-none focus:border-gold"
-        />
-      </div>
-
+  <input
+    type="text"
+    placeholder="Endereço"
+    value={addrFilter}
+    onChange={e => setAddrFilter(e.target.value)}
+    className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+  />
+</div>
       {/* tabela de resultados */}
       <div className="overflow-x-auto bg-[#2C2C2C] rounded-2xl shadow-lg">
         <table className="min-w-full divide-y divide-gray-700">
