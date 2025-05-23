@@ -46,7 +46,7 @@ export default function ListaClientesPage() {
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-[#383838]">
-              {['Nome', 'Telefone', 'E-mail', 'CPF', 'Obs', 'Propriedade'].map(h => (
+              {['Nome', 'Telefone', 'E-mail', 'CPF', 'Propriedade', 'Obs'].map(h => (
                 <th
                   key={h}
                   className="text-left px-4 py-2 text-sm font-semibold text-white"
@@ -58,7 +58,7 @@ export default function ListaClientesPage() {
           </thead>
           <tbody>
             {clientes.map((row, i) => {
-              const nome = row[0]
+              const [nome, telefone, email, cpf, obs] = row
               // encontra a propriedade cujo comprador (coluna 59) bate com o nome do cliente
               const prop = properties.find(p => (p[59] || '').trim() === nome)
               // exibe número da propriedade (coluna 2) ou traço
@@ -69,16 +69,23 @@ export default function ListaClientesPage() {
                   key={i}
                   className={i % 2 === 0 ? 'bg-[#2C2C2C]' : 'bg-[#252525]'}
                 >
-                  {row.map((cell, j) => (
-                    <td
-                      key={j}
-                      className="px-4 py-2 text-sm text-white break-words"
-                    >
-                      {cell || '—'}
-                    </td>
-                  ))}
+                  <td className="px-4 py-2 text-sm text-white break-words">
+                    {nome || '—'}
+                  </td>
+                  <td className="px-4 py-2 text-sm text-white break-words">
+                    {telefone || '—'}
+                  </td>
+                  <td className="px-4 py-2 text-sm text-white break-words">
+                    {email || '—'}
+                  </td>
+                  <td className="px-4 py-2 text-sm text-white break-words">
+                    {cpf || '—'}
+                  </td>
                   <td className="px-4 py-2 text-sm text-white break-words">
                     {propDisplay}
+                  </td>
+                  <td className="px-4 py-2 text-sm text-white break-words">
+                    {obs || '—'}
                   </td>
                 </tr>
               )
