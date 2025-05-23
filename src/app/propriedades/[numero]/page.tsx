@@ -458,7 +458,7 @@ const soldSections = [
   {!isEditing && (
     <button
       onClick={() => setShowCostsModal(true)}
-      className="bg-blue-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-blue-600 transition text-sm"
+      className="bg-red-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-red-600 transition text-sm"
     >
       {t('registerCosts')}
     </button>
