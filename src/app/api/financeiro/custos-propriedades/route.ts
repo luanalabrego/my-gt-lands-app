@@ -36,16 +36,17 @@ export async function GET() {
     const values = res.data.values || []
 
     const rows = values.map(r => ({
-      data:           r[1] || '',
-      numero:         r[2] || '',
-      descricao:      r[3] || '',
-      classificacao:  r[4] || '',
-      valor:          parseFloat(r[6] || '0'),
-      parcel:         r[7] || '',
-      endereco:       r[8] || '',
-      investidor:     r[9] || '',
-      notes:          r[10] || ''
+      data:          r[0] || '',               // coluna B
+      numero:        r[1] || '',               // coluna C
+      descricao:     r[2] || '',               // coluna D
+      classificacao: r[3] || '',               // coluna E
+      valor:         parseFloat(r[4] || '0'),  // coluna F
+      parcel:        r[5] || '',               // coluna G
+      endereco:      r[6] || '',               // coluna H
+      investidor:    r[7] || '',               // coluna I
+      notes:         r[8] || ''                // coluna J
     }))
+    
 
     return NextResponse.json({ ok: true, rows })
   } catch (err: any) {
