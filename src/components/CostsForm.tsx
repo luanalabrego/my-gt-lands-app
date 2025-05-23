@@ -279,7 +279,7 @@ export default function CostsForm({
           onChange={e => setNotes(e.target.value)}
           className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
           rows={3}
-          required
+      
         />
       </div>
 
