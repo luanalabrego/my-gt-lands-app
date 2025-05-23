@@ -76,17 +76,15 @@ useEffect(() => {
     .catch(err => console.error('Erro ao carregar propriedade:', err))
 }, [numero])
 
-// carrega nomes de clientes para o dropdown
 useEffect(() => {
   fetch('/api/clientes', { cache: 'no-store' })
     .then(res => res.json())
     .then(body => {
       if (body.ok) {
-        const names = body.rows.slice(1).map((row: any[]) => row[0])
-        setClientNames(names)
+        setClientNames(body.rows.slice(1).map((row: any[]) => row[0]))
       }
     })
-    .catch(err => console.error('Erro carregando clientes:', err))
+    .catch(console.error)
 }, [])
 
 const onSubmit = async (e: React.FormEvent) => {
@@ -181,23 +179,23 @@ const onSubmit = async (e: React.FormEvent) => {
         </div>
 
       {/* Nome do Comprador */}
-      <div>
-        <label htmlFor="buyerName" className="block mb-1">{t('buyerName')}</label>
-        <select
-          id="buyerName"
-          value={buyerName}
-          onChange={e => setBuyerName(e.target.value)}
-          className="w-full px-3 py-2 rounded bg-black text-white"
-          required
-        >
-          <option value="">{t('selectBuyer')}</option>
-          {clientNames.map((name, idx) => (
-            <option key={idx} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
-      </div>
+<div>
+  <label htmlFor="buyerName" className="block mb-1">{t('buyerName')}</label>
+  <select
+    id="buyerName"
+    value={buyerName}
+    onChange={e => setBuyerName(e.target.value)}
+    className="w-full px-3 py-2 rounded bg-black text-white"
+    required
+  >
+    <option value="">{t('selectBuyer')}</option>
+    {clientNames.map((name, idx) => (
+      <option key={idx} value={name}>
+        {name}
+      </option>
+    ))}
+  </select>
+</div>
 
 
         {/* Método de Pagamento */}
