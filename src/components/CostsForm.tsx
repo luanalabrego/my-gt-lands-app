@@ -15,7 +15,12 @@ interface DropdownData {
   investidores: string[]
 }
 
-export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFormProps) {
+export default function CostsForm({
+  numero,
+  parcel,
+  endereco,
+  onClose
+}: CostsFormProps) {
   const [tipoRegistro, setTipoRegistro] = useState<'Leilão' | 'Propriedade'>('Leilão')
   const [dropdowns, setDropdowns] = useState<DropdownData>({ investidores: [] })
 
@@ -30,13 +35,12 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
 
   // campos Leilão
   const [valorArrematado, setValorArrematado] = useState<number>(0)
-  const [docStamps, setDocStamps] = useState<number>(0) // percentual
+  const [docStamps, setDocStamps] = useState<number>(0)  // % sobre arremate
   const [recordingFees, setRecordingFees] = useState<number>(0)
   const [publicacionFee, setPublicacionFee] = useState<number>(0)
   const [taxaBancaria, setTaxaBancaria] = useState<number>(0)
   const [outrosCustos, setOutrosCustos] = useState<number>(0)
 
-  // carregar dropdown
   useEffect(() => {
     fetch('/api/propriedades/dropdown')
       .then(res => res.json())
@@ -66,7 +70,6 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
           })
         })
       } else {
-        // calcula doc stamps em valor
         const docStampsValor = (docStamps / 100) * valorArrematado
         const custos = [
           { descricao: 'Valor Arrematado', valor: valorArrematado },
@@ -96,6 +99,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
           }
         }
       }
+
       onClose()
     } catch (err: any) {
       alert(`Falha ao salvar: ${err.message}`)
@@ -275,6 +279,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
           onChange={e => setNotes(e.target.value)}
           className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
           rows={3}
+          required
         />
       </div>
 
