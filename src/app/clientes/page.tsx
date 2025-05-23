@@ -12,7 +12,7 @@ export default function ListaClientesPage() {
 
   // carrega todos os clientes
   useEffect(() => {
-    fetch('/api/clientes')
+    fetch('/api/usuario')
       .then(res => res.json())
       .then(data => {
         if (data.ok) setClientes(data.rows.slice(1)) // remove header
