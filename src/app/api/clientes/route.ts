@@ -36,7 +36,7 @@ export async function GET() {
     // 2) Lê todas as propriedades (para buscar o comprador, coluna index 59)
     const resProp = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: `'Cadastro de Propriedades'!A8:BJ`,
+      range: `'Cadastro de Propriedades'!A9:BJ`,
     })
     const props = resProp.data.values || []
 
