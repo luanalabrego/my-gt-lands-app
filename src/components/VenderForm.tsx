@@ -79,7 +79,7 @@ useEffect(() => {
     .then(body => {
       if (body.ok && Array.isArray(body.rows)) {
         // pula header e pega as linhas de dados
-        const dataRows = (body.rows as string[][]).slice(1)
+        const dataRows = body.rows as string[][]
         setPropsOptions(
           dataRows.map(r => ({
             numero:   r[2], // coluna C (índice 2): número da propriedade
