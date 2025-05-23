@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 
@@ -9,26 +9,11 @@ interface CostsFormProps {
   onClose: () => void
 }
 
-interface DropdownData {
-  propertyNumbers: string[]
-  descricaoOptions: string[]
-  investidores: string[]
-}
-
 export default function CostsForm({ numero, onClose }: CostsFormProps) {
-  // tipo de registro
-  const [tipoRegistro, setTipoRegistro] = useState<'Propriedade' | 'Leilão'>('Propriedade')
+  const [tipoRegistro, setTipoRegistro] = useState<'Leilão' | 'Propriedade'>('Leilão')
 
-  // dropdowns
-  const [dropdowns, setDropdowns] = useState<DropdownData>({
-    propertyNumbers: [],
-    descricaoOptions: [],
-    investidores: []
-  })
-
-  // campos comuns
-  const [data, setData] = useState<Date | null>(new Date())
-  const [numeroPropriedade, setNumeroPropriedade] = useState<string>(numero)
+  // campo de data inicial em branco
+  const [data, setData] = useState<Date | null>(null)
   const [investidor, setInvestidor] = useState<string>('')
   const [notes, setNotes] = useState<string>('')
 
@@ -44,17 +29,9 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
   const [taxaBancaria, setTaxaBancaria] = useState<number>(0)
   const [outrosCustos, setOutrosCustos] = useState<number>(0)
 
-  // busca opções de dropdown
-  useEffect(() => {
-    fetch('/api/propriedades/dropdown')
-      .then(res => res.json())
-      .then((data: DropdownData) => setDropdowns(data))
-      .catch(console.error)
-  }, [])
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const dateStr = data ? data.toISOString().slice(0,10) : ''
+    const dateStr = data ? data.toISOString().slice(0, 10) : ''
 
     try {
       if (tipoRegistro === 'Propriedade') {
@@ -63,7 +40,7 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             data: dateStr,
-            numeroPropriedade,
+            numeroPropriedade: numero,
             descricao,
             valor,
             investidor,
@@ -87,7 +64,7 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 data: dateStr,
-                numeroPropriedade,
+                numeroPropriedade: numero,
                 descricao: c.descricao,
                 valor: c.valor,
                 investidor,
@@ -105,100 +82,92 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 text-white">
-      <h2 className="text-2xl font-semibold">Registrar Custos</h2>
+    <form onSubmit={handleSubmit} className="space-y-4 text-white">
+      <h2 className="text-xl font-semibold">Registrar Custos</h2>
 
-      {/* Tipo de Registro */}
+      {/* 1) Tipo de Registro */}
       <div className="flex space-x-6">
-        <label className="flex items-center">
-          <input
-            type="radio"
-            value="Propriedade"
-            checked={tipoRegistro === 'Propriedade'}
-            onChange={() => setTipoRegistro('Propriedade')}
-            className="mr-2"
-          />
-          Propriedade
-        </label>
         <label className="flex items-center">
           <input
             type="radio"
             value="Leilão"
             checked={tipoRegistro === 'Leilão'}
             onChange={() => setTipoRegistro('Leilão')}
-            className="mr-2"
+            className="mr-1"
           />
           Leilão
         </label>
+        <label className="flex items-center">
+          <input
+            type="radio"
+            value="Propriedade"
+            checked={tipoRegistro === 'Propriedade'}
+            onChange={() => setTipoRegistro('Propriedade')}
+            className="mr-1"
+          />
+          Propriedade
+        </label>
       </div>
 
-      {/* Campos comuns */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block mb-1">Data</label>
-          <DatePicker
-            selected={data}
-            onChange={d => setData(d)}
-            dateFormat="yyyy-MM-dd"
-            className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
-            required
-          />
-        </div>
-        <div>
-          <label className="block mb-1">Número da Propriedade</label>
-          <select
-            value={numeroPropriedade}
-            onChange={e => setNumeroPropriedade(e.target.value)}
-            className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
-            required
-          >
-            <option value="">Selecione uma opção</option>
-            {dropdowns.propertyNumbers.map(n => (
-              <option key={n} value={n}>{n}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block mb-1">Investidor</label>
-          <select
-            value={investidor}
-            onChange={e => setInvestidor(e.target.value)}
-            className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
-            required
-          >
-            <option value="">Selecione uma opção</option>
-            {dropdowns.investidores.map(i => (
-              <option key={i} value={i}>{i}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block mb-1">Observações</label>
-          <textarea
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
-            rows={2}
-          />
-        </div>
+      {/* 2) Número da Propriedade (fixo) */}
+      <div>
+        <label className="block mb-1">Número da Propriedade</label>
+        <input
+          type="text"
+          value={numero}
+          readOnly
+          className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+        />
       </div>
 
-      {/* Campos específicos */}
+      {/* 3) Data (calendário sem valor inicial) */}
+      <div>
+        <label className="block mb-1">Data</label>
+        <DatePicker
+          selected={data}
+          onChange={d => setData(d)}
+          dateFormat="yyyy-MM-dd"
+          placeholderText="Selecione a data"
+          className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+          required
+        />
+      </div>
+
+      {/* 4) Investidor */}
+      <div>
+        <label className="block mb-1">Investidor</label>
+        <input
+          type="text"
+          value={investidor}
+          onChange={e => setInvestidor(e.target.value)}
+          className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+          required
+        />
+      </div>
+
+      {/* 5) Observações */}
+      <div>
+        <label className="block mb-1">Observações</label>
+        <textarea
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+          rows={2}
+        />
+      </div>
+
+      {/* 6) Campos específicos */}
       {tipoRegistro === 'Propriedade' ? (
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block mb-1">Descrição</label>
-            <select
+            <input
+              type="text"
               value={descricao}
               onChange={e => setDescricao(e.target.value)}
               className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
               required
-            >
-              <option value="">Selecione uma opção</option>
-              {dropdowns.descricaoOptions.map(d => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
+            />
           </div>
           <div>
             <label className="block mb-1">Valor (R$)</label>
@@ -216,7 +185,7 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
       ) : (
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block mb-1">Valor Arrematado</label>
+            <label className="block mb-1">Valor Arrematado (R$)</label>
             <input
               type="number"
               step="0.01"
@@ -227,7 +196,7 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
             />
           </div>
           <div>
-            <label className="block mb-1">% Doc Stamps</label>
+            <label className="block mb-1">Doc Stamps (%)</label>
             <input
               type="number"
               step="0.01"
