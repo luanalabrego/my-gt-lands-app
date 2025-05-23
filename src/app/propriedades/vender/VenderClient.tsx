@@ -208,7 +208,7 @@ export default function VenderClient({ numero, onClose = () => {} }: VenderClien
           <select
             value={buyerName}
             onChange={e => setBuyerName(e.target.value)}
-            className="w-full px-3 py-2 rounded bg-black text-white"
+            className="appearance-auto w-full px-3 py-2 rounded bg-black text-white"
             required
           >
             <option value="">{t('selectBuyer')}</option>
