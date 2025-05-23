@@ -29,38 +29,30 @@ export async function GET() {
   const ss = SPREADSHEET_ID
 
   try {
-    // 1) Faz a leitura
+    // 1) Faz a leitura da aba Registros, colunas B–J a partir da linha 9
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: ss,
       range: 'Registros!B9:J'
     })
     const values = res.data.values || []
 
-    // 2) LOG: raw values vindos do Sheets
+    // 2) Debug: log raw values
     console.log('⏳ [API] raw values:', JSON.stringify(values, null, 2))
-    const rows = values.map((r, i) => {
-      const rawValor = r[4] || ''
-      const sanitized = rawValor.toString().replace(/[^0-9.\-]/g, '')
-      const valorNum = parseFloat(sanitized) || 0
-    
-      console.log(
-        `Linha ${i + 9}: rawValor="${rawValor}" → sanitized="${sanitized}" → valorNum=${valorNum}`
-      )
-    
-      return {
-        data:          r[0] || '',    // coluna B
-        numero:        r[1] || '',    // coluna C
-        descricao:     r[2] || '',    // coluna D
-        classificacao: r[3] || '',    // coluna E
-        valor:         valorNum,      // agora já convertido corretamente
-        parcel:        r[5] || '',    // coluna G
-        endereco:      r[6] || '',    // coluna H
-        investidor:    r[7] || '',    // coluna I
-        notes:         r[8] || ''     // coluna J
-      }
-    })
-    
-    // 4) LOG: rows mapeadas
+
+    // 3) Mapeia cada linha, mantendo "valor" como string com símbolo
+    const rows = values.map((r, i) => ({
+      data:          r[0] || '',  // coluna B
+      numero:        r[1] || '',  // coluna C
+      descricao:     r[2] || '',  // coluna D
+      classificacao: r[3] || '',  // coluna E
+      valor:         r[4] || '',  // coluna F — preserva o "$xx.xx"
+      parcel:        r[5] || '',  // coluna G
+      endereco:      r[6] || '',  // coluna H
+      investidor:    r[7] || '',  // coluna I
+      notes:         r[8] || ''   // coluna J
+    }))
+
+    // 4) Debug: log mapped rows
     console.log('✅ [API] mapped rows:', JSON.stringify(rows, null, 2))
 
     // 5) Retorna ao cliente
