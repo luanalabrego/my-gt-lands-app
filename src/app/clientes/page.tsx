@@ -62,46 +62,55 @@ useEffect(() => {
           <tbody>
           {clientes.map((row, i) => {
   const [nome, telefone, email, cpf, obs] = row
-  // encontra a propriedade cujo comprador (coluna 59) bate com o nome do cliente
-  const prop = properties.find(p => (p[59] || '').trim() === nome)
-  // exibe número (coluna C, índice 2) e endereço (coluna F, índice 5) ou traço
-  const numero   = prop ? (prop[2] || '—') : '—'
-  const endereco = prop ? (prop[5] || '—') : '—'
-  const propDisplay = `${numero} – ${endereco}`
+  // filtra todas as propriedades cujo comprador (coluna 59) bate com o nome do cliente
+  const matches = properties.filter(p => (p[59] || '').trim() === nome)
 
-              return (
-                <tr
-                  key={i}
-                  className={i % 2 === 0 ? 'bg-[#2C2C2C]' : 'bg-[#252525]'}
-                >
-                  <td className="px-4 py-2 text-sm text-white break-words">
-                    {nome || '—'}
-                  </td>
-                  <td className="px-4 py-2 text-sm text-white break-words">
-                    {telefone || '—'}
-                  </td>
-                  <td className="px-4 py-2 text-sm text-white break-words">
-                    {email || '—'}
-                  </td>
-                  <td className="px-4 py-2 text-sm text-white break-words">
-                    {cpf || '—'}
-                  </td>
-                  <td className="px-4 py-2 text-sm text-white break-words">
-                    {propDisplay}
-                  </td>
-                  <td className="px-4 py-2 text-sm text-white break-words">
-                    {obs || '—'}
-                  </td>
-                </tr>
-              )
-            })}
-            {clientes.length === 0 && (
-              <tr>
-                <td colSpan={6} className="text-center py-6 text-gray-400">
-                  Nenhum cliente cadastrado.
-                </td>
-              </tr>
-            )}
+  return (
+    <tr
+      key={i}
+      className={i % 2 === 0 ? 'bg-[#2C2C2C]' : 'bg-[#252525]'}
+    >
+      <td className="px-4 py-2 text-sm text-white break-words">
+        {nome || '—'}
+      </td>
+      <td className="px-4 py-2 text-sm text-white break-words">
+        {telefone || '—'}
+      </td>
+      <td className="px-4 py-2 text-sm text-white break-words">
+        {email || '—'}
+      </td>
+      <td className="px-4 py-2 text-sm text-white break-words">
+        {cpf || '—'}
+      </td>
+      <td className="px-4 py-2 text-sm text-white break-words">
+        {matches.length > 0 ? (
+          matches.map((p, idx) => {
+            const numero   = p[2] || '—'
+            const endereco = p[5] || '—'
+            return (
+              <div key={idx}>
+                {numero} – {endereco}
+              </div>
+            )
+          })
+        ) : (
+          '—'
+        )}
+      </td>
+      <td className="px-4 py-2 text-sm text-white break-words">
+        {obs || '—'}
+      </td>
+    </tr>
+  )
+})}
+{clientes.length === 0 && (
+  <tr>
+    <td colSpan={6} className="text-center py-6 text-gray-400">
+      Nenhum cliente cadastrado.
+    </td>
+  </tr>
+)}
+
           </tbody>
         </table>
       </div>
