@@ -60,12 +60,14 @@ useEffect(() => {
             </tr>
           </thead>
           <tbody>
-            {clientes.map((row, i) => {
-              const [nome, telefone, email, cpf, obs] = row
-              // encontra a propriedade cujo comprador (coluna 59) bate com o nome do cliente
-              const prop = properties.find(p => (p[59] || '').trim() === nome)
-              // exibe número da propriedade (coluna 2) ou traço
-              const propDisplay = prop ? (prop[2] || '—') : '—'
+          {clientes.map((row, i) => {
+  const [nome, telefone, email, cpf, obs] = row
+  // encontra a propriedade cujo comprador (coluna 59) bate com o nome do cliente
+  const prop = properties.find(p => (p[59] || '').trim() === nome)
+  // exibe número (coluna C, índice 2) e endereço (coluna F, índice 5) ou traço
+  const numero   = prop ? (prop[2] || '—') : '—'
+  const endereco = prop ? (prop[5] || '—') : '—'
+  const propDisplay = `${numero} – ${endereco}`
 
               return (
                 <tr
