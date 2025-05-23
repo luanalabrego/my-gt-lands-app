@@ -110,7 +110,7 @@ export default function PropertyCostsPage() {
                 <td className="px-4 py-2 text-sm text-white">{r.descricao}</td>
                 <td className="px-4 py-2 text-sm text-white">{r.classificacao}</td>
                 <td className="px-4 py-2 text-sm text-white text-right">
-                <td className="px-4 py-2 text-right">{r.valor}</td>
+                <td className="px-4 py-2 text-left">{r.valor}</td>
                 </td>
                 <td className="px-4 py-2 text-sm text-white">{r.parcel}</td>
                 <td className="px-4 py-2 text-sm text-white">{r.endereco}</td>
