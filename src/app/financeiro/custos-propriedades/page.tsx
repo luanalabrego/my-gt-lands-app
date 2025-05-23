@@ -194,7 +194,8 @@ useEffect(() => {
                       type="date"
                       value={r.data}
                       onChange={e => updateCell(i, 'data', e.target.value)}
-                      className="w-full bg-gray-800 text-white rounded px-2"
+                      className="w-full bg-[#2C2C2C] border border-gray-600 text-white rounded-lg px-2 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+
                     />
                   ) : (
                     r.data
@@ -207,7 +208,8 @@ useEffect(() => {
                     <input
                       value={r.numero}
                       onChange={e => updateCell(i, 'numero', e.target.value)}
-                      className="w-full bg-gray-800 text-white rounded px-2"
+                      className="w-full bg-[#2C2C2C] border border-gray-600 text-white rounded-lg px-2 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+
                     />
                   ) : (
                     `#${r.numero}`
@@ -220,7 +222,8 @@ useEffect(() => {
                     <input
                       value={r.descricao}
                       onChange={e => updateCell(i, 'descricao', e.target.value)}
-                      className="w-full bg-gray-800 text-white rounded px-2"
+                      className="w-full bg-[#2C2C2C] border border-gray-600 text-white rounded-lg px-2 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+
                     />
                   ) : (
                     r.descricao
@@ -233,7 +236,8 @@ useEffect(() => {
                     <select
                       value={r.classificacao}
                       onChange={e => updateCell(i, 'classificacao', e.target.value)}
-                      className="w-full bg-gray-800 text-white rounded px-2"
+                      className="w-full bg-[#2C2C2C] border border-gray-600 text-white rounded-lg px-2 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+
                     >
                       <option>Leilão</option>
                       <option>Propriedade</option>
@@ -264,7 +268,8 @@ useEffect(() => {
                     <input
                       value={r.parcel}
                       onChange={e => updateCell(i, 'parcel', e.target.value)}
-                      className="w-full bg-gray-800 text-white rounded px-2"
+                      className="w-full bg-[#2C2C2C] border border-gray-600 text-white rounded-lg px-2 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+
                     />
                   ) : (
                     r.parcel
@@ -277,7 +282,8 @@ useEffect(() => {
                     <input
                       value={r.endereco}
                       onChange={e => updateCell(i, 'endereco', e.target.value)}
-                      className="w-full bg-gray-800 text-white rounded px-2"
+                      className="w-full bg-[#2C2C2C] border border-gray-600 text-white rounded-lg px-2 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+
                     />
                   ) : (
                     r.endereco
@@ -290,7 +296,8 @@ useEffect(() => {
                     <input
                       value={r.investidor}
                       onChange={e => updateCell(i, 'investidor', e.target.value)}
-                      className="w-full bg-gray-800 text-white rounded px-2"
+                      className="w-full bg-[#2C2C2C] border border-gray-600 text-white rounded-lg px-2 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+
                     />
                   ) : (
                     r.investidor
@@ -303,7 +310,8 @@ useEffect(() => {
                     <textarea
                       value={r.notes}
                       onChange={e => updateCell(i, 'notes', e.target.value)}
-                      className="w-full bg-gray-800 text-white rounded px-2"
+                      className="w-full bg-[#2C2C2C] border border-gray-600 text-white rounded-lg px-2 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+
                       rows={1}
                     />
                   ) : (
