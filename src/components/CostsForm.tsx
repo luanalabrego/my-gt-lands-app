@@ -22,7 +22,6 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
   // campos comuns
   const [data, setData] = useState<Date | null>(null)
   const [investidor, setInvestidor] = useState<string>('')
-  const [notes, setNotes] = useState<string>('')
 
   // campos Propriedade
   const [descricao, setDescricao] = useState<string>('')
@@ -60,7 +59,7 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
             descricao,
             valor,
             investidor,
-            notes,
+            notes: '',
             tipoRegistro
           })
         })
@@ -84,7 +83,7 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
                 descricao: c.descricao,
                 valor: c.valor,
                 investidor,
-                notes,
+                notes: '',
                 tipoRegistro
               })
             })
@@ -98,10 +97,10 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 text-white">
-      <h2 className="text-xl font-semibold">Registrar Custos</h2>
+    <form onSubmit={handleSubmit} className="space-y-6 text-white">
+      <h2 className="text-2xl font-semibold">Registrar Custos</h2>
 
-      {/* tipo de registro */}
+      {/* Tipo de Registro */}
       <div className="flex space-x-6">
         <label className="flex items-center">
           <input
@@ -109,7 +108,7 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
             value="Leilão"
             checked={tipoRegistro === 'Leilão'}
             onChange={() => setTipoRegistro('Leilão')}
-            className="mr-1"
+            className="mr-2"
           />
           Leilão
         </label>
@@ -119,37 +118,37 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
             value="Propriedade"
             checked={tipoRegistro === 'Propriedade'}
             onChange={() => setTipoRegistro('Propriedade')}
-            className="mr-1"
+            className="mr-2"
           />
           Propriedade
         </label>
       </div>
 
-      {/* número da propriedade (fixo) */}
-      <div>
-        <label className="block mb-1">Número da Propriedade</label>
-        <input
-          type="text"
-          value={numero}
-          readOnly
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
-        />
+      {/* Campos Comuns: Número e Data */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block mb-1">Número da Propriedade</label>
+          <input
+            type="text"
+            value={numero}
+            readOnly
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+          />
+        </div>
+        <div>
+          <label className="block mb-1">Data</label>
+          <DatePicker
+            selected={data}
+            onChange={d => setData(d)}
+            dateFormat="yyyy-MM-dd"
+            placeholderText="Selecione a data"
+            className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+            required
+          />
+        </div>
       </div>
 
-      {/* data */}
-      <div>
-        <label className="block mb-1">Data</label>
-        <DatePicker
-          selected={data}
-          onChange={d => setData(d)}
-          dateFormat="yyyy-MM-dd"
-          placeholderText="Selecione a data"
-          className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
-          required
-        />
-      </div>
-
-      {/* investidor dropdown */}
+      {/* Investidor */}
       <div>
         <label className="block mb-1">Investidor</label>
         <select
@@ -165,18 +164,7 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
         </select>
       </div>
 
-      {/* observações */}
-      <div>
-        <label className="block mb-1">Observações</label>
-        <textarea
-          value={notes}
-          onChange={e => setNotes(e.target.value)}
-          className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
-          rows={2}
-        />
-      </div>
-
-      {/* campos específicos */}
+      {/* Campos Específicos */}
       {tipoRegistro === 'Propriedade' ? (
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -273,18 +261,18 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
         </div>
       )}
 
-      {/* ações */}
+      {/* Ações */}
       <div className="flex justify-end space-x-2 pt-4">
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 bg-gray-600 rounded hover:bg-gray-700"
+          className="px-4 py-2 bg-[#2C2C2C] border border-[#D4AF37] text-[#D4AF37] rounded hover:bg-[#2C2C2C]/90 transition text-sm"
         >
           Cancelar
         </button>
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600"
+          className="px-4 py-2 bg-[#D4AF37] text-black rounded hover:bg-[#D4AF37]/90 transition text-sm"
         >
           Salvar
         </button>
