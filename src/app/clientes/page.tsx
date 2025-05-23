@@ -10,23 +10,26 @@ export default function ListaClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [properties, setProperties] = useState<PropertyRow[]>([])
 
-  // carrega todos os clientes
-  useEffect(() => {
-    fetch('/api/usuario')
-      .then(res => res.json())
-      .then(data => {
-        if (data.ok) setClientes(data.rows.slice(1)) // remove header
-      })
-  }, [])
+// carrega todos os clientes
+useEffect(() => {
+  fetch('/api/clientes')
+    .then(res => res.json())
+    .then(data => {
+      console.log('GET /api/clientes →', data)
+      if (data.ok) setClientes(data.rows.slice(1)) // remove header
+    })
+}, [])
 
-  // carrega todas as propriedades
-  useEffect(() => {
-    fetch('/api/propriedades')
-      .then(res => res.json())
-      .then(data => {
-        if (data.ok) setProperties(data.rows.slice(1))
-      })
-  }, [])
+// carrega todas as propriedades
+useEffect(() => {
+  fetch('/api/propriedades')
+    .then(res => res.json())
+    .then(data => {
+      console.log('GET /api/propriedades →', data)
+      if (data.ok) setProperties(data.rows.slice(1))
+    })
+}, [])
+
 
   return (
     <div className="p-6">
