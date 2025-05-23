@@ -98,7 +98,7 @@ export default function PropertyCostsPage() {
                 <td className="px-4 py-2">#{r.numero}</td>
                 <td className="px-4 py-2">{r.descricao}</td>
                 <td className="px-4 py-2">{r.classificacao}</td>
-                <td className="px-4 py-2 text-right">R${r.valor.toFixed(2)}</td>
+                <td className="px-4 py-2 text-right">R${(r.valor ?? 0).toFixed(2)}</td>
                 <td className="px-4 py-2">{r.parcel}</td>
                 <td className="px-4 py-2">{r.endereco}</td>
                 <td className="px-4 py-2">{r.investidor}</td>
