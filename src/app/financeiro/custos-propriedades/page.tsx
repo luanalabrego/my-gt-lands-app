@@ -15,45 +15,37 @@ interface CostRow {
 }
 
 export default function PropertyCostsPage() {
-  const [rows, setRows] = useState<CostRow[]>([])
+  const [rows, setRows]   = useState<CostRow[]>([])
   const [error, setError] = useState<string | null>(null)
 
-  // filtros
-  const [classFilter, setClassFilter] = useState<string>('')       // '' = todos
-  const [numFilter, setNumFilter]       = useState<string>('')
-  const [addrFilter, setAddrFilter]     = useState<string>('')
+  // filtros…
+  const [classFilter, setClassFilter]   = useState('')
+  const [numFilter, setNumFilter]       = useState('')
+  const [addrFilter, setAddrFilter]     = useState('')
 
   useEffect(() => {
     fetch('/api/financeiro/custos-propriedades')
-      .then(res => res.json())
-      .then(body => {
-        if (!body.ok) throw new Error(body.error || 'fetch failed')
-        setRows(body.rows)
+      .then(r => r.json())
+      .then(b => {
+        if (!b.ok) throw new Error(b.error)
+        setRows(b.rows)
       })
-      .catch(err => setError(err.message))
+      .catch(e => setError(e.message))
   }, [])
 
-  // aplica filtros
   const filtered = rows.filter(r => {
     if (classFilter && r.classificacao !== classFilter) return false
-    if (numFilter && !r.numero.includes(numFilter))       return false
-    if (addrFilter && !r.endereco.toLowerCase().includes(addrFilter.toLowerCase())) return false
+    if (numFilter   && !r.numero.includes(numFilter)) return false
+    if (addrFilter  && !r.endereco.toLowerCase().includes(addrFilter.toLowerCase())) return false
     return true
   })
-
-  // agrupa
-  const byClass = {
-    Leilão:        filtered.filter(r => r.classificacao === 'Leilão'),
-    Propriedade:   filtered.filter(r => r.classificacao === 'Propriedade'),
-    Venda:         filtered.filter(r => r.classificacao === 'Venda'),
-  }
 
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Custos das Propriedades</h1>
       {error && <p className="text-red-500">Erro: {error}</p>}
 
-      {/* ---- FILTROS ---- */}
+      {/* filtros… */}      
       <div className="flex flex-wrap gap-4 mb-6">
         <select
           value={classFilter}
@@ -83,29 +75,47 @@ export default function PropertyCostsPage() {
         />
       </div>
 
-      {/* ---- SEÇÕES AGRUPADAS ---- */}
-      {(['Leilão','Propriedade','Venda'] as const).map(key => (
-        <section key={key} className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">
-            {key === 'Venda'
-              ? 'Custos de Venda'
-              : key === 'Leilão'
-                ? 'Custos de Leilão'
-                : 'Custos de Propriedade'}
-          </h2>
-          {byClass[key].length ? (
-            <ul className="list-disc ml-6">
-              {byClass[key].map((r,i) => (
-                <li key={i}>
-                  {r.data} — #{r.numero} — {r.descricao}: R${r.valor.toFixed(2)} — {r.endereco}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>Nenhum custo de {key.toLowerCase()} registrado.</p>
-          )}
-        </section>
-      ))}
+      {/* tabela de resultados */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-[#2C2C2C] text-white rounded-lg overflow-hidden">
+          <thead className="bg-gray-800">
+            <tr>
+              <th className="px-4 py-2 text-left">Data</th>
+              <th className="px-4 py-2 text-left">Número</th>
+              <th className="px-4 py-2 text-left">Descrição</th>
+              <th className="px-4 py-2 text-left">Classificação</th>
+              <th className="px-4 py-2 text-right">Valor</th>
+              <th className="px-4 py-2 text-left">Parcel</th>
+              <th className="px-4 py-2 text-left">Endereço</th>
+              <th className="px-4 py-2 text-left">Investidor</th>
+              <th className="px-4 py-2 text-left">Observações</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-700">
+            {filtered.map((r, i) => (
+              <tr key={i} className="hover:bg-gray-700">
+                <td className="px-4 py-2">{r.data}</td>
+                <td className="px-4 py-2">#{r.numero}</td>
+                <td className="px-4 py-2">{r.descricao}</td>
+                <td className="px-4 py-2">{r.classificacao}</td>
+                <td className="px-4 py-2 text-right">R${r.valor.toFixed(2)}</td>
+                <td className="px-4 py-2">{r.parcel}</td>
+                <td className="px-4 py-2">{r.endereco}</td>
+                <td className="px-4 py-2">{r.investidor}</td>
+                <td className="px-4 py-2">{r.notes}</td>
+              </tr>
+            ))}
+
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={9} className="px-4 py-6 text-center text-gray-400">
+                  Nenhum custo encontrado para os filtros selecionados.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
