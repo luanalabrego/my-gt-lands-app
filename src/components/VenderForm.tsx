@@ -1,3 +1,4 @@
+// src/components/VenderForm.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -20,65 +21,75 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
   const router = useRouter()
 
   // ----- Estados do formulário -----
-  const [propsOptions, setPropsOptions] = useState<PropertyOption[]>([])
+  const [propsOptions, setPropsOptions]     = useState<PropertyOption[]>([])
   const [selectedNumero, setSelectedNumero] = useState<string>('')
-  const [saleDateObj, setSaleDateObj] = useState<Date | null>(null)
-  const [buyerName, setBuyerName] = useState<string>('')
-  const [paymentMethod, setPaymentMethod] = useState<string>('')
-  const [downPayment, setDownPayment] = useState<string>('')
-  const [installmentCount, setInstallmentCount] = useState<string>('')
-  const [installmentValue, setInstallmentValue] = useState<string>('')
-  const [saleValue, setSaleValue] = useState<string>('')
-  const [commType, setCommType] = useState<'percent'|'fixed'>('percent')
-  const [commValue, setCommValue] = useState<string>('')
-  const [stampType, setStampType] = useState<'percent'|'fixed'>('percent')
-  const [stampValue, setStampValue] = useState<string>('')
+  const [saleDateObj, setSaleDateObj]       = useState<Date | null>(null)
 
+  // **novo**: lista de clientes e comprador selecionado
+  const [clientNames, setClientNames] = useState<string[]>([])
+  const [buyerName, setBuyerName]     = useState<string>('')
+
+  const [paymentMethod, setPaymentMethod]   = useState<string>('')
+  const [downPayment, setDownPayment]       = useState<string>('')
+  const [installmentCount, setInstallmentCount]   = useState<string>('')
+  const [installmentValue, setInstallmentValue]   = useState<string>('')
+  const [saleValue, setSaleValue]           = useState<string>('')
+  const [commType, setCommType]             = useState<'percent'|'fixed'>('percent')
+  const [commValue, setCommValue]           = useState<string>('')
+  const [stampType, setStampType]           = useState<'percent'|'fixed'>('percent')
+  const [stampValue, setStampValue]         = useState<string>('')
+
+  // (custos e créditos omitidos para brevidade...)
+  const costTypes: string[]   = [ /* ...seus tipos aqui... */ ]
+  const creditTypes: string[] = [ /* ...seus tipos aqui... */ ]
+  const [costs, setCosts]     = useState<Cost[]>(costTypes.map(type => ({ type, value: '' })))
+  const [credits, setCredits] = useState<Credit[]>(creditTypes.map(type => ({ type, value: '' })))
+
+  // ----- Efeitos de carregamento -----
   useEffect(() => {
+    // propriedades disponíveis
     fetch('/api/propriedades?onlyAvailable=true', { cache: 'no-store' })
       .then(res => res.json())
       .then(body => {
-        if (body.ok && Array.isArray(body.properties)) {
-          setPropsOptions(body.properties)
-        } else {
-          console.error('Formato inesperado:', body)
+        if (body.ok) {
+          // body.rows existe: primeira linha é header
+          const rows = (body.rows as string[][]).slice(1)
+          setPropsOptions(
+            rows.map(r => ({ numero: r[1], endereco: r[4] }))
+          )
         }
       })
       .catch(err => console.error('Erro ao carregar propriedades:', err))
-  }, [])
-  
-  
 
-  // (custos e créditos omitidos para brevidade...)
-  const costTypes: string[] = [
-    'Title Wave (Search Fee)',
-    'Closing Fee',
-    'Doc Prep Fee',
-    'All Doc (RON)',
-    'Lien Search',
-    'Owner Title Insurance',
-    'Complemento Insurance',
-    'Fee Real Estate',
-    'Recording Fee County Clerks',
-    'Property Taxes',
-    'Fee City Assessments',
-    'Notary Fee',
-    'Liens',
-    'Special district Assessments',
-    'e-Recording Service Fee',
-    'Outras Saídas'
-  ]
-  const creditTypes: string[] = [
-    'County Taxes',
-    'Assessments'
-  ]
-  
-  const [costs, setCosts] = useState<Cost[]>(costTypes.map(type => ({ type, value: '' })))
-  const [credits, setCredits] = useState<Credit[]>(creditTypes.map(type => ({ type, value: '' })))
+    // clientes
+    fetch('/api/clientes', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(body => {
+        if (body.ok) {
+          setClientNames((body.rows as any[][]).slice(1).map(r => r[0]))
+        }
+      })
+      .catch(err => console.error('Erro ao carregar clientes:', err))
+  }, [])
+
+  // pré-seleciona a propriedade atual
+  useEffect(() => {
+    if (propsOptions.length) {
+      setSelectedNumero(
+        propsOptions.find(o => o.numero === numero)?.numero
+        || propsOptions[0].numero
+      )
+    }
+  }, [propsOptions, numero])
 
   // ----- Handler de envio -----
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    // validações básicas
+    if (!selectedNumero || !buyerName || !saleDateObj || !saleValue || !paymentMethod) {
+      alert(t('fillRequiredFields'))
+      return
+    }
 
     const saleValNum  = parseFloat(saleValue)  || 0
     const commValNum  = parseFloat(commValue)  || 0
@@ -95,24 +106,24 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
         : stampValNum
 
     const payload = {
-      saleDate: saleDateObj ? saleDateObj.toISOString().slice(0, 10) : '',
+      saleDate: saleDateObj.toISOString().slice(0, 10),
       propriedade: selectedNumero,
       buyerName,
       paymentMethod,
       downPayment,
       installmentCount,
       installmentValue,
-      custos: Object.fromEntries(costs.map(c => [c.type, c.value])),
+      custos:   Object.fromEntries(costs.map(c => [c.type, c.value])),
       creditos: Object.fromEntries(credits.map(c => [c.type, c.value])),
-      saleValue,
+      saleValue: saleValNum,
       stateCommission,
       docStamps,
     }
 
     const res = await fetch('/api/propriedades/vender', {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body:    JSON.stringify(payload),
     })
 
     if (res.ok) {
@@ -160,18 +171,22 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
         />
       </div>
 
-      {/* Nome do Comprador */}
-      <div>
+     {/* **Nome do Comprador** agora como <select> */}
+     <div>
         <label className="block mb-1 text-sm font-medium text-gray-300">
           {t('buyerName')}
         </label>
-        <input
-          type="text"
+        <select
           value={buyerName}
           onChange={e => setBuyerName(e.target.value)}
-          className="w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
+          className="appearance-auto w-full px-3 py-2 bg-[#1F1F1F] border border-gray-600 rounded text-white"
           required
-        />
+        >
+          <option value="">{t('selectBuyer')}</option>
+          {clientNames.map((name, i) => (
+            <option key={i} value={name}>{name}</option>
+          ))}
+        </select>
       </div>
 
       {/* Método de Pagamento */}
@@ -347,12 +362,14 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
         <button
           type="button"
           onClick={onClose}
-          className="text-sm px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 text-white">
+          className="text-sm px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 text-white"
+        >
           {t('cancel')}
         </button>
         <button
           type="submit"
-          className="text-sm px-4 py-2 bg-[#D4AF37] rounded hover:bg-[#D4AF37]/90 text-black">
+          className="text-sm px-4 py-2 bg-[#D4AF37] rounded hover:bg-[#D4AF37]/90 text-black"
+        >
           {t('confirmSale')}
         </button>
       </div>
