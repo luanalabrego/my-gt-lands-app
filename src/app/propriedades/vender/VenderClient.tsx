@@ -180,23 +180,24 @@ const onSubmit = async (e: React.FormEvent) => {
           </div>
         </div>
 
-     {/* Nome do Comprador */}
-<div>
-  <label className="block mb-1">{t('buyerName')}</label>
-  <select
-    value={buyerName}
-    onChange={e => setBuyerName(e.target.value)}
-    className="w-full px-3 py-2 rounded bg-black text-white"
-    required
-  >
-    <option value="">{t('selectBuyer')}</option>
-    {clientNames.map((name, idx) => (
-      <option key={idx} value={name}>
-        {name}
-      </option>
-    ))}
-  </select>
-</div>
+      {/* Nome do Comprador */}
+      <div>
+        <label htmlFor="buyerName" className="block mb-1">{t('buyerName')}</label>
+        <select
+          id="buyerName"
+          value={buyerName}
+          onChange={e => setBuyerName(e.target.value)}
+          className="w-full px-3 py-2 rounded bg-black text-white"
+          required
+        >
+          <option value="">{t('selectBuyer')}</option>
+          {clientNames.map((name, idx) => (
+            <option key={idx} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
+      </div>
 
 
         {/* Método de Pagamento */}
