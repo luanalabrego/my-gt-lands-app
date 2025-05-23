@@ -38,20 +38,28 @@ export async function GET() {
 
     // 2) LOG: raw values vindos do Sheets
     console.log('⏳ [API] raw values:', JSON.stringify(values, null, 2))
-
-    // 3) Mapeia as colunas corretas
-    const rows = values.map(r => ({
-      data:          r[0] || '',               // coluna B
-      numero:        r[1] || '',               // coluna C
-      descricao:     r[2] || '',               // coluna D
-      classificacao: r[3] || '',               // coluna E
-      valor:         parseFloat(r[4] || '0'),  // coluna F
-      parcel:        r[5] || '',               // coluna G
-      endereco:      r[6] || '',               // coluna H
-      investidor:    r[7] || '',               // coluna I
-      notes:         r[8] || ''                // coluna J
-    }))
-
+    const rows = values.map((r, i) => {
+      const rawValor = r[4] || ''
+      const sanitized = rawValor.toString().replace(/[^0-9.\-]/g, '')
+      const valorNum = parseFloat(sanitized) || 0
+    
+      console.log(
+        `Linha ${i + 9}: rawValor="${rawValor}" → sanitized="${sanitized}" → valorNum=${valorNum}`
+      )
+    
+      return {
+        data:          r[0] || '',    // coluna B
+        numero:        r[1] || '',    // coluna C
+        descricao:     r[2] || '',    // coluna D
+        classificacao: r[3] || '',    // coluna E
+        valor:         valorNum,      // agora já convertido corretamente
+        parcel:        r[5] || '',    // coluna G
+        endereco:      r[6] || '',    // coluna H
+        investidor:    r[7] || '',    // coluna I
+        notes:         r[8] || ''     // coluna J
+      }
+    })
+    
     // 4) LOG: rows mapeadas
     console.log('✅ [API] mapped rows:', JSON.stringify(rows, null, 2))
 
