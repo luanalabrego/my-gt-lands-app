@@ -83,8 +83,8 @@ useEffect(() => {
         const dataRows = (body.rows as string[][]).slice(1)
         setPropsOptions(
           dataRows.map(r => ({
-            numero:   r[1], // coluna B: número da propriedade
-            endereco: r[4], // coluna E: endereço
+            numero:   r[2], // coluna B: número da propriedade
+            endereco: r[5], // coluna E: endereço
           }))
         )
       } else {
