@@ -35,14 +35,22 @@ export default function CadastrarClientePage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-white mb-6">Novo Cliente</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-white">Novo Cliente</h1>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="bg-gray-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-500 transition"
+        >
+          Voltar
+        </button>
+      </div>
+
       <form
         onSubmit={handleSubmit}
         className="space-y-4 bg-[#2C2C2C] p-6 rounded-2xl shadow-lg"
       >
-        {error && (
-          <p className="text-red-500 text-sm">{error}</p>
-        )}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <div>
           <label className="block text-white mb-1">Nome do Cliente*</label>
