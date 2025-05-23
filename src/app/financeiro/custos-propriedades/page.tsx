@@ -26,17 +26,23 @@ export default function PropertyCostsPage() {
   const [numFilter,   setNumFilter]   = useState('')
   const [addrFilter,  setAddrFilter]  = useState('')
 
-  // busca inicial
-  useEffect(() => {
-    fetch('/api/financeiro/custos-propriedades')
-      .then(r => r.json())
-      .then(b => {
-        if (!b.ok) throw new Error(b.error)
-        setRows(b.rows)
-        setEditedRows(b.rows)
-      })
-      .catch(e => setError(e.message))
-  }, [])
+ // busca inicial
+useEffect(() => {
+  ;(async () => {
+    try {
+      const res = await fetch('/api/financeiro/custos-propriedades')
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const text = await res.text()
+      const body = text ? JSON.parse(text) : {}
+      if (!body.ok) throw new Error(body.error || 'Resposta inválida do servidor')
+      setRows(body.rows)
+      setEditedRows(body.rows)
+    } catch (e: any) {
+      setError(e.message)
+    }
+  })()
+}, [])
+
 
   // aplica filtros sobre editedRows ou rows, dependendo do modo
   const source = isEditing ? editedRows : rows
