@@ -28,16 +28,22 @@ export default function Header() {
   if (pathname === '/login') return null;
 
   const navLinks = [
-    { href: '/dashboard',    key: 'dashboard',  Icon: Home         },
-    { href: '/propriedades', key: 'properties', Icon: MapPin       },
-    { href: '/clientes',     key: 'clients',    Icon: User         },
+    { href: '/dashboard',    key: 'dashboard', Icon: Home,         iconSize: 18 },
+    { href: '/propriedades', key: 'properties', Icon: MapPin,       iconSize: 18 },
+    { href: '/clientes',     key: 'clients',    Icon: User,         iconSize: 18 },
     {
       href: '/financeiro',
       key: 'financials',
       Icon: DollarSign,
+      iconSize: 18,
       children: [
-        { href: '/calculadora',  key: 'calculator',  Icon: Calculator  },
-        { href: '/financeiro/custos-propriedades', key: 'propertyCosts',   Icon: ClipboardList, iconSize: 20 },
+        { href: '/calculadora',  key: 'calculator',         Icon: Calculator,      iconSize: 18 },
+        {
+          href: '/financeiro/custos-propriedades',
+          key: 'propertyCosts',
+          Icon: ClipboardList,
+          iconSize: 24,   // <-- Tamanho maior para esse ícone
+        },
       ],
     },
   ];
@@ -52,12 +58,11 @@ export default function Header() {
 
       {/* Menu desktop */}
       <nav className="hidden md:flex items-center space-x-6">
-        {navLinks.map(({ href, key, Icon, children }) => {
+        {navLinks.map(({ href, key, Icon, iconSize, children }) => {
           const isActive =
             pathname === href ||
             (children?.some(c => pathname === c.href) ?? false);
 
-          // itens sem submenu
           if (!children) {
             return (
               <Link
@@ -69,31 +74,30 @@ export default function Header() {
                     : 'flex items-center text-gray-300 hover:text-white'
                 }
               >
-                <Icon size={18} className="mr-1 text-[#D4AF37]" />
+                <Icon size={iconSize} className="mr-1 text-[#D4AF37]" />
                 {t(key)}
               </Link>
             );
           }
 
-          // Financeiro com clique
           return (
             <div key={href} className="relative">
               <button
-                onClick={() => setFinanceOpen(open => !open)}
+                onClick={() => setFinanceOpen(o => !o)}
                 className={
                   isActive
                     ? 'flex items-center text-white'
                     : 'flex items-center text-gray-300 hover:text-white'
                 }
               >
-                <Icon size={18} className="mr-1 text-[#D4AF37]" />
+                <Icon size={iconSize} className="mr-1 text-[#D4AF37]" />
                 {t(key)}
                 <span className="ml-1 text-xs">▾</span>
               </button>
 
               {financeOpen && (
                 <div className="absolute top-full left-0 mt-1 flex flex-col bg-[#2C2C2C] rounded shadow-lg z-10">
-                  {children.map(({ href: subHref, key: subKey, Icon: SubIcon }) => {
+                  {children.map(({ href: subHref, key: subKey, Icon: SubIcon, iconSize: subSize }) => {
                     const subActive = pathname === subHref;
                     return (
                       <Link
@@ -105,7 +109,7 @@ export default function Header() {
                             : 'flex items-center px-4 py-2 text-gray-300 hover:text-white'
                         }
                       >
-                        <SubIcon size={16} className="mr-1 text-[#D4AF37]" />
+                        <SubIcon size={subSize} className="mr-1 text-[#D4AF37]" />
                         {t(subKey)}
                       </Link>
                     );
@@ -139,7 +143,6 @@ export default function Header() {
 
       {/* Menu mobile */}
       <div className="flex items-center md:hidden">
-        {/* idioma */}
         <select
           value={lang}
           onChange={e => setLang(e.target.value as any)}
@@ -150,28 +153,28 @@ export default function Header() {
           <option value="es">ES</option>
         </select>
 
-        {/* hambúrguer */}
         <button
-          onClick={() => setMenuOpen(prev => !prev)}
+          onClick={() => setMenuOpen(p => !p)}
           className="text-white"
           aria-label="Toggle menu"
         >
-          {menuOpen ? <X size={24} className="text-[#D4AF37]" /> : <Menu size={24} className="text-[#D4AF37]" />}
+          {menuOpen
+            ? <X size={24} className="text-[#D4AF37]" />
+            : <Menu size={24} className="text-[#D4AF37]" />}
         </button>
 
-        {/* painel móvel */}
         {menuOpen && (
           <div className="absolute top-full right-6 mt-2 w-48 bg-[#2C2C2C] rounded-lg shadow-lg p-4 flex flex-col space-y-2 z-50">
-            {navLinks.map(({ href, key, Icon, children }) => {
-              const items = children ?? [{ href, key, Icon }];
-              return items.map(({ href: iHref, key: iKey, Icon: IIcon }) => (
+            {navLinks.map(({ href, key, Icon, iconSize, children }) => {
+              const items = children ?? [{ href, key, Icon, iconSize }];
+              return items.map(({ href: iHref, key: iKey, Icon: IIcon, iconSize: iSize }) => (
                 <Link
                   key={iHref}
                   href={iHref}
                   onClick={() => setMenuOpen(false)}
                   className="flex items-center text-white hover:text-[#D4AF37] py-1"
                 >
-                  <IIcon size={18} className="mr-1 text-[#D4AF37]" />
+                  <IIcon size={iSize} className="mr-1 text-[#D4AF37]" />
                   {t(iKey)}
                 </Link>
               ));
