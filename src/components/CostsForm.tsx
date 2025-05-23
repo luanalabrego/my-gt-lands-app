@@ -24,6 +24,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
   // campos comuns
   const [data, setData] = useState<Date | null>(null)
   const [investidor, setInvestidor] = useState<string>('')
+  const [notes, setNotes] = useState<string>('')
 
   // campos Propriedade
   const [descricao, setDescricao] = useState<string>('')
@@ -31,7 +32,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
 
   // campos Leilão
   const [valorArrematado, setValorArrematado] = useState<number>(0)
-  const [docStamps, setDocStamps] = useState<number>(0)
+  const [docStamps, setDocStamps] = useState<number>(0) // percentual
   const [recordingFees, setRecordingFees] = useState<number>(0)
   const [publicacionFee, setPublicacionFee] = useState<number>(0)
   const [taxaBancaria, setTaxaBancaria] = useState<number>(0)
@@ -48,6 +49,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const dateStr = data ? data.toISOString().slice(0,10) : ''
+
     try {
       if (tipoRegistro === 'Propriedade') {
         await fetch('/api/propriedades/custos', {
@@ -61,14 +63,16 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
             descricao,
             valor,
             investidor,
-            notes: '',
+            notes,
             tipoRegistro
           })
         })
       } else {
+        // calcula doc stamps em valor
+        const docStampsValor = (docStamps / 100) * valorArrematado
         const custos = [
           { descricao: 'Valor Arrematado', valor: valorArrematado },
-          { descricao: 'Doc Stamps', valor: docStamps },
+          { descricao: 'Doc Stamps', valor: docStampsValor },
           { descricao: 'Recording Fees', valor: recordingFees },
           { descricao: 'Publicacion Fee', valor: publicacionFee },
           { descricao: 'Taxa Bancária', valor: taxaBancaria },
@@ -87,7 +91,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
                 descricao: c.descricao,
                 valor: c.valor,
                 investidor,
-                notes: '',
+                notes,
                 tipoRegistro
               })
             })
@@ -152,6 +156,28 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
         </div>
       </div>
 
+      {/* Parcel e Endereço */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block mb-1">Parcel</label>
+          <input
+            type="text"
+            value={parcel}
+            readOnly
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+          />
+        </div>
+        <div>
+          <label className="block mb-1">Endereço</label>
+          <input
+            type="text"
+            value={endereco}
+            readOnly
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+          />
+        </div>
+      </div>
+
       {/* Investidor */}
       <div>
         <label className="block mb-1">Investidor</label>
@@ -177,7 +203,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
               type="text"
               value={descricao}
               onChange={e => setDescricao(e.target.value)}
-              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
               required
             />
           </div>
@@ -188,7 +214,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
               step="0.01"
               value={valor || ''}
               onChange={e => setValor(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
               required
               min={0.01}
             />
@@ -203,7 +229,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
               step="0.01"
               value={valorArrematado || ''}
               onChange={e => setValorArrematado(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
               min={0}
             />
           </div>
@@ -214,7 +240,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
               step="0.01"
               value={docStamps || ''}
               onChange={e => setDocStamps(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
               min={0}
             />
           </div>
@@ -225,7 +251,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
               step="0.01"
               value={recordingFees || ''}
               onChange={e => setRecordingFees(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
               min={0}
             />
           </div>
@@ -236,7 +262,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
               step="0.01"
               value={publicacionFee || ''}
               onChange={e => setPublicacionFee(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
               min={0}
             />
           </div>
@@ -269,9 +295,9 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
       <div>
         <label className="block mb-1">Observações</label>
         <textarea
-          value={''}
-          onChange={() => {}}
-          className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
           rows={3}
         />
       </div>
