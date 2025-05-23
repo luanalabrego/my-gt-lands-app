@@ -74,7 +74,7 @@ const [credits, setCredits] = useState<Credit[]>(creditTypes.map(type => ({ type
 // ----- Efeitos de carregamento -----
 useEffect(() => {
   // propriedades disponíveis
-  fetch('/api/propriedades?onlyAvailable=true', { cache: 'no-store' })
+  fetch('/api/propriedades', { cache: 'no-store' })
     .then(res => res.json())
     .then(body => {
       if (body.ok && Array.isArray(body.rows)) {
