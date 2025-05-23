@@ -13,6 +13,8 @@ interface CostsFormProps {
 
 interface DropdownData {
   investidores: string[]
+  descricaoOptions: string[]
+  
 }
 
 export default function CostsForm({
@@ -22,7 +24,10 @@ export default function CostsForm({
   onClose
 }: CostsFormProps) {
   const [tipoRegistro, setTipoRegistro] = useState<'Leilão' | 'Propriedade'>('Leilão')
-  const [dropdowns, setDropdowns] = useState<DropdownData>({ investidores: [] })
+  const [dropdowns, setDropdowns] = useState<DropdownData>({
+    investidores: [],
+    descricaoOptions: []
+  })
 
   // campos comuns
   const [data, setData] = useState<Date | null>(null)
@@ -44,7 +49,10 @@ export default function CostsForm({
   useEffect(() => {
     fetch('/api/propriedades/dropdown')
       .then(res => res.json())
-      .then((data: DropdownData) => setDropdowns(data))
+      .then((data: DropdownData) => setDropdowns({
+        investidores: data.investidores,
+        descricaoOptions: data.descricaoOptions 
+      }))
       .catch(console.error)
   }, [])
 
@@ -174,32 +182,38 @@ export default function CostsForm({
         </select>
       </div>
 
-      {/* Campos Específicos */}
-      {tipoRegistro === 'Propriedade' ? (
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block mb-1">Descrição</label>
-            <input
-              type="text"
-              value={descricao}
-              onChange={e => setDescricao(e.target.value)}
-              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
-              required
-            />
-          </div>
-          <div>
-            <label className="block mb-1">Valor (R$)</label>
-            <input
-              type="number"
-              step="0.01"
-              value={valor || ''}
-              onChange={e => setValor(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
-              required
-              min={0.01}
-            />
-          </div>
-        </div>
+     {/* Campos Específicos */}
+{tipoRegistro === 'Propriedade' ? (
+  <div className="grid grid-cols-2 gap-4">
+    <div>
+      <label className="block mb-1">Descrição</label>
+      <select
+        value={descricao}
+        onChange={e => setDescricao(e.target.value)}
+        className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+        required
+      >
+        <option value="">Selecione</option>
+        {dropdowns.descricaoOptions.map(opt => (
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label className="block mb-1">Valor (R$)</label>
+      <input
+        type="number"
+        step="0.01"
+        value={valor || ''}
+        onChange={e => setValor(e.target.value === '' ? 0 : parseFloat(e.target.value))}
+        className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+        required
+        min={0.01}
+      />
+    </div>
+  </div>
       ) : (
         <div className="grid grid-cols-2 gap-4">
           <div>

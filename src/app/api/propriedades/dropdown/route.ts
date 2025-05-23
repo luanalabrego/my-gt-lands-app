@@ -12,10 +12,13 @@ export async function GET() {
   } = process.env
 
   if (!clientEmail || !privateKey || !SPREADSHEET_ID) {
-    return NextResponse.json({ ok: false, error: 'misconfiguration' }, { status: 500 })
+    return NextResponse.json(
+      { ok: false, error: 'misconfiguration' },
+      { status: 500 }
+    )
   }
 
-  // autenticação
+  // autenticação Google Sheets
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: clientEmail,
@@ -27,32 +30,39 @@ export async function GET() {
   const spreadsheetId = SPREADSHEET_ID
 
   try {
-    // 1) Números de propriedade: coluna C (índice 3) a partir da linha 9
+    // 1) Números de propriedade (caso ainda use)
     const propRes = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: `'Cadastro de Propriedades'!C9:C`,
     })
-    const propertyNumbers = (propRes.data.values || []).flat().filter(v => v)
+    const propertyNumbers = (propRes.data.values || [])
+      .flat()
+      .map(v => v.toString().trim())
+      .filter(v => v)
 
     // 2) Descrições: coluna B a partir da linha 5 na sheet "Configurações"
     const descRes = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: `'Configurações'!B5:B`,
     })
-    const descricaoOptions = (descRes.data.values || [])
-      .flat()
-      .map(v => v.toString().trim())
-      .filter(v => v)
+    const descricaoOptions = Array.from(new Set(
+      (descRes.data.values || [])
+        .flat()
+        .map(v => v.toString().trim())
+        .filter(v => v)
+    ))
 
     // 3) Investidores: coluna I a partir da linha 9 na sheet "Registros"
     const invRes = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: `'Registros'!I9:I`,
     })
-    const investidores = Array.from(new Set((invRes.data.values || [])
-      .flat()
-      .map(v => v.toString().trim())
-      .filter(v => v)))
+    const investidores = Array.from(new Set(
+      (invRes.data.values || [])
+        .flat()
+        .map(v => v.toString().trim())
+        .filter(v => v)
+    ))
 
     return NextResponse.json({
       ok: true,
@@ -62,6 +72,9 @@ export async function GET() {
     })
   } catch (err: any) {
     console.error('Erro ao buscar dropdown:', err)
-    return NextResponse.json({ ok: false, error: err.message }, { status: 500 })
+    return NextResponse.json(
+      { ok: false, error: err.message },
+      { status: 500 }
+    )
   }
 }
