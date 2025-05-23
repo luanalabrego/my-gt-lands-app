@@ -7,7 +7,7 @@ interface CostRow {
   numero: string
   descricao: string
   classificacao: string
-  valor: number
+  valor: string
   parcel: string
   endereco: string
   investidor: string
