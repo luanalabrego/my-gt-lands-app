@@ -1,112 +1,67 @@
-// src/app/api/propriedades/custos/route.ts
-
+// src/app/api/financeiro/custos-propriedades/route.ts
 import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
 
 export const runtime = 'nodejs'
 
-export async function POST(req: Request) {
+export async function GET() {
   const {
-    GOOGLE_CLIENT_EMAIL,
-    GOOGLE_PRIVATE_KEY,
+    GOOGLE_CLIENT_EMAIL: clientEmail,
+    GOOGLE_PRIVATE_KEY: privateKey,
     SPREADSHEET_ID
   } = process.env
-  if (!GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY || !SPREADSHEET_ID) {
-    return NextResponse.json({ ok: false, error: 'misconfiguration' }, { status: 500 })
+
+  if (!clientEmail || !privateKey || !SPREADSHEET_ID) {
+    return NextResponse.json(
+      { ok: false, error: 'misconfiguration' },
+      { status: 500 }
+    )
   }
 
-  const {
-    data,
-    numeroPropriedade,
-    parcel,
-    endereco,
-    descricao,
-    valor,
-    investidor,
-    notes,
-    tipoRegistro
-  } = await req.json() as {
-    data: string
-    numeroPropriedade: string
-    parcel: string
-    endereco: string
-    descricao: string
-    valor: number
-    investidor: string
-    notes: string
-    tipoRegistro: 'Propriedade' | 'Leilão'
-  }
-
-  // Autentica no Google Sheets
   const auth = new google.auth.GoogleAuth({
     credentials: {
-      client_email: GOOGLE_CLIENT_EMAIL,
-      private_key: GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n')
+      client_email: clientEmail,
+      private_key: privateKey.replace(/\\n/g, '\n')
     },
     scopes: ['https://www.googleapis.com/auth/spreadsheets']
   })
   const sheets = google.sheets({ version: 'v4', auth })
-  const ssId = SPREADSHEET_ID
-  const sheetName = 'Registros'
+  const ss = SPREADSHEET_ID
 
   try {
-    // 1) Lê todas as linhas atuais (B9:J)
-    const getRes = await sheets.spreadsheets.values.get({
-      spreadsheetId: ssId,
-      range: `${sheetName}!B9:J`
+    // 1) Faz a leitura da aba Registros, colunas B–J a partir da linha 9
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: ss,
+      range: 'Registros!B9:J'
     })
-    const values: string[][] = getRes.data.values || []
+    const values = res.data.values || []
 
-    // 2) Procura por linha existente (mesmo número e descrição)
-    let foundRowIndex = -1
-    for (let i = 0; i < values.length; i++) {
-      const row = values[i]
-      const num = row[1]?.toString().trim()   // coluna C
-      const desc = row[2]?.toString().trim()  // coluna D
-      if (num === numeroPropriedade.trim() && desc === descricao.trim()) {
-        foundRowIndex = i
-        break
-      }
-    }
+    // 2) Debug: log raw values
+    console.log('⏳ [API] raw values:', JSON.stringify(values, null, 2))
 
-    // Prepara os dados a escrever: colunas B–J
-    const newRow = [
-      data,                     // B: data
-      numeroPropriedade,        // C: propriedade
-      descricao,                // D: descrição
-      tipoRegistro,             // E: classificação
-      valor,                    // F: valor
-      parcel,                   // G: parcel
-      endereco,                 // H: endereço
-      investidor,               // I: investidor
-      notes                     // J: observações
-    ]
+    // 3) Mapeia cada linha, mantendo "valor" como string com símbolo
+    const rows = values.map((r, i) => ({
+      data:          r[0] || '',  // coluna B
+      numero:        r[1] || '',  // coluna C
+      descricao:     r[2] || '',  // coluna D
+      classificacao: r[3] || '',  // coluna E
+      valor:         r[4] || '',  // coluna F — preserva o "$xx.xx"
+      parcel:        r[5] || '',  // coluna G
+      endereco:      r[6] || '',  // coluna H
+      investidor:    r[7] || '',  // coluna I
+      notes:         r[8] || ''   // coluna J
+    }))
 
-    if (foundRowIndex >= 0) {
-      // 3a) Atualiza linha existente
-      const sheetRow = foundRowIndex + 9  // pois começamos em B9
-      await sheets.spreadsheets.values.update({
-        spreadsheetId: ssId,
-        range: `${sheetName}!B${sheetRow}:J${sheetRow}`,
-        valueInputOption: 'RAW',
-        requestBody: { values: [newRow] }
-      })
-      console.log(`Registro existente na linha ${sheetRow} atualizado.`)
-    } else {
-      // 3b) Caso não exista, insere nova linha
-      await sheets.spreadsheets.values.append({
-        spreadsheetId: ssId,
-        range: `${sheetName}!B:J`,
-        valueInputOption: 'RAW',
-        insertDataOption: 'INSERT_ROWS',
-        requestBody: { values: [newRow] }
-      })
-      console.log('Novo registro inserido.')
-    }
+    // 4) Debug: log mapped rows
+    console.log('✅ [API] mapped rows:', JSON.stringify(rows, null, 2))
 
-    return NextResponse.json({ ok: true })
-  } catch (e: any) {
-    console.error('Erro salvando custo:', e)
-    return NextResponse.json({ ok: false, error: e.message }, { status: 500 })
+    // 5) Retorna ao cliente
+    return NextResponse.json({ ok: true, rows })
+  } catch (err: any) {
+    console.error('❌ Erro ao buscar custos:', err)
+    return NextResponse.json(
+      { ok: false, error: err.message },
+      { status: 500 }
+    )
   }
 }
