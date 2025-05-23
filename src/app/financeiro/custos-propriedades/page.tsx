@@ -16,7 +16,7 @@ interface CostRow {
 
 export default function PropertyCostsPage() {
   // estados de edição
-  const [isEditing, setIsEditing]   = useState(false)
+  const [isEditing,   setIsEditing]   = useState(false)
   const [editedRows, setEditedRows] = useState<CostRow[]>([])
   const [rows, setRows]             = useState<CostRow[]>([])
   const [error, setError]           = useState<string | null>(null)
