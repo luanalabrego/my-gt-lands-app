@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 
@@ -9,10 +9,17 @@ interface CostsFormProps {
   onClose: () => void
 }
 
+interface DropdownData {
+  investidores: string[]
+}
+
 export default function CostsForm({ numero, onClose }: CostsFormProps) {
   const [tipoRegistro, setTipoRegistro] = useState<'Leilão' | 'Propriedade'>('Leilão')
 
-  // campo de data inicial em branco
+  // opções de dropdown
+  const [dropdowns, setDropdowns] = useState<DropdownData>({ investidores: [] })
+
+  // campos comuns
   const [data, setData] = useState<Date | null>(null)
   const [investidor, setInvestidor] = useState<string>('')
   const [notes, setNotes] = useState<string>('')
@@ -29,10 +36,19 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
   const [taxaBancaria, setTaxaBancaria] = useState<number>(0)
   const [outrosCustos, setOutrosCustos] = useState<number>(0)
 
+  // carregar investidores para dropdown
+  useEffect(() => {
+    fetch('/api/propriedades/dropdown')
+      .then(res => res.json())
+      .then((data: { investidores: string[] }) => {
+        if (data.investidores) setDropdowns({ investidores: data.investidores })
+      })
+      .catch(console.error)
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const dateStr = data ? data.toISOString().slice(0, 10) : ''
-
     try {
       if (tipoRegistro === 'Propriedade') {
         await fetch('/api/propriedades/custos', {
@@ -85,7 +101,7 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4 text-white">
       <h2 className="text-xl font-semibold">Registrar Custos</h2>
 
-      {/* 1) Tipo de Registro */}
+      {/* tipo de registro */}
       <div className="flex space-x-6">
         <label className="flex items-center">
           <input
@@ -109,7 +125,7 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
         </label>
       </div>
 
-      {/* 2) Número da Propriedade (fixo) */}
+      {/* número da propriedade (fixo) */}
       <div>
         <label className="block mb-1">Número da Propriedade</label>
         <input
@@ -120,7 +136,7 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
         />
       </div>
 
-      {/* 3) Data (calendário sem valor inicial) */}
+      {/* data */}
       <div>
         <label className="block mb-1">Data</label>
         <DatePicker
@@ -133,19 +149,23 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
         />
       </div>
 
-      {/* 4) Investidor */}
+      {/* investidor dropdown */}
       <div>
         <label className="block mb-1">Investidor</label>
-        <input
-          type="text"
+        <select
           value={investidor}
           onChange={e => setInvestidor(e.target.value)}
           className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
           required
-        />
+        >
+          <option value="">Selecione</option>
+          {dropdowns.investidores.map(inv => (
+            <option key={inv} value={inv}>{inv}</option>
+          ))}
+        </select>
       </div>
 
-      {/* 5) Observações */}
+      {/* observações */}
       <div>
         <label className="block mb-1">Observações</label>
         <textarea
@@ -156,7 +176,7 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
         />
       </div>
 
-      {/* 6) Campos específicos */}
+      {/* campos específicos */}
       {tipoRegistro === 'Propriedade' ? (
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -253,7 +273,7 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
         </div>
       )}
 
-      {/* Ações */}
+      {/* ações */}
       <div className="flex justify-end space-x-2 pt-4">
         <button
           type="button"
