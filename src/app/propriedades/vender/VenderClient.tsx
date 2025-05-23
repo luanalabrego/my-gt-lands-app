@@ -11,10 +11,11 @@ type Credit = { type: string; value: number }
 
 interface VenderClientProps {
   numero: string
-  onClose: () => void
+  onClose?: () => void
+
 }
 
-export default function VenderClient({ numero, onClose }: VenderClientProps) {
+export default function VenderClient({ numero, onClose = () => {} }: VenderClientProps) {
   const { t } = useTranslation()
   const router = useRouter()
 
