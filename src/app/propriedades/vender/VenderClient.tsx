@@ -18,6 +18,7 @@ export default function VenderClient({ numero }: VenderClientProps) {
 
   // agora `numero` vem por props, não de useSearchParams
   const [propObj, setPropObj] = useState<PropertyOption | null>(null)
+  const [clientNames, setClientNames] = useState<string[]>([])
   
 
   // campos do formulário
@@ -59,56 +60,77 @@ export default function VenderClient({ numero }: VenderClientProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [statusMessage, setStatusMessage] = useState('')
 
-  // carrega apenas a propriedade correspondente ao número da URL
-  useEffect(() => {
-    if (!numero) return
+ // carrega apenas a propriedade correspondente ao número da URL
+useEffect(() => {
+  if (!numero) return
 
-    fetch(`/api/propriedades/${numero}`, { cache: 'no-store' })
-      .then(res => res.json())
-      .then(body => {
-        if (body.ok && body.property) {
-          setPropObj(body.property as PropertyOption)
-        } else {
-          console.error(`Propriedade #${numero} não encontrada`, body)
-        }
-      })
-      .catch(err => console.error('Erro ao carregar propriedade:', err))
-  }, [numero])
+  fetch(`/api/propriedades/${numero}`, { cache: 'no-store' })
+    .then(res => res.json())
+    .then(body => {
+      if (body.ok && body.property) {
+        setPropObj(body.property as PropertyOption)
+      } else {
+        console.error(`Propriedade #${numero} não encontrada`, body)
+      }
+    })
+    .catch(err => console.error('Erro ao carregar propriedade:', err))
+}, [numero])
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!propObj) {
-      alert('Propriedade ainda não carregada')
-      return
-    }
+// carrega nomes de clientes para o dropdown
+useEffect(() => {
+  fetch('/api/clientes', { cache: 'no-store' })
+    .then(res => res.json())
+    .then(body => {
+      if (body.ok) {
+        const names = body.rows.slice(1).map((row: any[]) => row[0])
+        setClientNames(names)
+      }
+    })
+    .catch(err => console.error('Erro carregando clientes:', err))
+}, [])
 
-    setIsSubmitting(true)
-    setStatusMessage('Registrando...')
+const onSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
 
-    const stateCommission = commType === 'percent'
-      ? saleValue * (commValue / 100)
-      : commValue
-    const docStamps = stampType === 'percent'
-      ? saleValue * (stampValue / 100)
-      : stampValue
+  // valida propriedade carregada
+  if (!propObj) {
+    alert('Propriedade ainda não carregada')
+    return
+  }
+  // valida comprador selecionado
+  if (!buyerName) {
+    alert('Escolha um cliente')
+    return
+  }
 
-    const payload = {
-      saleDate,
-      propriedade: numero,
-      parcel: propObj.parcel,
-      endereco: propObj.endereco,
-      buyerName,
-      paymentMethod,
-      downPayment,
-      installmentCount,
-      installmentValue,
-      custos: Object.fromEntries(costs.map(c => [c.type, c.value])),
-      creditos: Object.fromEntries(credits.map(c => [c.type, c.value])),
-      saleValue,
-      stateCommission,
-      docStamps
-    }
+  setIsSubmitting(true)
+  setStatusMessage('Registrando...')
 
+  const stateCommission = commType === 'percent'
+    ? saleValue * (commValue / 100)
+    : commValue
+  const docStamps = stampType === 'percent'
+    ? saleValue * (stampValue / 100)
+    : stampValue
+
+  const payload = {
+    saleDate,
+    propriedade: numero,
+    parcel: propObj.parcel,
+    endereco: propObj.endereco,
+    buyerName,
+    paymentMethod,
+    downPayment,
+    installmentCount,
+    installmentValue,
+    custos: Object.fromEntries(costs.map(c => [c.type, c.value])),
+    creditos: Object.fromEntries(credits.map(c => [c.type, c.value])),
+    saleValue,
+    stateCommission,
+    docStamps
+  }
+
+  try {
     const res = await fetch('/api/propriedades/vender', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -119,11 +141,15 @@ export default function VenderClient({ numero }: VenderClientProps) {
       setStatusMessage('Venda registrada')
       setTimeout(() => router.push('/propriedades'), 1000)
     } else {
-      setIsSubmitting(false)
-      setStatusMessage('')
-      alert(t('errorSaving'))
+      throw new Error('Falha ao registrar venda')
     }
+  } catch (err: any) {
+    console.error(err)
+    setIsSubmitting(false)
+    setStatusMessage('')
+    alert(t('errorSaving'))
   }
+}
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-[#2C2C2C] rounded-lg mt-8 text-white">
@@ -154,17 +180,24 @@ export default function VenderClient({ numero }: VenderClientProps) {
           </div>
         </div>
 
-        {/* Nome do Comprador */}
-        <div>
-          <label className="block mb-1">{t('buyerName')}</label>
-          <input
-            type="text"
-            value={buyerName}
-            onChange={e => setBuyerName(e.target.value)}
-            className="w-full px-3 py-2 rounded bg-black"
-            required
-          />
-        </div>
+     {/* Nome do Comprador */}
+<div>
+  <label className="block mb-1">{t('buyerName')}</label>
+  <select
+    value={buyerName}
+    onChange={e => setBuyerName(e.target.value)}
+    className="w-full px-3 py-2 rounded bg-black text-white"
+    required
+  >
+    <option value="">{t('selectBuyer')}</option>
+    {clientNames.map((name, idx) => (
+      <option key={idx} value={name}>
+        {name}
+      </option>
+    ))}
+  </select>
+</div>
+
 
         {/* Método de Pagamento */}
         <div>
