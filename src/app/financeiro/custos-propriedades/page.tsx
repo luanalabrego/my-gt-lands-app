@@ -16,7 +16,12 @@ interface CostRow {
 
 export default function PropertyCostsPage() {
   const [rows, setRows] = useState<CostRow[]>([])
-  const [error, setError] = useState<string| null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  // filtros
+  const [classFilter, setClassFilter] = useState<string>('')       // '' = todos
+  const [numFilter, setNumFilter]       = useState<string>('')
+  const [addrFilter, setAddrFilter]     = useState<string>('')
 
   useEffect(() => {
     fetch('/api/financeiro/custos-propriedades')
@@ -28,40 +33,79 @@ export default function PropertyCostsPage() {
       .catch(err => setError(err.message))
   }, [])
 
-  // agrupar por classificação
-  const leilao = rows.filter(r => r.classificacao === 'Leilão')
-  const propriedade = rows.filter(r => r.classificacao === 'Propriedade')
+  // aplica filtros
+  const filtered = rows.filter(r => {
+    if (classFilter && r.classificacao !== classFilter) return false
+    if (numFilter && !r.numero.includes(numFilter))       return false
+    if (addrFilter && !r.endereco.toLowerCase().includes(addrFilter.toLowerCase())) return false
+    return true
+  })
+
+  // agrupa
+  const byClass = {
+    Leilão:        filtered.filter(r => r.classificacao === 'Leilão'),
+    Propriedade:   filtered.filter(r => r.classificacao === 'Propriedade'),
+    Venda:         filtered.filter(r => r.classificacao === 'Venda'),
+  }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Custos das Propriedades</h1>
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold">Custos das Propriedades</h1>
       {error && <p className="text-red-500">Erro: {error}</p>}
 
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Custos de Leilão</h2>
-        {leilao.length
-          ? <ul className="list-disc ml-6">
-              {leilao.map((r,i) => (
-                <li key={i}>
-                  {r.data} — #{r.numero} — {r.descricao}: R${r.valor.toFixed(2)}
-                </li>
-              ))}
-            </ul>
-          : <p>Nenhum custo de leilão registrado.</p>}
-      </section>
+      {/* ---- FILTROS ---- */}
+      <div className="flex flex-wrap gap-4 mb-6">
+        <select
+          value={classFilter}
+          onChange={e => setClassFilter(e.target.value)}
+          className="px-3 py-2 bg-gray-800 text-white rounded"
+        >
+          <option value="">Todas Classificações</option>
+          <option value="Leilão">Leilão</option>
+          <option value="Propriedade">Propriedade</option>
+          <option value="Venda">Venda</option>
+        </select>
 
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Custos de Propriedade</h2>
-        {propriedade.length
-          ? <ul className="list-disc ml-6">
-              {propriedade.map((r,i) => (
+        <input
+          type="text"
+          placeholder="Número da propriedade"
+          value={numFilter}
+          onChange={e => setNumFilter(e.target.value)}
+          className="px-3 py-2 bg-gray-800 text-white rounded"
+        />
+
+        <input
+          type="text"
+          placeholder="Endereço"
+          value={addrFilter}
+          onChange={e => setAddrFilter(e.target.value)}
+          className="px-3 py-2 bg-gray-800 text-white rounded flex-1"
+        />
+      </div>
+
+      {/* ---- SEÇÕES AGRUPADAS ---- */}
+      {(['Leilão','Propriedade','Venda'] as const).map(key => (
+        <section key={key} className="mb-8">
+          <h2 className="text-xl font-semibold mb-2">
+            {key === 'Venda'
+              ? 'Custos de Venda'
+              : key === 'Leilão'
+                ? 'Custos de Leilão'
+                : 'Custos de Propriedade'}
+          </h2>
+          {byClass[key].length ? (
+            <ul className="list-disc ml-6">
+              {byClass[key].map((r,i) => (
                 <li key={i}>
-                  {r.data} — #{r.numero} — {r.descricao}: R${r.valor.toFixed(2)}
+                  {r.data} — #{r.numero} — {r.descricao}: R${r.valor.toFixed(2)} — {r.endereco}
                 </li>
               ))}
             </ul>
-          : <p>Nenhum custo de propriedade registrado.</p>}
-      </section>
+          ) : (
+            <p>Nenhum custo de {key.toLowerCase()} registrado.</p>
+          )}
+        </section>
+      ))}
     </div>
   )
 }
