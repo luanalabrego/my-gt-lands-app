@@ -39,38 +39,77 @@ export default function VenderForm({ numero, onClose }: VenderFormProps) {
   const [stampType, setStampType]           = useState<'percent'|'fixed'>('percent')
   const [stampValue, setStampValue]         = useState<string>('')
 
-  // (custos e créditos omitidos para brevidade...)
-  const costTypes: string[]   = [ /* ...seus tipos aqui... */ ]
-  const creditTypes: string[] = [ /* ...seus tipos aqui... */ ]
-  const [costs, setCosts]     = useState<Cost[]>(costTypes.map(type => ({ type, value: '' })))
-  const [credits, setCredits] = useState<Credit[]>(creditTypes.map(type => ({ type, value: '' })))
+ // Custos e Créditos completos
+
+// Tipos de custos
+const costTypes: string[] = [
+  'Title Wave (Search Fee)',
+  'Closing Fee',
+  'Doc Prep Fee',
+  'All Doc (RON)',
+  'Lien Search',
+  'Owner Title Insurance',
+  'Complemento Insurance',
+  'Fee Real Estate',
+  'Recording Fee County Clerks',
+  'Property Taxes',
+  'Fee City Assessments',
+  'Notary Fee',
+  'Liens',
+  'Special district Assessments',
+  'e-Recording Service Fee',
+  'Outras Saídas'
+]
+
+// Tipos de créditos
+const creditTypes: string[] = [
+  'County Taxes',
+  'Assessments'
+]
+
+// Estados iniciais para custos e créditos
+const [costs, setCosts]     = useState<Cost[]>(costTypes.map(type => ({ type, value: '' })))
+const [credits, setCredits] = useState<Credit[]>(creditTypes.map(type => ({ type, value: '' })))
+
 
   // ----- Efeitos de carregamento -----
-  useEffect(() => {
-    // propriedades disponíveis
-    fetch('/api/propriedades?onlyAvailable=true', { cache: 'no-store' })
-      .then(res => res.json())
-      .then(body => {
-        if (body.ok) {
-          // body.rows existe: primeira linha é header
-          const rows = (body.rows as string[][]).slice(1)
-          setPropsOptions(
-            rows.map(r => ({ numero: r[1], endereco: r[4] }))
-          )
-        }
-      })
-      .catch(err => console.error('Erro ao carregar propriedades:', err))
+useEffect(() => {
+  // propriedades disponíveis
+  fetch('/api/propriedades?onlyAvailable=true', { cache: 'no-store' })
+    .then(res => res.json())
+    .then(body => {
+      if (body.ok && Array.isArray(body.rows)) {
+        // pula header e pega as linhas de dados
+        const dataRows = (body.rows as string[][]).slice(1)
+        setPropsOptions(
+          dataRows.map(r => ({
+            numero:   r[1], // coluna B: número da propriedade
+            endereco: r[4], // coluna E: endereço
+          }))
+        )
+      } else {
+        console.error('Formato inesperado ao carregar propriedades:', body)
+      }
+    })
+    .catch(err => console.error('Erro ao carregar propriedades:', err))
 
-    // clientes
-    fetch('/api/clientes', { cache: 'no-store' })
-      .then(res => res.json())
-      .then(body => {
-        if (body.ok) {
-          setClientNames((body.rows as any[][]).slice(1).map(r => r[0]))
-        }
-      })
-      .catch(err => console.error('Erro ao carregar clientes:', err))
-  }, [])
+  // lista de clientes
+  fetch('/api/clientes', { cache: 'no-store' })
+    .then(res => res.json())
+    .then(body => {
+      if (body.ok && Array.isArray(body.rows)) {
+        setClientNames(
+          (body.rows as any[][])
+            .slice(1)         // pula header
+            .map(r => r[0])   // coluna A: nome do cliente
+        )
+      } else {
+        console.error('Formato inesperado ao carregar clientes:', body)
+      }
+    })
+    .catch(err => console.error('Erro ao carregar clientes:', err))
+}, [])
+
 
   // pré-seleciona a propriedade atual
   useEffect(() => {
