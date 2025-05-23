@@ -132,7 +132,7 @@ useEffect(() => {
   <select
     value={classFilter}
     onChange={e => setClassFilter(e.target.value)}
-    className="px-4 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+    className="px-4 py-2 bg-[#2C2C2C] border border-gray-600 text-gray-300 placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
   >
     <option value="">Todas Classificações</option>
     <option value="Leilão">Leilão</option>
@@ -145,7 +145,7 @@ useEffect(() => {
     placeholder="Número da propriedade"
     value={numFilter}
     onChange={e => setNumFilter(e.target.value)}
-    className="px-4 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+    className="px-4 py-2 bg-[#2C2C2C] border border-gray-600 text-gray-300 placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
   />
 
   <input
@@ -153,9 +153,10 @@ useEffect(() => {
     placeholder="Endereço"
     value={addrFilter}
     onChange={e => setAddrFilter(e.target.value)}
-    className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+    className="flex-1 px-4 py-2 bg-[#2C2C2C] border border-gray-600 text-gray-300 placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
   />
 </div>
+
       {/* tabela de resultados */}
       <div className="overflow-x-auto bg-[#2C2C2C] rounded-2xl shadow-lg">
         <table className="min-w-full divide-y divide-gray-700">
