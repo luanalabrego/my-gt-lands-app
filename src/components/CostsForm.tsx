@@ -6,6 +6,8 @@ import 'react-datepicker/dist/react-datepicker.css'
 
 interface CostsFormProps {
   numero: string
+  parcel: string
+  endereco: string
   onClose: () => void
 }
 
@@ -13,10 +15,10 @@ interface DropdownData {
   investidores: string[]
 }
 
-export default function CostsForm({ numero, onClose }: CostsFormProps) {
+export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFormProps) {
   const [tipoRegistro, setTipoRegistro] = useState<'Leilão' | 'Propriedade'>('Leilão')
 
-  // opções de dropdown
+  // dropdown de investidores
   const [dropdowns, setDropdowns] = useState<DropdownData>({ investidores: [] })
 
   // campos comuns
@@ -35,19 +37,17 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
   const [taxaBancaria, setTaxaBancaria] = useState<number>(0)
   const [outrosCustos, setOutrosCustos] = useState<number>(0)
 
-  // carregar investidores para dropdown
+  // carregar opções
   useEffect(() => {
     fetch('/api/propriedades/dropdown')
       .then(res => res.json())
-      .then((data: { investidores: string[] }) => {
-        if (data.investidores) setDropdowns({ investidores: data.investidores })
-      })
+      .then((data: DropdownData) => setDropdowns(data))
       .catch(console.error)
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const dateStr = data ? data.toISOString().slice(0, 10) : ''
+    const dateStr = data ? data.toISOString().slice(0,10) : ''
     try {
       if (tipoRegistro === 'Propriedade') {
         await fetch('/api/propriedades/custos', {
@@ -56,6 +56,8 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
           body: JSON.stringify({
             data: dateStr,
             numeroPropriedade: numero,
+            parcel,
+            endereco,
             descricao,
             valor,
             investidor,
@@ -80,6 +82,8 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
               body: JSON.stringify({
                 data: dateStr,
                 numeroPropriedade: numero,
+                parcel,
+                endereco,
                 descricao: c.descricao,
                 valor: c.valor,
                 investidor,
@@ -124,7 +128,7 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
         </label>
       </div>
 
-      {/* Campos Comuns: Número e Data */}
+      {/* Número e Data lado a lado */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block mb-1">Número da Propriedade</label>
@@ -182,8 +186,8 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
             <input
               type="number"
               step="0.01"
-              value={valor}
-              onChange={e => setValor(parseFloat(e.target.value))}
+              value={valor || ''}
+              onChange={e => setValor(e.target.value === '' ? 0 : parseFloat(e.target.value))}
               className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
               required
               min={0.01}
@@ -197,8 +201,8 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
             <input
               type="number"
               step="0.01"
-              value={valorArrematado}
-              onChange={e => setValorArrematado(parseFloat(e.target.value))}
+              value={valorArrematado || ''}
+              onChange={e => setValorArrematado(e.target.value === '' ? 0 : parseFloat(e.target.value))}
               className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
               min={0}
             />
@@ -208,8 +212,8 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
             <input
               type="number"
               step="0.01"
-              value={docStamps}
-              onChange={e => setDocStamps(parseFloat(e.target.value))}
+              value={docStamps || ''}
+              onChange={e => setDocStamps(e.target.value === '' ? 0 : parseFloat(e.target.value))}
               className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
               min={0}
             />
@@ -219,8 +223,8 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
             <input
               type="number"
               step="0.01"
-              value={recordingFees}
-              onChange={e => setRecordingFees(parseFloat(e.target.value))}
+              value={recordingFees || ''}
+              onChange={e => setRecordingFees(e.target.value === '' ? 0 : parseFloat(e.target.value))}
               className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
               min={0}
             />
@@ -230,8 +234,8 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
             <input
               type="number"
               step="0.01"
-              value={publicacionFee}
-              onChange={e => setPublicacionFee(parseFloat(e.target.value))}
+              value={publicacionFee || ''}
+              onChange={e => setPublicacionFee(e.target.value === '' ? 0 : parseFloat(e.target.value))}
               className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
               min={0}
             />
@@ -241,9 +245,9 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
             <input
               type="number"
               step="0.01"
-              value={taxaBancaria}
-              onChange={e => setTaxaBancaria(parseFloat(e.target.value))}
-              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+              value={taxaBancaria || ''}
+              onChange={e => setTaxaBancaria(e.target.value === '' ? 0 : parseFloat(e.target.value))}
+              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
               min={0}
             />
           </div>
@@ -252,16 +256,27 @@ export default function CostsForm({ numero, onClose }: CostsFormProps) {
             <input
               type="number"
               step="0.01"
-              value={outrosCustos}
-              onChange={e => setOutrosCustos(parseFloat(e.target.value))}
-              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+              value={outrosCustos || ''}
+              onChange={e => setOutrosCustos(e.target.value === '' ? 0 : parseFloat(e.target.value))}
+              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
               min={0}
             />
           </div>
         </div>
       )}
 
-      {/* Ações */}
+      {/* Observações abaixo de todos os campos */}
+      <div>
+        <label className="block mb-1">Observações</label>
+        <textarea
+          value={''}
+          onChange={() => {}}
+          className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+          rows={3}
+        />
+      </div>
+
+      {/* Botões */}
       <div className="flex justify-end space-x-2 pt-4">
         <button
           type="button"
