@@ -30,12 +30,13 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
 
   // campos Leilão
   const [valorArrematado, setValorArrematado] = useState<number>(0)
-  const [docStamps, setDocStamps] = useState<number>(0) // % de doc stamps
+  const [docStamps, setDocStamps] = useState<number>(0) // percentual
   const [recordingFees, setRecordingFees] = useState<number>(0)
   const [publicacionFee, setPublicacionFee] = useState<number>(0)
   const [taxaBancaria, setTaxaBancaria] = useState<number>(0)
   const [outrosCustos, setOutrosCustos] = useState<number>(0)
 
+  // carregar dropdown
   useEffect(() => {
     fetch('/api/propriedades/dropdown')
       .then(res => res.json())
@@ -65,6 +66,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
           })
         })
       } else {
+        // calcula doc stamps em valor
         const docStampsValor = (docStamps / 100) * valorArrematado
         const custos = [
           { descricao: 'Valor Arrematado', valor: valorArrematado },
@@ -218,7 +220,50 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
               min={0}
             />
           </div>
-          {/* você pode manter ou adicionar os demais campos de leilão aqui */}
+          <div>
+            <label className="block mb-1">Recording Fees</label>
+            <input
+              type="number"
+              step="0.01"
+              value={recordingFees || ''}
+              onChange={e => setRecordingFees(e.target.value === '' ? 0 : parseFloat(e.target.value))}
+              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+              min={0}
+            />
+          </div>
+          <div>
+            <label className="block mb-1">Publicación Fee</label>
+            <input
+              type="number"
+              step="0.01"
+              value={publicacionFee || ''}
+              onChange={e => setPublicacionFee(e.target.value === '' ? 0 : parseFloat(e.target.value))}
+              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+              min={0}
+            />
+          </div>
+          <div>
+            <label className="block mb-1">Taxa Bancária</label>
+            <input
+              type="number"
+              step="0.01"
+              value={taxaBancaria || ''}
+              onChange={e => setTaxaBancaria(e.target.value === '' ? 0 : parseFloat(e.target.value))}
+              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+              min={0}
+            />
+          </div>
+          <div>
+            <label className="block mb-1">Custos Adicionais</label>
+            <input
+              type="number"
+              step="0.01"
+              value={outrosCustos || ''}
+              onChange={e => setOutrosCustos(e.target.value === '' ? 0 : parseFloat(e.target.value))}
+              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
+              min={0}
+            />
+          </div>
         </div>
       )}
 
