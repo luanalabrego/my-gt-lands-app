@@ -161,7 +161,7 @@ export default function CostsForm({
             dateFormat="yyyy-MM-dd"
             placeholderText="Selecione a data"
             className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
-            required
+            
           />
         </div>
       </div>
