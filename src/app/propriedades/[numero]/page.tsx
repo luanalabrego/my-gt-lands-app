@@ -508,10 +508,15 @@ const soldSections = [
       className="bg-[#2C2C2C] p-6 rounded-2xl shadow-lg max-w-lg w-full max-h-[80vh] overflow-y-auto"
       onClick={e => e.stopPropagation()}
     >
-      <CostsForm numero={numero} onClose={() => setShowCostsModal(false)} />
-    </div>
-  </div>
-)}
+      <CostsForm
+            numero={numero}
+            parcel={row[6]}     // coluna G no array (índice 6)
+            endereco={row[7]}   // coluna H no array (índice 7)
+            onClose={() => setShowCostsModal(false)}
+          />
+        </div>
+      </div>
+    )}
 
 
 
