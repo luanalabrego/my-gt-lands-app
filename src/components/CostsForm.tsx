@@ -17,8 +17,6 @@ interface DropdownData {
 
 export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFormProps) {
   const [tipoRegistro, setTipoRegistro] = useState<'Leilão' | 'Propriedade'>('Leilão')
-
-  // dropdown de investidores
   const [dropdowns, setDropdowns] = useState<DropdownData>({ investidores: [] })
 
   // campos comuns
@@ -32,13 +30,12 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
 
   // campos Leilão
   const [valorArrematado, setValorArrematado] = useState<number>(0)
-  const [docStamps, setDocStamps] = useState<number>(0) // percentual
+  const [docStamps, setDocStamps] = useState<number>(0) // % de doc stamps
   const [recordingFees, setRecordingFees] = useState<number>(0)
   const [publicacionFee, setPublicacionFee] = useState<number>(0)
   const [taxaBancaria, setTaxaBancaria] = useState<number>(0)
   const [outrosCustos, setOutrosCustos] = useState<number>(0)
 
-  // carregar opções
   useEffect(() => {
     fetch('/api/propriedades/dropdown')
       .then(res => res.json())
@@ -68,7 +65,6 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
           })
         })
       } else {
-        // calcula doc stamps em valor
         const docStampsValor = (docStamps / 100) * valorArrematado
         const custos = [
           { descricao: 'Valor Arrematado', valor: valorArrematado },
@@ -132,7 +128,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
         </label>
       </div>
 
-      {/* Número e Data lado a lado */}
+      {/* Número e Data */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block mb-1">Número da Propriedade</label>
@@ -152,28 +148,6 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
             placeholderText="Selecione a data"
             className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
             required
-          />
-        </div>
-      </div>
-
-      {/* Parcel e Endereço */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block mb-1">Parcel</label>
-          <input
-            type="text"
-            value={parcel}
-            readOnly
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
-          />
-        </div>
-        <div>
-          <label className="block mb-1">Endereço</label>
-          <input
-            type="text"
-            value={endereco}
-            readOnly
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
           />
         </div>
       </div>
@@ -203,7 +177,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
               type="text"
               value={descricao}
               onChange={e => setDescricao(e.target.value)}
-              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
+              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
               required
             />
           </div>
@@ -214,7 +188,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
               step="0.01"
               value={valor || ''}
               onChange={e => setValor(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
+              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
               required
               min={0.01}
             />
@@ -229,7 +203,7 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
               step="0.01"
               value={valorArrematado || ''}
               onChange={e => setValorArrematado(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
+              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
               min={0}
             />
           </div>
@@ -240,64 +214,21 @@ export default function CostsForm({ numero, parcel, endereco, onClose }: CostsFo
               step="0.01"
               value={docStamps || ''}
               onChange={e => setDocStamps(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
+              className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
               min={0}
             />
           </div>
-          <div>
-            <label className="block mb-1">Recording Fees</label>
-            <input
-              type="number"
-              step="0.01"
-              value={recordingFees || ''}
-              onChange={e => setRecordingFees(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
-              min={0}
-            />
-          </div>
-          <div>
-            <label className="block mb-1">Publicacion Fee</label>
-            <input
-              type="number"
-              step="0.01"
-              value={publicacionFee || ''}
-              onChange={e => setPublicacionFee(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
-              min={0}
-            />
-          </div>
-          <div>
-            <label className="block mb-1">Taxa Bancária</label>
-            <input
-              type="number"
-              step="0.01"
-              value={taxaBancaria || ''}
-              onChange={e => setTaxaBancaria(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
-              min={0}
-            />
-          </div>
-          <div>
-            <label className="block mb-1">Custos Adicionais</label>
-            <input
-              type="number"
-              step="0.01"
-              value={outrosCustos || ''}
-              onChange={e => setOutrosCustos(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-              className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
-              min={0}
-            />
-          </div>
+          {/* você pode manter ou adicionar os demais campos de leilão aqui */}
         </div>
       )}
 
-      {/* Observações abaixo de todos os campos */}
+      {/* Observações */}
       <div>
         <label className="block mb-1">Observações</label>
         <textarea
           value={notes}
           onChange={e => setNotes(e.target.value)}
-          className="w-full px-3 py-2 bg-black	border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-black border border-gray-600 rounded text-white"
           rows={3}
         />
       </div>
