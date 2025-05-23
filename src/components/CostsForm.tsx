@@ -145,7 +145,7 @@ export default function CostsForm({
       {/* Número e Data */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block mb-1">Número da Propriedade</label>
+          <label className="block mb-1">N Propriedade</label>
           <input
             type="text"
             value={numero}
