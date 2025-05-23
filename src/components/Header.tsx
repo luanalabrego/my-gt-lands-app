@@ -38,6 +38,7 @@ export default function Header() {
       children: [
         { href: '/financeiro',              key: 'financials',  Icon: DollarSign  },
         { href: '/calculadora',  key: 'calculator',  Icon: Calculator  },
+        { href: '/financeiro/custos-propriedades', key: 'propertyCosts',   Icon: ClipboardList },
       ],
     },
   ];
