@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useTranslation } from '../../../hooks/useTranslation';
 import Link from 'next/link'
 import VenderForm from '@/components/VenderForm'
+import CostsForm from '@/components/CostsForm'
+
 
 
 
@@ -16,6 +18,7 @@ export default function PropertyDetailPage() {
   const router = useRouter();
   const cardRef = useRef<HTMLDivElement>(null);
   const [showSellModal, setShowSellModal] = useState(false)
+  const [showCostsModal, setShowCostsModal] = useState(false);
 
 
   const [headers, setHeaders] = useState<string[]>([]);
@@ -435,7 +438,7 @@ const soldSections = [
 </div>
 
 
-        {/* Botões de ação */}
+{/* Botões de ação */}
 <div className="mt-6 flex justify-end space-x-2 print:hidden">
   {!isEditing && (
     <button
@@ -452,15 +455,23 @@ const soldSections = [
     ← {t('back')}
   </button>
 
-  {/* botão Vender (apenas fora do modo edição e se não estiver vendida) */}
-{!isEditing && !isSold && (
-  <button
-    onClick={() => setShowSellModal(true)}
-    className="bg-green-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-green-600 transition text-sm"
-  >
-    {t('sellProperty')}
-  </button>
-)}
+  {!isEditing && (
+    <button
+      onClick={() => setShowCostsModal(true)}
+      className="bg-blue-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-blue-600 transition text-sm"
+    >
+      {t('registerCosts')}
+    </button>
+  )}
+
+  {!isEditing && !isSold && (
+    <button
+      onClick={() => setShowSellModal(true)}
+      className="bg-green-500 text-white px-3 py-2 rounded-lg font-medium hover:bg-green-600 transition text-sm"
+    >
+      {t('sellProperty')}
+    </button>
+  )}
 
   {isEditing ? (
     <>
@@ -487,32 +498,21 @@ const soldSections = [
   )}
 </div>
 
-{/* ——————— AQUI: modal de venda ——————— */}
-{showSellModal && (
+{/* ——————— Modal de Registrar Custos ——————— */}
+{showCostsModal && (
   <div
     className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-    onClick={() => setShowSellModal(false)}
+    onClick={() => setShowCostsModal(false)}
   >
     <div
-      className="
-        bg-[#2C2C2C]
-        p-6
-        rounded-2xl
-        shadow-lg
-        max-w-lg
-        w-full
-        max-h-[80vh]
-        overflow-y-auto
-      "
+      className="bg-[#2C2C2C] p-6 rounded-2xl shadow-lg max-w-lg w-full max-h-[80vh] overflow-y-auto"
       onClick={e => e.stopPropagation()}
     >
-      <VenderForm
-        numero={numero}
-        onClose={() => setShowSellModal(false)}
-      />
+      <CostsForm numero={numero} onClose={() => setShowCostsModal(false)} />
     </div>
   </div>
 )}
+
 
 
       </div>  {/* fecha o container interno do card */}
