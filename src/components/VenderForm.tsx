@@ -67,7 +67,7 @@ const creditTypes: string[] = [
   'Assessments'
 ]
 
-// Estados iniciais para custos e créditos
+// ----- Estados iniciais para custos e créditos -----
 const [costs, setCosts]     = useState<Cost[]>(costTypes.map(type => ({ type, value: '' })))
 const [credits, setCredits] = useState<Credit[]>(creditTypes.map(type => ({ type, value: '' })))
 
@@ -82,8 +82,8 @@ useEffect(() => {
         const dataRows = (body.rows as string[][]).slice(1)
         setPropsOptions(
           dataRows.map(r => ({
-            numero:   r[1], // coluna B: número da propriedade
-            endereco: r[4], // coluna E: endereço
+            numero:   r[2], // coluna C (índice 2): número da propriedade
+            endereco: r[5], // coluna F (índice 5): endereço
           }))
         )
       } else {
@@ -99,8 +99,8 @@ useEffect(() => {
       if (body.ok && Array.isArray(body.rows)) {
         setClientNames(
           (body.rows as any[][])
-            .slice(1)         // pula header
-            .map(r => r[0])   // coluna A: nome do cliente
+            .slice(1)       // pula header
+            .map(r => r[0]) // coluna A: nome do cliente
         )
       } else {
         console.error('Formato inesperado ao carregar clientes:', body)
